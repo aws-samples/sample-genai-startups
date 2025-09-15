@@ -29,14 +29,14 @@ strands_solar_agent/
 The project demonstrates a complete transformation from the original AWS Bedrock Agent architecture to a modern Strands Agent implementation with comprehensive observability:
 
 #### Before: Original AWS Bedrock Agent Architecture
-![Original AWS Bedrock Agent](/images/bedrock_agent_architecture.png)
+![Original AWS Bedrock Agent](./images/bedrock_agent_architecture.png)
 
 The original implementation used AWS Bedrock Agent with basic knowledge base integration, providing solar panel support through AWS-managed agent infrastructure.
 
 #### After: Strands Agent with Multiple Observability Integrations
 
 **Strands Agent with Langfuse & RAGAS Evaluation**
-![Strands Agent with Langfuse](/images/strands_langfuse_ragas.png)
+![Strands Agent with Langfuse](./images/strands_langfuse_ragas.png)
 
 This implementation showcases:
 - Strands Agent framework with comprehensive Langfuse observability
@@ -44,7 +44,7 @@ This implementation showcases:
 - Real-time trace collection and performance analytics
 
 **Strands Agent with Arize Observability**
-![Strands Agent with Arize](/images/strands_arize.png)
+![Strands Agent with Arize](./images/strands_arize.png)
 
 This implementation demonstrates:
 - OpenTelemetry-based trace export to Arize platform
@@ -52,7 +52,7 @@ This implementation demonstrates:
 - Custom span mapping for enhanced monitoring
 
 **Strands Agent on Bedrock Agent Core**
-![Strands Agent on Bedrock Agent Core](/images/strands_agent_core_architecture.png)
+![Strands Agent on Bedrock Agent Core](./images/strands_agent_core_architecture.png)
 
 This implementation shows:
 - Containerized Strands Agent deployment on AWS Bedrock Agent Core

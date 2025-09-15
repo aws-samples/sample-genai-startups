@@ -1,0 +1,14 @@
+# Core Strands and Agent Dependencies
+strands-agents
+strands-agents-tools
+
+# Langfuse Observability
+langfuse>=3.0.0
+
+# AWS Dependencies
+boto3
+opensearch-py
+botocore
+bedrock-agentcore
+bedrock-agentcore-starter-toolkit
+aws-opentelemetry-distro==0.10.0

@@ -1,0 +1,299 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Agent - {{ agent.name }} - Strands GUI{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Edit Agent: {{ agent.name }}</h1>
+    <a href="/agents" class="btn btn-secondary">Back to Agents</a>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>Agent Details</h5>
+            </div>
+            <div class="card-body">
+                <form id="agent-details-form">
+                    <div class="mb-3">
+                        <label for="agent-name" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="agent-name" value="{{ agent.name }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="agent-description" class="form-label">Description</label>
+                        <textarea class="form-control" id="agent-description" rows="2">{{ agent.description }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="agent-prompt" class="form-label">Prompt (Optional)</label>
+                        <textarea class="form-control" id="agent-prompt" rows="10">{{ agent.prompt }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="agent-model" class="form-label">Bedrock Model</label>
+                        <select class="form-select" id="agent-model">
+                            <option value="">Loading models...</option>
+                        </select>
+                        <small class="text-muted">Select a Bedrock model for this agent. If none is selected, the default model will be used.</small>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Update Details</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5>Tools</h5>
+                <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addToolModal">Add Tool</button>
+            </div>
+            <div class="card-body">
+                {% if agent.agent_tools %}
+                <ul class="list-group" id="agent-tools-list">
+                    {% for agent_tool in agent.agent_tools %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ agent_tool.tool.name }}
+                        <button class="btn btn-sm btn-danger remove-tool-btn" data-tool-id="{{ agent_tool.tool.id }}">Remove</button>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div class="alert alert-info text-center">
+                    <i class="fas fa-info-circle me-2"></i> No tools assigned to this agent. Add tools to enhance the agent's capabilities.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Tool Modal -->
+<div class="modal fade" id="addToolModal" tabindex="-1" aria-labelledby="addToolModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addToolModalLabel">Add Tool to Agent</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <ul class="nav nav-tabs" id="toolTypeTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="builtin-tab" data-bs-toggle="tab" data-bs-target="#builtin" type="button" role="tab">Built-in Tools</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="custom-tab" data-bs-toggle="tab" data-bs-target="#custom" type="button" role="tab">Custom Tools</button>
+                    </li>
+                </ul>
+                <div class="tab-content pt-3" id="toolTypeTabsContent">
+                    <div class="tab-pane fade show active" id="builtin" role="tabpanel">
+                        <div class="mb-3">
+                            <label for="builtin-tool-select" class="form-label">Select Built-in Tool</label>
+                            <select class="form-select" id="builtin-tool-select">
+                                <option value="">Select a built-in tool...</option>
+                                {% for tool in builtin_tools %}
+                                <option value="{{ tool.name }}">{{ tool.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <small class="text-muted">If the dropdown doesn't work, try typing the tool name directly.</small>
+                        </div>
+                        <div class="mb-3">
+                            <div id="builtin-tool-description" class="text-muted small"></div>
+                        </div>
+                        <!-- Script moved to block extra_js to ensure jQuery is loaded first -->
+                    </div>
+                    <div class="tab-pane fade" id="custom" role="tabpanel">
+                        <div class="mb-3">
+                            <label for="custom-tool-select" class="form-label">Select Custom Tool</label>
+                            <select class="form-select" id="custom-tool-select">
+                                <option value="">Select a custom tool...</option>
+                                {% for tool in tools %}
+                                <option value="{{ tool.id }}">{{ tool.name }} ({{ tool.tool_type }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="text-center mt-3">
+                            <a href="/tool/new" class="btn btn-outline-primary btn-sm" target="_blank">Create New Tool</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="tool-config" class="form-label">Configuration (Optional JSON)</label>
+                    <textarea class="form-control" id="tool-config" rows="5"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="add-tool-btn">Add Tool</button>
+                <a href="/tools" class="btn btn-secondary" id="view-tools-btn">View All Tools</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        const agentId = "{{ agent.id }}";
+        
+        // Update the description when a built-in tool is selected
+        $('#builtin-tool-select').on('change', function() {
+            const selectedTool = $(this).val();
+            // For now, just show a generic message
+            $('#builtin-tool-description').text(selectedTool ? 'Built-in Strands tool' : '');
+        });
+        
+        // Load Bedrock models
+        $.ajax({
+            url: '/api/bedrock/models',
+            method: 'GET',
+            success: function(response) {
+                const modelSelect = $('#agent-model');
+                modelSelect.empty();
+                
+                // Add default option
+                modelSelect.append(`<option value="">Default (${response.default_model_name})</option>`);
+                
+                // Add models from API
+                if (response.models && response.models.length > 0) {
+                    response.models.forEach(model => {
+                        const selected = model.modelId === "{{ agent.model_id }}" ? 'selected' : '';
+                        modelSelect.append(`<option value="${model.modelId}" ${selected}>${model.modelName} (${model.provider})</option>`);
+                    });
+                }
+                
+                // If agent has a model_id that's not in the list, add it
+                if ("{{ agent.model_id }}" && !response.models.find(m => m.modelId === "{{ agent.model_id }}")) {
+                    modelSelect.append(`<option value="{{ agent.model_id }}" selected>{{ agent.model_id }}</option>`);
+                }
+            },
+            error: function() {
+                $('#agent-model').html('<option value="">Error loading models</option>');
+            }
+        });
+        
+        // Update agent details
+        $('#agent-details-form').on('submit', function(e) {
+            e.preventDefault();
+            
+            const name = $('#agent-name').val();
+            const description = $('#agent-description').val();
+            const prompt = $('#agent-prompt').val();
+            const model_id = $('#agent-model').val();
+            
+            // Send API request to update agent details
+            $.ajax({
+                url: `/api/agent/${agentId}`,
+                method: 'PUT',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    name: name,
+                    description: description,
+                    prompt: prompt,
+                    model_id: model_id
+                }),
+                success: function(response) {
+                    showSuccess('Agent details updated successfully');
+                },
+                error: function(xhr) {
+                    showError('Error updating agent: ' + (xhr.responseJSON?.error || 'Unknown error'));
+                }
+            });
+        });
+        
+        // Add tool to agent
+        $('#add-tool-btn').on('click', function() {
+            // Check which tab is active and get the appropriate tool ID
+            let toolId;
+            let toolName;
+            let isBuiltin = false;
+            
+            if ($('#builtin-tab').hasClass('active')) {
+                toolName = $('#builtin-tool-select').val();
+                isBuiltin = true;
+            } else {
+                toolId = $('#custom-tool-select').val();
+            }
+            const config = $('#tool-config').val();
+            
+            if ((!toolId && !toolName) || (isBuiltin && !toolName)) {
+                showError('Please select a tool');
+                return;
+            }
+            
+            // Send API request to add tool to agent
+            $.ajax({
+                url: `/api/agent/${agentId}/tools`,
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    tool_id: toolId,
+                    tool_name: toolName,
+                    config: config
+                }),
+                success: function(response) {
+            // Add the tool to the list
+            const toolsList = $('#agent-tools-list');
+            if (toolsList.length === 0) {
+                // Create the list if it doesn't exist
+                // Target only the card-body in the Tools section
+                $('.card-header:contains("Tools")').next('.card-body').html('<ul class="list-group" id="agent-tools-list"></ul>');
+            }
+                    
+                    $('#agent-tools-list').append(
+                        `<li class="list-group-item d-flex justify-content-between align-items-center">
+                            ${response.tool.name}
+                            <button class="btn btn-sm btn-danger remove-tool-btn" data-tool-id="${response.tool.id}">Remove</button>
+                        </li>`
+                    );
+                    
+                    // Show success notification
+                    const toolSource = response.tool.source;
+                    if (toolSource === 'builtin') {
+                        // For built-in tools, just show success message
+                        showSuccess(`Tool "${response.tool.name}" added to agent successfully.`);
+                    } else {
+                        // For custom tools, show success with link to tools page
+                        showSuccess(`Tool "${response.tool.name}" added to agent successfully.`);
+                    }
+                    
+                    // Close modal
+                    $('#addToolModal').modal('hide');
+                },
+                error: function(xhr) {
+                    showError('Error adding tool: ' + (xhr.responseJSON?.error || 'Unknown error'));
+                }
+            });
+        });
+        
+        // Remove tool from agent
+        $(document).on('click', '.remove-tool-btn', function() {
+            const toolId = $(this).data('tool-id');
+            const listItem = $(this).closest('li');
+            
+            showConfirmation('Are you sure you want to remove this tool from the agent?', function() {
+                $.ajax({
+                    url: `/api/agent/${agentId}/tools/${toolId}`,
+                    method: 'DELETE',
+                    success: function() {
+                        // Remove the tool from the list
+                        listItem.remove();
+                        
+                        // If no tools left, show the info message
+                        if ($('#agent-tools-list li').length === 0) {
+                            $('#agent-tools-list').replaceWith(
+                                `<div class="alert alert-info text-center">
+                                    <i class="fas fa-info-circle me-2"></i> No tools assigned to this agent. Add tools to enhance the agent's capabilities.
+                                </div>`
+                            );
+                        }
+                    },
+                    error: function() {
+                        showError('Error removing tool');
+                    }
+                });
+            }, 'Remove Tool');
+        });
+    });
+</script>
+{% endblock %}

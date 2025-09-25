@@ -1,0 +1,223 @@
+{% extends 'base.html' %}
+
+{% block title %}User Management{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">User Management</h1>
+    
+    <!-- Add User Form -->
+    <div class="card mb-5">
+        <div class="card-header">
+            <h5 class="mb-0">Add New User</h5>
+        </div>
+        <div class="card-body">
+            <form id="addUserForm">
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="username" name="username" required>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="profile_type" class="form-label">Profile Type</label>
+                            <select class="form-control" id="profile_type" name="profile_type">
+                                <option value="user">User</option>
+                                <option value="configurer">Configurer</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary mt-4">Add User</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- User List -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Existing Users</h5>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Profile Type</th>
+                        <th>Created At</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user.username }}</td>
+                        <td>{{ user.profile_type or 'user' }}</td>
+                        <td>{{ user.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>
+                            <div class="btn-group d-flex flex-wrap">
+                                {% if user.username == 'admin@example.com' %}
+                                    <button class="btn btn-sm btn-primary me-1 mb-1" disabled>Admin (Fixed)</button>
+                                {% else %}
+                                    <button class="btn btn-sm btn-outline-primary set-profile me-1 mb-1" data-user-id="{{ user.id }}" data-profile="admin">Admin</button>
+                                    <button class="btn btn-sm btn-outline-secondary set-profile me-1 mb-1" data-user-id="{{ user.id }}" data-profile="configurer">Configurer</button>
+                                    <button class="btn btn-sm btn-outline-info set-profile me-1 mb-1" data-user-id="{{ user.id }}" data-profile="user">User</button>
+                                {% endif %}
+                                <button class="btn btn-sm btn-outline-warning reset-password mb-1" data-user-id="{{ user.id }}" data-username="{{ user.username }}">Reset Password</button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Reset Password Modal -->
+<div class="modal fade" id="resetPasswordModal" tabindex="-1" role="dialog" aria-labelledby="resetPasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="resetPasswordModalLabel">Reset Password</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="resetPasswordForm">
+                    <input type="hidden" id="reset_user_id" name="user_id">
+                    <div class="form-group mb-3">
+                        <label for="new_password" class="form-label">New Password for <span id="reset_username" class="fw-bold"></span></label>
+                        <input type="password" class="form-control" id="new_password" name="new_password" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmResetPassword">Reset Password</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add User Form Submission
+    document.getElementById('addUserForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const profileType = document.getElementById('profile_type').value;
+        
+        fetch('/api/users', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                username: username,
+                password: password,
+                profile_type: profileType
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            } else {
+                console.error('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            console.error('An error occurred while adding the user.');
+        });
+    });
+    
+    // Set Profile Buttons
+    const profileButtons = document.querySelectorAll('.set-profile');
+    profileButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const userId = this.getAttribute('data-user-id');
+            const profileType = this.getAttribute('data-profile');
+            
+            fetch(`/api/user/${userId}/profile`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    profile_type: profileType
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    console.error('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                console.error('An error occurred while updating the profile.');
+            });
+        });
+    });
+    
+    // Reset Password Buttons
+    const resetButtons = document.querySelectorAll('.reset-password');
+    resetButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const userId = this.getAttribute('data-user-id');
+            const username = this.getAttribute('data-username');
+            
+            document.getElementById('reset_user_id').value = userId;
+            document.getElementById('reset_username').textContent = username;
+            
+            $('#resetPasswordModal').modal('show');
+        });
+    });
+    
+    // Confirm Reset Password
+    document.getElementById('confirmResetPassword').addEventListener('click', function() {
+        const userId = document.getElementById('reset_user_id').value;
+        const newPassword = document.getElementById('new_password').value;
+        
+        fetch(`/api/user/${userId}/password`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                password: newPassword
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                $('#resetPasswordModal').modal('hide');
+                console.log('Password reset successfully');
+            } else {
+                console.error('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            console.error('An error occurred while resetting the password.');
+        });
+    });
+});
+</script>
+{% endblock %}

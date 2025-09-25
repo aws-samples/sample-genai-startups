@@ -1,0 +1,347 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Workflow - {{ workflow.name }} - Strands GUI{% endblock %}
+
+{% block extra_css %}
+<style>
+    #workflow-canvas {
+        width: 100%;
+        height: 600px;
+        border: 1px solid #ddd;
+        border-radius: var(--border-radius);
+        background-color: #f8f9fa;
+        position: relative;
+        overflow: hidden;
+        box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+    .connection-label {
+        background-color: rgba(255, 255, 255, 0.9);
+        padding: 3px 6px;
+        border-radius: 4px;
+        font-size: 11px;
+        border: 1px solid #dc3545;
+        color: #dc3545;
+        font-weight: bold;
+        pointer-events: none;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    .node {
+        position: absolute;
+        width: 160px;
+        padding: 12px;
+        border-radius: var(--border-radius);
+        cursor: move;
+        z-index: 10;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .node:hover {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        transform: translateY(-2px);
+    }
+    .agent-node {
+        background-color: #d1ecf1;
+        border: 2px solid #0dcaf0;
+    }
+    .tool-node {
+        background-color: #d4edda;
+        border: 2px solid #198754;
+    }
+    .input-node {
+        background-color: #cfe2ff;
+        border: 2px solid #0d6efd;
+    }
+    .output-node {
+        background-color: #f8d7da;
+        border: 2px solid #dc3545;
+    }
+    .node-title {
+        font-weight: 600;
+        margin-bottom: 8px;
+        text-align: center;
+        font-size: 0.9rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .node-controls {
+        text-align: right;
+        margin-top: 8px;
+    }
+    .edge {
+        position: absolute;
+        z-index: 5;
+    }
+    .edge-path {
+        stroke: #6c757d;
+        stroke-width: 2px;
+        fill: none;
+        cursor: pointer;
+    }
+    .edge-path:hover {
+        stroke: #dc3545;
+        stroke-width: 3px;
+    }
+    .edge-arrow {
+        fill: #6c757d;
+    }
+    .palette {
+        margin-bottom: 20px;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: var(--border-radius);
+        background-color: #f8f9fa;
+        box-shadow: var(--box-shadow);
+    }
+    .palette h5 {
+        font-weight: 600;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+    }
+    .palette h5 i {
+        margin-right: 8px;
+    }
+    .list-group-item {
+        border-radius: var(--border-radius) !important;
+        margin-bottom: 5px;
+        transition: all 0.2s;
+    }
+    .list-group-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    .connect-btn, .delete-btn {
+        padding: 2px 6px;
+        font-size: 0.75rem;
+    }
+    .node.connecting {
+        box-shadow: 0 0 0 3px var(--primary-color), 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+    
+    /* Endpoint positioning */
+    .jtk-endpoint {
+        z-index: 15;
+    }
+    
+    .node-endpoint-right {
+        position: absolute;
+        right: -5px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        z-index: 15;
+    }
+    
+    .node-endpoint-left {
+        position: absolute;
+        left: -5px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        z-index: 15;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-diagram-project me-2"></i>Edit Workflow: {{ workflow.name }}</h1>
+    <div>
+        <a href="/workflows" class="btn btn-outline-secondary me-2">
+            <i class="fas fa-arrow-left me-1"></i> Back to Workflows
+        </a>
+        <a href="/?workflow={{ workflow.id }}" class="btn btn-success">
+            <i class="fas fa-comments me-1"></i> Agentic Chat
+        </a>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Workflow Details</h5>
+            </div>
+            <div class="card-body">
+                <form id="workflow-details-form">
+                    <div class="mb-3">
+                        <label for="workflow-name" class="form-label">
+                            <i class="fas fa-signature me-1"></i> Name
+                        </label>
+                        <input type="text" class="form-control" id="workflow-name" value="{{ workflow.name }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="workflow-description" class="form-label">
+                            <i class="fas fa-align-left me-1"></i> Description
+                        </label>
+                        <textarea class="form-control" id="workflow-description" rows="2">{{ workflow.description }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="workflow-model" class="form-label">
+                            <i class="fas fa-brain me-1"></i> Bedrock Model
+                        </label>
+                        <select class="form-select" id="workflow-model">
+                            <option value="">Loading models...</option>
+                        </select>
+                        <div class="form-text">
+                            <i class="fas fa-info-circle me-1"></i> 
+                            Select a Bedrock model for this workflow. If none is selected, the default model will be used.
+                        </div>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="save-graph-icon" checked>
+                        <label class="form-check-label" for="save-graph-icon">
+                            <i class="fas fa-image me-1"></i> Save workflow graph as icon
+                        </label>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i> Update Details
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-3">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <i class="fas fa-info-circle me-2 text-info"></i> <strong>Tip:</strong> To remove a connection, click on it. Connections will highlight in red when you hover over them.
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-3">
+        <div class="palette">
+            <h5><i class="fas fa-sitemap"></i> Flow Controls</h5>
+            <div class="list-group mb-4">
+                <div class="list-group-item list-group-item-action bg-primary text-white draggable-item" 
+                     draggable="true" 
+                     data-type="input" 
+                     data-id="0" 
+                     data-name="Input">
+                    <i class="fas fa-sign-in-alt me-2"></i> Input (Start)
+                </div>
+                <div class="list-group-item list-group-item-action bg-danger text-white draggable-item" 
+                     draggable="true" 
+                     data-type="output" 
+                     data-id="0" 
+                     data-name="Output">
+                    <i class="fas fa-sign-out-alt me-2"></i> Output (End)
+                </div>
+            </div>
+            
+            <h5><i class="fas fa-robot"></i> Agents</h5>
+            <div class="list-group mb-4">
+                {% for agent in agents %}
+                <div class="list-group-item list-group-item-action draggable-item" 
+                     draggable="true" 
+                     data-type="agent" 
+                     data-id="{{ agent.id }}" 
+                     data-name="{{ agent.name }}">
+                    <i class="fas fa-robot me-2"></i> {{ agent.name }}
+                </div>
+                {% endfor %}
+            </div>
+            
+            <h5><i class="fas fa-wrench"></i> Tools</h5>
+            <div class="list-group">
+                {% for tool in tools %}
+                <div class="list-group-item list-group-item-action draggable-item" 
+                     draggable="true" 
+                     data-type="tool" 
+                     data-id="{{ tool.id }}" 
+                     data-name="{{ tool.name }}">
+                    <i class="fas fa-tools me-2"></i> {{ tool.name }}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-9">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-project-diagram me-2"></i>Workflow Canvas</h5>
+            </div>
+            <div class="card-body p-2">
+                <div id="workflow-canvas"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden input to store workflow ID -->
+<input type="hidden" id="workflow-id" value="{{ workflow.id }}">
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='import/js/jsplumb.min.js') }}"></script>
+<script>
+    console.log('Loading workflow editor page...');
+</script>
+<script src="{{ url_for('static', filename='js/workflow-editor.js') }}"></script>
+<script>
+    // Initialize nodes and edges data
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM content loaded, initializing workflow nodes and edges...');
+        
+        // Load Bedrock models
+        $.ajax({
+            url: '/api/bedrock/models',
+            method: 'GET',
+            success: function(response) {
+                const modelSelect = $('#workflow-model');
+                modelSelect.empty();
+                
+                // Add default option
+                modelSelect.append(`<option value="">Default (${response.default_model_name})</option>`);
+                
+                // Add models from API
+                if (response.models && response.models.length > 0) {
+                    response.models.forEach(model => {
+                        const selected = model.modelId === "{{ workflow.model_id }}" ? 'selected' : '';
+                        modelSelect.append(`<option value="${model.modelId}" ${selected}>${model.modelName} (${model.provider})</option>`);
+                    });
+                }
+                
+                // If workflow has a model_id that's not in the list, add it
+                if ("{{ workflow.model_id }}" && !response.models.find(m => m.modelId === "{{ workflow.model_id }}")) {
+                    modelSelect.append(`<option value="{{ workflow.model_id }}" selected>{{ workflow.model_id }}</option>`);
+                }
+            },
+            error: function() {
+                $('#workflow-model').html('<option value="">Error loading models</option>');
+            }
+        });
+        // Load existing nodes
+        {% for node in nodes %}
+        if (window.createNode) {
+            window.createNode(
+                "{{ node.id }}", 
+                "{{ node.node_type }}", 
+                "{{ node.reference_id }}", 
+                {{ node.position_x }}, 
+                {{ node.position_y }},
+                "{% if node.node_type == 'agent' %}{% for agent in agents %}{% if agent.id == node.reference_id %}{{ agent.name }}{% endif %}{% endfor %}{% elif node.node_type == 'tool' %}{% for tool in tools %}{% if tool.id == node.reference_id %}{{ tool.name }}{% endif %}{% endfor %}{% else %}{{ node.node_type }}{% endif %}"
+            );
+        }
+        {% endfor %}
+        
+        // Load existing edges
+        {% for edge in edges %}
+        if (window.createEdge) {
+            window.createEdge("{{ edge.id }}", "{{ edge.source_node_id }}", "{{ edge.target_node_id }}");
+        }
+        {% endfor %}
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}New Tool - Strands GUI{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 offset-lg-2">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-wrench me-2"></i>Create New Tool</h1>
+        </div>
+        
+        <div class="card">
+            <div class="card-body">
+                <form method="post">
+                    <div class="mb-4">
+                        <label for="name" class="form-label">
+                            <i class="fas fa-signature me-1"></i> Name
+                        </label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="description" class="form-label">
+                            <i class="fas fa-align-left me-1"></i> Description
+                        </label>
+                        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="tool_type" class="form-label">
+                            <i class="fas fa-tag me-1"></i> Tool Type
+                        </label>
+                        <select class="form-select" id="tool_type" name="tool_type" required>
+                            <option value="mcp">
+                                <i class="fas fa-cloud"></i> MCP Service
+                            </option>
+                            <option value="agent">
+                                <i class="fas fa-robot"></i> Agent
+                            </option>
+                        </select>
+                    </div>
+                    
+                    <div id="agent-selector" class="mb-4" style="display: none;">
+                        <label for="agent_id" class="form-label">
+                            <i class="fas fa-robot me-1"></i> Select Agent
+                        </label>
+                        <select class="form-select" id="agent_id" name="agent_id">
+                            <option value="null">Select an agent...</option>
+                            {% for agent in agents %}
+                            <option value="{{ agent.id }}">{{ agent.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">
+                            <i class="fas fa-info-circle me-1"></i> 
+                            The selected agent will be used to handle requests to this tool.
+                        </div>
+                    </div>
+                    
+                    <div id="config-editor" class="mb-4">
+                        <label for="config" class="form-label">
+                            <i class="fas fa-cog me-1"></i> Configuration (JSON)
+                        </label>
+                        <textarea class="form-control" id="config" name="config" rows="10" 
+                                  placeholder='{"server": "example.com", "port": 8080, "auth": {"username": "user", "password": "pass"}}'>
+                        </textarea>
+                        <div class="form-text">
+                            <i class="fas fa-info-circle me-1"></i> 
+                            Enter the JSON configuration for the MCP service.
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="/tools" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i> Create Tool
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Toggle fields based on tool type
+        $('#tool_type').on('change', function() {
+            const toolType = $(this).val();
+            
+            if (toolType === 'agent') {
+                $('#agent-selector').show();
+                $('#config-editor').hide();
+            } else {
+                $('#agent-selector').hide();
+                $('#config-editor').show();
+            }
+        });
+        
+        // Initialize based on default selection
+        $('#tool_type').trigger('change');
+    });
+</script>
+{% endblock %}

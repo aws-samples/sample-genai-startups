@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Strands GUI</title>
+    <link href="/static/import/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/import/css/fontawesome.min.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-container {
+            max-width: 450px;
+            width: 100%;
+            padding: 2.5rem;
+            background-color: #fff;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .login-logo {
+            text-align: center;
+            margin-bottom: 2.5rem;
+            font-size: 2.2rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        .form-label {
+            font-weight: 500;
+            margin-bottom: 0.75rem;
+        }
+        .form-control {
+            padding: 0.75rem 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .btn-primary {
+            padding: 0.75rem;
+            font-weight: 500;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-logo">
+            <i class="fas fa-brain me-2"></i>Strands GUI
+        </div>
+        
+        {% if error %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+        {% endif %}
+        
+        <form method="POST" action="/login">
+            <div class="mb-4">
+                <label for="username" class="form-label">Username</label>
+                <input type="text" class="form-control" id="username" name="username" required autocomplete="username">
+            </div>
+            <div class="mb-4">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="password" name="password" required autocomplete="current-password">
+            </div>
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary">Login</button>
+            </div>
+        </form>
+    </div>
+<script>
+    // Log all network requests
+    const originalFetch = window.fetch;
+    window.fetch = function() {
+        console.log('Fetch request:', arguments[0]);
+        return originalFetch.apply(this, arguments);
+    };
+
+    // Log all resource loads
+    const observer = new PerformanceObserver((list) => {
+        list.getEntries().forEach((entry) => {
+            console.log('Resource loaded:', entry.name, entry);
+        });
+    });
+    observer.observe({entryTypes: ['resource']});
+</script>
+</body>
+</html>

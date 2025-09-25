@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Tool - {{ tool.name }} - Strands GUI{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Edit Tool: {{ tool.name }}</h1>
+    <a href="/tools" class="btn btn-secondary">Back to Tools</a>
+</div>
+
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header">
+                <h5>Tool Details</h5>
+            </div>
+            <div class="card-body">
+                <form id="tool-details-form">
+                    <div class="mb-3">
+                        <label for="tool-name" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="tool-name" value="{{ tool.name }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="tool-description" class="form-label">Description</label>
+                        <textarea class="form-control" id="tool-description" rows="2">{{ tool.description }}</textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="tool-type" class="form-label">Tool Type</label>
+                        <select class="form-select" id="tool-type">
+                            <option value="builtin" {% if tool.tool_type == 'builtin' %}selected{% endif %}>Built-in Strands Tool</option>
+                            <option value="mcp" {% if tool.tool_type == 'mcp' %}selected{% endif %}>MCP Service</option>
+                            <option value="agent" {% if tool.tool_type == 'agent' %}selected{% endif %}>Agent</option>
+                        </select>
+                    </div>
+                    
+                    <div id="agent-selector" class="mb-3" {% if tool.tool_type != 'agent' %}style="display: none;"{% endif %}>
+                        <label for="agent-id" class="form-label">Select Agent</label>
+                        <select class="form-select" id="agent-id">
+                            <option value="">Select an agent...</option>
+                            {% for agent in agents %}
+                            <option value="{{ agent.id }}" {% if tool.agent_id == agent.id %}selected{% endif %}>{{ agent.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div id="config-editor" class="mb-3" {% if tool.tool_type == 'agent' %}style="display: none;"{% endif %}>
+                        <label for="tool-config" class="form-label">Configuration (JSON)</label>
+                        <textarea class="form-control" id="tool-config" rows="10">{{ tool.config }}</textarea>
+                        
+                        <div id="mcp-tools-section" class="mt-3" {% if tool.tool_type != 'mcp' %}style="display: none;"{% endif %}>
+                            <button type="button" id="discover-tools-btn" class="btn btn-outline-primary btn-sm mb-3">Discover Available Tools</button>
+                            <div id="mcp-tools-list" style="display: none;">
+                                <label class="form-label">Available Tools (uncheck to disable):</label>
+                                <div id="tools-checkboxes" class="border p-3 rounded" style="max-height: 200px; overflow-y: auto;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="button" id="update-tool-btn" class="btn btn-primary">Update Tool</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        const toolId = "{{ tool.id }}";
+        
+        // Toggle fields based on tool type
+        $('#tool-type').on('change', function() {
+            const toolType = $(this).val();
+            
+            if (toolType === 'agent') {
+                $('#agent-selector').show();
+                $('#config-editor').hide();
+            } else {
+                $('#agent-selector').hide();
+                $('#config-editor').show();
+                
+                if (toolType === 'mcp') {
+                    $('#mcp-tools-section').show();
+                } else {
+                    $('#mcp-tools-section').hide();
+                }
+            }
+        });
+        
+        // Discover MCP tools
+        $('#discover-tools-btn').on('click', function() {
+            const config = $('#tool-config').val();
+            
+            $(this).prop('disabled', true).text('Discovering...');
+            
+            $.ajax({
+                url: '/api/tool/mcp/discover',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ config: config }),
+                success: function(response) {
+                    if (response.success) {
+                        displayMCPTools(response.tools);
+                        $('#mcp-tools-list').show();
+                    } else {
+                        showError('Failed to discover tools: ' + response.error);
+                    }
+                },
+                error: function(xhr) {
+                    const error = xhr.responseJSON ? xhr.responseJSON.error : 'Unknown error';
+                    showError('Failed to discover tools: ' + error);
+                },
+                complete: function() {
+                    $('#discover-tools-btn').prop('disabled', false).text('Discover Available Tools');
+                }
+            });
+        });
+        
+        function displayMCPTools(tools) {
+            const container = $('#tools-checkboxes');
+            container.empty();
+            
+            // Parse existing config to get disabled tools
+            let disabledTools = [];
+            try {
+                const config = JSON.parse($('#tool-config').val() || '{}');
+                disabledTools = config.disabled_tools || [];
+            } catch (e) {
+                // Ignore parsing errors
+            }
+            
+            tools.forEach(tool => {
+                const isEnabled = !disabledTools.includes(tool);
+                const checkbox = $(`
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="tool-${tool}" value="${tool}" ${isEnabled ? 'checked' : ''}>
+                        <label class="form-check-label" for="tool-${tool}">${tool}</label>
+                    </div>
+                `);
+                container.append(checkbox);
+            });
+            
+            // Update config when checkboxes change
+            container.find('input[type="checkbox"]').on('change', updateToolConfig);
+        }
+        
+        function updateToolConfig() {
+            const disabledTools = [];
+            $('#tools-checkboxes input[type="checkbox"]:not(:checked)').each(function() {
+                disabledTools.push($(this).val());
+            });
+            
+            try {
+                const config = JSON.parse($('#tool-config').val() || '{}');
+                config.disabled_tools = disabledTools;
+                $('#tool-config').val(JSON.stringify(config, null, 2));
+            } catch (e) {
+                // If config is invalid JSON, create new config
+                const config = { disabled_tools: disabledTools };
+                $('#tool-config').val(JSON.stringify(config, null, 2));
+            }
+        }
+        
+        $('#update-tool-btn').on('click', function() {
+            const name = $('#tool-name').val();
+            const description = $('#tool-description').val();
+            const toolType = $('#tool-type').val();
+            const agentId = toolType === 'agent' ? $('#agent-id').val() || null : null;
+            const config = toolType !== 'agent' ? $('#tool-config').val() : null;
+            
+            console.log('Submitting tool update:', {
+                name: name, 
+                description: description, 
+                tool_type: toolType, 
+                agent_id: agentId, 
+                config: config
+            });
+            
+            // Create the data object
+            const updateData = {
+                name: name,
+                description: description,
+                tool_type: toolType,
+                agent_id: agentId,
+                config: config
+            };
+            
+            console.log('JSON data to be sent:', JSON.stringify(updateData));
+            
+            // Send API request to update tool
+            $.ajax({
+                url: `/api/tool/${toolId}`,
+                type: 'PUT',
+                contentType: 'application/json',
+                data: JSON.stringify(updateData),
+                dataType: 'json',
+                success: function(response) {
+                    console.log('Update successful:', response);
+                    showSuccess('Tool updated successfully');
+                    // Redirect to tools page after a short delay
+                    setTimeout(function() {
+                        window.location.href = '/tools';
+                    }, 1000);
+                },
+                error: function(xhr, status, error) {
+                    console.error('Update failed:', xhr);
+                    console.error('Status:', status);
+                    console.error('Error:', error);
+                    console.error('Response Text:', xhr.responseText);
+                    
+                    let errorMessage = 'Error updating tool';
+                    try {
+                        if (xhr.responseJSON && xhr.responseJSON.error) {
+                            errorMessage += ': ' + xhr.responseJSON.error;
+                        } else if (xhr.responseText) {
+                            const errorData = JSON.parse(xhr.responseText);
+                            if (errorData.error) {
+                                errorMessage += ': ' + errorData.error;
+                            }
+                        }
+                    } catch (e) {
+                        errorMessage += ': ' + error;
+                    }
+                    
+                    showError(errorMessage);
+                }
+            });
+        });
+        
+        function showError(message) {
+            // Log error to console instead of showing alert
+            console.error('Error: ' + message);
+        }
+        
+        function showSuccess(message) {
+            // Log success to console instead of showing alert
+            console.log('Success: ' + message);
+        }
+    });
+</script>
+{% endblock %}

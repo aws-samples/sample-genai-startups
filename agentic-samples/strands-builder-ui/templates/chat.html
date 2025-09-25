@@ -1,0 +1,679 @@
+{% extends "base.html" %}
+
+{% block title %}Chat - Strands GUI{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dropdown-icons.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/chat-buttons.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-comments me-2"></i>Chat with Agent or Workflow</h1>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="workflow-selector mb-4">
+            <label for="workflow-select" class="form-label">
+                  Select Agent or Strand:
+            </label>
+            <div class="d-flex gap-2">
+                <select id="workflow-select" class="form-select">
+                    <option value="">Select agent or workflow...</option>
+                    
+                    <!-- Display all strands (workflows) first -->
+                    {% for item in workflows %}
+                        {% if item.type == 'workflow' %}
+                        <option value="{{ item.id }}" data-type="{{ item.type }}">
+                            <i class="fas fa-diagram-project"></i> {{ item.name }}
+                        </option>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    <!-- Then display all agents -->
+                    {% for item in workflows %}
+                        {% if item.type == 'agent' %}
+                        <option value="{{ item.id }}" data-type="{{ item.type }}">
+                            <i class="fas fa-robot"></i> {{ item.name }}
+                        </option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+                <button id="reset-chat" class="btn btn-outline-secondary">
+                    <i class="fas fa-refresh me-1"></i> Reset
+                </button>
+            </div>
+        </div>
+        
+        <div class="chat-container">
+            <div class="chat-messages" id="chat-messages">
+                <div class="message agent-message">
+                    <p><i class="fas fa-robot me-2"></i>Welcome to Strands GUI! Please select an agent or workflow to start chatting.</p>
+                </div>
+            </div>
+            
+            <div class="input-group mt-3">
+                <input type="text" id="message-input" class="form-control" placeholder="Type your message..." disabled>
+                <button id="send-button" class="btn btn-primary" disabled>
+                    <i class="fas fa-paper-plane me-1"></i> Send
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/dropdown-icons.js') }}"></script>
+<script>
+    $(document).ready(function() {
+        const workflowSelect = $('#workflow-select');
+        const messageInput = $('#message-input');
+        const sendButton = $('#send-button');
+        const resetButton = $('#reset-chat');
+        const chatMessages = $('#chat-messages');
+        
+        let selectedWorkflowId = null;
+        let selectedWorkflowType = null;
+        let lastSelectedWorkflowId = null;
+        let conversationId = null;
+        
+        // Store workflow edit timestamps to detect changes
+        const workflowEditTimestamps = {};
+        
+        // Load from localStorage on page load
+        function loadFromStorage() {
+            const storedConversationId = localStorage.getItem('conversationId');
+            const storedWorkflowId = localStorage.getItem('workflowId');
+            
+            if (storedConversationId && storedWorkflowId) {
+                conversationId = storedConversationId;
+                selectedWorkflowId = storedWorkflowId;
+                lastSelectedWorkflowId = storedWorkflowId;
+                
+        // Set the workflow selector and get the type
+        workflowSelect.val(storedWorkflowId);
+        selectedWorkflowType = $('option:selected', workflowSelect).data('type') || 'workflow';
+        workflowSelect.trigger('change');
+                
+                // Enable input
+                messageInput.prop('disabled', false);
+                sendButton.prop('disabled', false);
+                
+                // Retrieve conversation history
+                retrieveConversationHistory();
+            }
+        }
+        
+        function saveToStorage() {
+            if (conversationId && selectedWorkflowId) {
+                localStorage.setItem('conversationId', conversationId);
+                localStorage.setItem('workflowId', selectedWorkflowId);
+            }
+        }
+        
+        function clearStorage() {
+            localStorage.removeItem('conversationId');
+            localStorage.removeItem('workflowId');
+        }
+        
+        function retrieveConversationHistory() {
+            if (!conversationId) return;
+            
+            $.ajax({
+                url: '/api/chat/history',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ conversation_id: conversationId }),
+                success: function(response) {
+                    if (response.success && response.history.length > 0) {
+                        clearChat();
+                        response.history.forEach(msg => {
+                            if (msg.role === 'user') {
+                                addUserMessage(msg.content);
+                            } else if (msg.role === 'assistant') {
+                                addAgentMessage(msg.content);
+                            }
+                        });
+                    }
+                },
+                error: function(xhr) {
+                    if (xhr.status === 404) {
+                        // Backend session was cleared, create new conversation
+                        console.log('Conversation not found, creating new session');
+                        clearStorage();
+                        conversationId = null;
+                        clearChat();
+                        
+                        // Reactivate the workflow to create new session
+                        if (selectedWorkflowId) {
+                            showTypingIndicator();
+                            selectedWorkflowType = $('option:selected', workflowSelect).data('type') || 'workflow';
+                            const selectedType = selectedWorkflowType;
+                            const selectedName = $('option:selected', workflowSelect).text().trim();
+                            
+                            $.ajax({
+                                url: `/api/workflow/activate/${selectedWorkflowId}`,
+                                method: 'POST',
+                                contentType: 'application/json',
+                                data: JSON.stringify({ type: selectedType }),
+                                success: function(response) {
+                                    removeTypingIndicator();
+                                    if (response.success) {
+                                        conversationId = response.workflow.id;
+                                        saveToStorage();
+                                        
+                                        // Store metadata to avoid extra API calls
+                                        if (response.metadata) {
+                                            workflowEditTimestamps[selectedWorkflowId] = response.metadata.lastEdited || Date.now();
+                                        }
+                                        
+                                        const itemType = selectedType === 'agent' ? 'Agent' : 'Workflow';
+                                        addAgentMessage(`<i class="fas fa-robot me-2"></i>${itemType} "${selectedName}" loaded. How can I help you?`);
+                                    }
+                                },
+                                error: function() {
+                                    removeTypingIndicator();
+                                }
+                            });
+                        }
+                    } else {
+                        console.log('Failed to retrieve conversation history');
+                    }
+                }
+            });
+        }
+        
+        // Load from storage on page load
+        loadFromStorage();
+        
+        workflowSelect.on('change', function() {
+            selectedWorkflowId = $(this).val();
+            selectedWorkflowType = $('option:selected', workflowSelect).data('type') || 'workflow';
+            
+            // Always clear chat when selecting a workflow or agent, even if it's the same one
+            clearChat();
+            
+            if (selectedWorkflowId) {
+                // Show loading indicator
+                showTypingIndicator();
+                
+                // Get the selected item type (agent or workflow)
+                const selectedType = selectedWorkflowType;
+                const selectedName = $('option:selected', workflowSelect).text();
+                
+                // Activate the workflow or agent on the server
+                $.ajax({
+                    url: `/api/workflow/activate/${selectedWorkflowId}`,
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ type: selectedType }),
+                    success: function(response) {
+                        // Remove typing indicator
+                        removeTypingIndicator();
+                        
+                        if (response.success) {
+                            messageInput.prop('disabled', false);
+                            sendButton.prop('disabled', false);
+                            
+                            // Store the conversation ID from the response
+                            conversationId = response.workflow.id;
+                            saveToStorage();
+                            
+                            // Store metadata to avoid extra API calls
+                            if (response.metadata) {
+                                workflowEditTimestamps[selectedWorkflowId] = response.metadata.lastEdited || Date.now();
+                            }
+                            
+                            // Add welcome message for the selected workflow or agent
+                            const itemType = selectedType === 'agent' ? 'Agent' : 'Workflow';
+                            addAgentMessage(`<i class="fas fa-robot me-2"></i>${itemType} "${selectedName}" loaded. How can I help you?`);
+                            
+                            // Store this workflow ID as last selected
+                            lastSelectedWorkflowId = selectedWorkflowId;
+                        } else {
+                            addAgentMessage(`<i class="fas fa-exclamation-triangle me-2"></i>Error: ${response.error}`);
+                        }
+                    },
+                    error: function(xhr) {
+                        // Remove typing indicator
+                        removeTypingIndicator();
+                        
+                        const errorMsg = xhr.responseJSON ? xhr.responseJSON.error : 'Failed to activate workflow';
+                        addAgentMessage(`<i class="fas fa-exclamation-triangle me-2"></i>Error: ${errorMsg}`);
+                    }
+                });
+            } else {
+                messageInput.prop('disabled', true);
+                sendButton.prop('disabled', true);
+                
+                // Reset the workflow on the server
+                resetWorkflowSession();
+            }
+        });
+        
+        sendButton.on('click', sendMessage);
+        messageInput.on('keypress', function(e) {
+            if (e.which === 13 && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+        
+        resetButton.on('click', function() {
+            // Reset the workflow on the server and clear the chat
+            // Pass the conversation ID to properly terminate the thread
+            if (conversationId) {
+                resetWorkflowSession(conversationId);
+            } else {
+                resetWorkflowSession();
+            }
+            clearChat();
+            
+            // Clear the workflow selection
+            workflowSelect.val('');
+            
+            // Clear conversation ID
+            conversationId = null;
+            clearStorage();
+            
+            // If a workflow was previously selected, reactivate it to create a new session
+            if (lastSelectedWorkflowId) {
+                // Set the workflow select back to the last selected workflow
+                workflowSelect.val(lastSelectedWorkflowId);
+                
+                selectedWorkflowType = $('option:selected', workflowSelect).data('type') || 'workflow';
+                const selectedType = selectedWorkflowType;
+                const selectedName = $('option:selected', workflowSelect).text().trim();
+                
+                // Show loading indicator
+                showTypingIndicator();
+                
+                // Activate the workflow or agent on the server to create a new session
+                $.ajax({
+                    url: `/api/workflow/activate/${lastSelectedWorkflowId}`,
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ type: selectedType }),
+                    success: function(response) {
+                        // Remove typing indicator
+                        removeTypingIndicator();
+                        
+                        if (response.success) {
+                            // Enable input
+                            messageInput.prop('disabled', false);
+                            sendButton.prop('disabled', false);
+                            
+                            // Store the new conversation ID
+                            conversationId = response.workflow.id;
+                            saveToStorage();
+                            
+                            // Store metadata to avoid extra API calls
+                            if (response.metadata) {
+                                workflowEditTimestamps[lastSelectedWorkflowId] = response.metadata.lastEdited || Date.now();
+                            }
+                            
+                            // Add welcome message for the selected workflow or agent
+                            const itemType = selectedType === 'agent' ? 'Agent' : 'Workflow';
+                            addAgentMessage(`<i class="fas fa-robot me-2"></i>${itemType} "${selectedName}" loaded. How can I help you?`);
+                        } else {
+                            addAgentMessage(`<i class="fas fa-exclamation-triangle me-2"></i>Error: ${response.error}`);
+                        }
+                    },
+                    error: function(xhr) {
+                        // Remove typing indicator
+                        removeTypingIndicator();
+                        
+                        const errorMsg = xhr.responseJSON ? xhr.responseJSON.error : 'Failed to activate workflow';
+                        addAgentMessage(`<i class="fas fa-exclamation-triangle me-2"></i>Error: ${errorMsg}`);
+                    }
+                });
+            } else {
+                // No workflow was previously selected, just disable input
+                messageInput.prop('disabled', true);
+                sendButton.prop('disabled', true);
+                
+                // Add welcome message
+                addAgentMessage('<i class="fas fa-robot me-2"></i>Welcome to Strands GUI! Please select an agent or workflow to start chatting.');
+            }
+        });
+        
+        function resetWorkflowSession(conversationId) {
+            $.ajax({
+                url: '/api/workflow/reset',
+                method: 'POST',
+                contentType: 'application/json',
+                data: conversationId ? JSON.stringify({ conversation_id: conversationId }) : '{}'
+            });
+        }
+        
+        function clearChat() {
+            chatMessages.html('');
+        }
+        
+        function sendMessage() {
+            const message = messageInput.val().trim();
+            if (!message) return;
+            
+            // No need to check for edits since metadata comes from activate response
+            processSendMessage(message);
+        }
+        
+        function processSendMessage(message) {
+            // Add user message to chat
+            addUserMessage(message);
+            messageInput.val('');
+            
+            // Show typing indicator
+            showTypingIndicator();
+            
+            // Create a message container for the streaming response
+            const messageId = 'msg-' + Date.now();
+            chatMessages.append(`
+                <div class="message agent-message" id="${messageId}">
+                    <div class="markdown-content">
+                        <i class="fas fa-robot me-2"></i>
+                        <div class="waiting-dots">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                </div>
+            `);
+            scrollToBottom();
+            
+            // Remove typing indicator since we'll be streaming the response
+            removeTypingIndicator();
+            
+            console.log("Sending message and expecting streaming response...");
+            
+            // Send the message to the backend using fetch for streaming support
+            fetch('/api/chat/message', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ message: message, conversation_id: conversationId })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                
+                // Get a reader from the response body stream
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = '';
+                let fullContent = '';
+                
+                // Function to process the stream
+                function processStream() {
+                    return reader.read().then(({ done, value }) => {
+                        if (done) {
+                            console.log("Stream complete");
+                            // Process any remaining data in the buffer
+                            if (buffer.trim()) {
+                                processLine(buffer.replace('data: ','').replace('\nend',''));
+                            }
+                            // Remove waiting dots when stream is complete
+                            $(`#${messageId} .waiting-dots`).remove();
+                            return;
+                        }
+                        
+                        // Decode the chunk and add it to our buffer
+                        const chunk = decoder.decode(value, { stream: true });
+                        console.log("Received chunk");
+                        console.log(chunk)
+                        buffer += chunk;
+                        console.log(buffer)                        
+                        // Process complete lines
+                        const lines = buffer.split('\nenddata: ');
+                        buffer = lines.pop(); // Keep the last incomplete line in the buffer
+                        
+                        // Process each complete line
+                        lines.forEach(line => {
+                            if (line.trim()) {
+                                processLine(line);
+                            }
+                        });
+
+                        //verify if the last line is complete (starts data: and end with \nend)
+                        if (buffer.startsWith('data: ') && buffer.endsWith('\nend')) {
+                            line = buffer.replace('data: ','').replace('\nend','')
+                            processLine(line);
+                            buffer = '';
+                        }
+                        
+                        // Continue reading
+                        return processStream();
+                    });
+                }
+                
+                // Function to process each line
+                function processLine(line) {
+                    console.log("Processing line:", line);
+                    
+                    
+                    try {
+                        // Remove data: at the start of line if present
+                        const cleanLine = line.startsWith('data:') ? line.substring(5) : line;
+                        const jsonData = JSON.parse(cleanLine);
+                        console.log("Parsed JSON:", jsonData);
+                        
+                        if (jsonData.delta && jsonData.delta.text) {
+                            if (window.lastToolUseId){
+                                window.lastToolUseId = null
+                                fullContent += '\n\n';
+                            }
+                            // Append delta text to content
+                            fullContent += jsonData.delta.text;
+                            
+                            // Parse markdown and preserve the robot icon
+                            const renderedMarkdown = marked.parse(fullContent);
+                            
+                            $('.tool-use-info').remove();
+
+                            // Add the content with the robot icon, any tool use info, and waiting dots
+                            $(`#${messageId} .markdown-content`).html(`
+                                <i class="fas fa-robot me-2"></i>${renderedMarkdown}
+                                
+                                <div class="waiting-dots">
+                                    <span></span>
+                                    <span></span>
+                                    <span></span>
+                                </div>
+                            `);
+                            scrollToBottom();
+                        } 
+                        // Handle tool use notifications
+                        else if (jsonData.delta && jsonData.delta.toolUse) {
+                            console.log("Tool use detected:", jsonData);
+                            
+                            // Track tool use ID
+                            const lastToolUseId = window.lastToolUseId || '';
+                            const currentToolUseId = jsonData.current_tool_use?.toolUseId || '';
+                            
+                            // Remove any existing tool use info
+                            $('.tool-use-info').remove();
+                            
+                            // If we have current_tool_use with more details
+                            if (jsonData.current_tool_use) {
+                                const toolName = jsonData.current_tool_use.name || "Unknown Tool";
+                                let toolInput = "";
+                                
+                                // Format tool input based on type and convert to YAML-like format for better readability
+                                if (jsonData.current_tool_use.input) {
+                                    if (typeof jsonData.current_tool_use.input === 'string') {
+                                        toolInput = jsonData.current_tool_use.input;
+                                    } else if (typeof jsonData.current_tool_use.input === 'object') {
+                                        // Convert object to YAML-like format
+                                        toolInput = Object.entries(jsonData.current_tool_use.input)
+                                            .map(([key, value]) => {
+                                                // Handle nested objects
+                                                if (typeof value === 'object' && value !== null) {
+                                                    return `${key}:\n  ${Object.entries(value)
+                                                        .map(([k, v]) => `${k}: ${v}`)
+                                                        .join('\n  ')}`;
+                                                }
+                                                return `${key}: ${value}`;
+                                            })
+                                            .join('</p><p>');
+                                    }
+                                }
+                                
+                                // Create tool use HTML
+                                const toolUseHtml = `
+                                    <div class="tool-use-info">
+                                        <p><i class="fas fa-tools me-2"></i>Using tool: <strong>${toolName}</strong>
+                                        ${toolInput ? `<div class="tool-input mt-2"><p>${toolInput}</p></div>` : ''}</p>
+                                    </div>
+                                    
+                                `;
+                                
+                                // Add the tool use info to the current message, before the waiting dots
+                                const currentMarkdown = $(`#${messageId} .markdown-content`).html();
+                                const waitingDots = `                                <div class="waiting-dots">
+                                    <span></span>
+                                    <span></span>
+                                    <span></span>
+                                </div>`;
+                                
+                                // Split the content to insert tool use before waiting dots
+                                const parts = currentMarkdown.split(waitingDots);
+                                if (parts.length > 1) {
+                                    $(`#${messageId} .markdown-content`).html(
+                                        parts[0] + toolUseHtml + waitingDots + parts[1].split('</div>').slice(1).join('</div>')
+                                    );
+                                } else {
+                                    // If waiting dots not found, just append to the end before adding waiting dots
+                                    $(`#${messageId} .markdown-content`).html(
+                                        currentMarkdown.replace(/<div class="waiting-dots">.*?<\/div>/s, '') + 
+                                        toolUseHtml + 
+                                        `<div class="waiting-dots">
+                                            <span></span>
+                                            <span></span>
+                                            <span></span>
+                                        </div>`
+                                    );
+                                }
+                                
+                                // Store this tool use ID
+                                window.lastToolUseId = currentToolUseId;
+                            } else {
+                                // Simpler notification if we don't have detailed info
+                                const toolUseHtml = `
+                                    <div class="tool-use-info">
+                                        <p><i class="fas fa-tools me-2"></i>Using a tool to find information...</p>
+                                    </div>
+                                `;
+                                
+                                // Add the tool use info to the current message, before the waiting dots
+                                const currentMarkdown = $(`#${messageId} .markdown-content`).html();
+                                const waitingDots = `                                <div class="waiting-dots">
+                                    <span></span>
+                                    <span></span>
+                                    <span></span>
+                                </div>`;
+                                
+                                // Split the content to insert tool use before waiting dots
+                                const parts = currentMarkdown.split(waitingDots);
+                                if (parts.length > 1) {
+                                    $(`#${messageId} .markdown-content`).html(
+                                        parts[0] + toolUseHtml + waitingDots + parts[1].split('</div>').slice(1).join('</div>')
+                                    );
+                                } else {
+                                    // If waiting dots not found, just append to the end before adding waiting dots
+                                    $(`#${messageId} .markdown-content`).html(
+                                        currentMarkdown.replace(/<div class="waiting-dots">.*?<\/div>/s, '') + 
+                                        toolUseHtml + 
+                                        `<div class="waiting-dots">
+                                            <span></span>
+                                            <span></span>
+                                            <span></span>
+                                        </div>`
+                                    );
+                                }
+                                
+                                window.lastToolUseId = currentToolUseId;
+                            }
+                            scrollToBottom();
+                        }
+                        
+
+                    } catch (e) {
+                        console.error('Error parsing JSON:', e, line);
+                    }
+                }
+                
+                // Start processing the stream
+                return processStream();
+            })
+            .catch(error => {
+                console.error('Fetch error:', error);
+                // Remove waiting dots in case of error
+                $(`#${messageId} .waiting-dots`).remove();
+                $(`#${messageId} .markdown-content`).html(`<i class="fas fa-exclamation-triangle me-2"></i>Error: ${error.message || 'Failed to process message'}`);
+                scrollToBottom();
+            });
+        }
+        
+        function showTypingIndicator() {
+            chatMessages.append(`
+                <div class="typing-indicator" id="typing-indicator">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            `);
+            scrollToBottom();
+        }
+        
+        function removeTypingIndicator() {
+            $('#typing-indicator').remove();
+        }
+        
+        function addUserMessage(text) {
+            chatMessages.append(`
+                <div class="message user-message">
+                    <p><i class="fas fa-user me-2"></i>${text}</p>
+                </div>
+            `);
+            scrollToBottom();
+        }
+        
+        function addAgentMessage(text) {
+            // If the text starts with <i class="fas, it's a system message, don't treat as markdown
+            if (text.startsWith('<i class="fas')) {
+                chatMessages.append(`
+                    <div class="message agent-message">
+                        <p>${text}</p>
+                    </div>
+                `);
+            } else {
+                // Parse markdown for agent responses
+                const renderedMarkdown = marked.parse(text);
+                chatMessages.append(`
+                    <div class="message agent-message">
+                        <div class="markdown-content">${renderedMarkdown}</div>
+                    </div>
+                `);
+            }
+            scrollToBottom();
+        }
+        
+        function scrollToBottom() {
+            chatMessages.scrollTop(chatMessages[0].scrollHeight);
+        }
+        
+        // Check for workflow edits periodically - disabled since we get metadata from activate
+        function checkForWorkflowEdits() {
+            // No longer needed since metadata comes from activate response
+        }
+        
+        // Check for workflow edits every 30 seconds
+        //setInterval(checkForWorkflowEdits, 30000);
+    });
+</script>
+{% endblock %}

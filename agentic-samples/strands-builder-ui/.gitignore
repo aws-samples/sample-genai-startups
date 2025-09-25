@@ -1,0 +1,8 @@
+.venv
+**/strands.db
+**/*terraform*
+**/state
+migrations*
+.terraform
+**__pycache__**
+.DS_Store

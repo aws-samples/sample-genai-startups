@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Tools - Strands GUI{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-wrench me-2"></i>Tools</h1>
+    <a href="/tool/new" class="btn btn-primary">
+        <i class="fas fa-plus me-1"></i> Create New Tool
+    </a>
+</div>
+
+{% if tools %}
+<div class="row row-cols-1 row-cols-md-3 g-4">
+    {% for tool in tools %}
+    <div class="col">
+        <div class="card h-100">
+            <div class="card-header">
+                {% if tool.tool_type == 'builtin' %}
+                <span class="badge bg-primary">
+                    <i class="fas fa-cog me-1"></i> Built-in
+                </span>
+                {% elif tool.tool_type == 'mcp' %}
+                <span class="badge bg-success">
+                    <i class="fas fa-cloud me-1"></i> MCP Service
+                </span>
+                {% elif tool.tool_type == 'agent' %}
+                <span class="badge bg-info">
+                    <i class="fas fa-robot me-1"></i> Agent
+                </span>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">{{ tool.name }}</h5>
+                <p class="card-text">{{ tool.description }}</p>
+                {% if tool.tool_type == 'agent' and tool.agent_reference %}
+                <div class="d-flex align-items-center mt-3">
+                    <i class="fas fa-link me-2 text-muted"></i>
+                    <p class="card-text mb-0"><small class="text-muted">Agent: {{ tool.agent_reference.name }}</small></p>
+                </div>
+                {% endif %}
+            </div>
+            <div class="card-footer">
+                <div class="d-flex gap-2">
+                    <a href="/tool/{{ tool.id }}" class="btn btn-outline-primary flex-grow-1">
+                        <i class="fas fa-edit me-1"></i> Edit
+                    </a>
+                    <button class="btn btn-outline-danger delete-tool" data-id="{{ tool.id }}">
+                        <i class="fas fa-trash me-1"></i> Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card">
+    <div class="card-body text-center">
+        <i class="fas fa-info-circle me-2"></i> No tools found. Create your first tool to get started.
+    </div>
+</div>
+{% endif %}
+{% endblock %}

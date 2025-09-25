@@ -1,0 +1,78 @@
+/* Chat button improvements */
+
+/* Reset button styling */
+#reset-chat {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 100px;
+    height: 38px; /* Match the height of the dropdown */
+    padding: 0.375rem 0.75rem;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-left: 8px; /* Add space between dropdown and button */
+}
+
+#reset-chat:hover {
+    transform: none; /* Remove the upward movement on hover */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+}
+
+#reset-chat:active {
+    transform: translateY(1px); /* Slight downward movement when clicked */
+}
+
+/* Send button styling */
+#send-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 100px;
+    height: 38px;
+    padding: 0.375rem 0.75rem;
+    margin-left: 8px; /* Add space between input and button */
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+#send-button:hover {
+    transform: none; /* Remove the upward movement on hover */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+}
+
+#send-button:active {
+    transform: translateY(1px); /* Slight downward movement when clicked */
+}
+
+/* Input group styling */
+.input-group {
+    display: flex;
+    align-items: stretch; /* Make all items stretch to match height */
+}
+
+/* Ensure the input takes up available space */
+#message-input {
+    flex: 1;
+    height: 38px;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+/* Fix the workflow selector layout */
+.workflow-selector .d-flex {
+    display: flex;
+    align-items: center; /* Vertically center the dropdown and reset button */
+}
+
+/* Make the workflow select and reset button the same height */
+#workflow-select {
+    height: 38px;
+    flex: 1; /* Take up available space */
+}
+
+/* Make the send button flush with the input */
+#send-button {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    margin-left: 0; /* Remove the margin to make it flush with input */
+}

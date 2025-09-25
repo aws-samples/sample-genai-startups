@@ -1,0 +1,750 @@
+/* General styles */
+:root {
+    --primary-color: #4361ee;
+    --primary-hover: #3a56d4;
+    --secondary-color: #3f37c9;
+    --accent-color: #4cc9f0;
+    --success-color: #4caf50;
+    --warning-color: #ff9800;
+    --danger-color: #f44336;
+    --light-bg: #f8f9fa;
+    --dark-bg: #212529;
+    --text-color: #333;
+    --text-muted: #6c757d;
+    --border-radius: 8px;
+    --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --transition-speed: 0.3s;
+    --sidebar-width: 10em;
+    --sidebar-bg: #2a2d3e;
+    --sidebar-text: #e4e6eb;
+    --sidebar-hover: #3a3f55;
+}
+
+body {
+    font-family: 'Amazon Ember', sans-serif;
+    background-color: var(--light-bg);
+    color: var(--text-color);
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Layout structure */
+.d-flex {
+    display: flex;
+    flex: 1;
+}
+
+.main-content {
+    flex: 1;
+    padding: 2rem;  /* Increased padding from 1.5rem to 2rem */
+    overflow-y: auto;
+    max-width: calc(100vw - var(--sidebar-width));
+    height: calc(100vh - 56px); /* Set height to viewport height minus navbar height */
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    margin-bottom: 1.5rem;  /* Increased from 1rem to 1.5rem */
+}
+
+/* Navbar styling */
+.navbar {
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 0.5rem 1rem;
+    z-index: 1030;
+}
+
+.navbar-dark {
+    background: linear-gradient(135deg, var(--secondary-color), var(--primary-color)) !important;
+}
+
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.4rem;
+    letter-spacing: 0.5px;
+}
+
+/* Sidebar styling */
+.sidebar {
+    width: var(--sidebar-width);
+    background-color: var(--sidebar-bg);
+    color: var(--sidebar-text);
+    height: calc(100vh - 56px); /* Subtract navbar height */
+    position: sticky;
+    top: 56px;
+    overflow-y: auto;
+    z-index: 1020;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-nav {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-item {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    color: var(--sidebar-text);
+    text-decoration: none;
+    transition: all var(--transition-speed);
+    font-weight: 500;
+}
+
+.sidebar-link:hover, .sidebar-link:focus {
+    background-color: var(--sidebar-hover);
+    color: white;
+    text-decoration: none;
+}
+
+.sidebar-link i {
+    font-size: 1.2rem;
+    width: 24px;
+    text-align: center;
+}
+
+/* Workflow menu styling */
+.workflow-menu {
+    background-color: rgba(0, 0, 0, 0.15);
+    padding: 0.5rem 0;
+    display: none;
+}
+
+.workflow-item {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 1rem 0.5rem 3rem;
+    color: var(--sidebar-text);
+    text-decoration: none;
+    transition: all var(--transition-speed);
+    font-size: 0.9rem;
+}
+
+.workflow-item:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: white;
+    text-decoration: none;
+}
+
+.workflow-icon {
+    width: 24px;
+    height: 24px;
+    margin-right: 0.75rem;
+    border-radius: 4px;
+    object-fit: contain;
+}
+
+.workflow-icon-placeholder {
+    width: 24px;
+    height: 24px;
+    margin-right: 0.75rem;
+    text-align: center;
+    color: var(--accent-color);
+}
+
+/* Button styling */
+.btn {
+    border-radius: var(--border-radius);
+    padding: 0.5rem 1.2rem;
+    font-weight: 500;
+    transition: all var(--transition-speed);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-right: 0.5rem;  /* Added margin between buttons */
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-hover);
+    border-color: var(--primary-hover);
+}
+
+.btn-outline-primary {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-outline-danger:hover {
+    background-color: var(--danger-color);
+    border-color: var(--danger-color);
+}
+
+.btn-outline-success:hover {
+    background-color: var(--success-color);
+    border-color: var(--success-color);
+}
+
+/* Card styling */
+.card {
+    border: none;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+    overflow: hidden;
+    height: auto; /* Changed from 100% to auto */
+    min-height: 0; /* Ensure card doesn't have unnecessary height */
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 2rem;  /* Increased from 1.5rem to 2rem */
+}
+
+.card:hover {
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+    background-color: rgba(0, 0, 0, 0.03);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 1.25rem;  /* Increased from 1rem to 1.25rem */
+}
+
+.card-body {
+    padding: 2rem;  /* Increased from 1.5rem to 2rem */
+    flex-grow: 1;
+}
+
+.card-footer {
+    background-color: rgba(0, 0, 0, 0.02);
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 1.25rem;  /* Increased from 1rem to 1.25rem */
+}
+
+.card-title {
+    font-weight: 600;
+    margin-bottom: 1rem;  /* Increased from 0.75rem to 1rem */
+    color: var(--primary-color);
+}
+
+/* Form styling */
+.form-control, .form-select {
+    border-radius: var(--border-radius);
+    padding: 0.75rem 1rem;  /* Increased from 0.6rem to 0.75rem */
+    border: 1px solid #ced4da;
+    transition: border-color var(--transition-speed), box-shadow var(--transition-speed);
+    margin-bottom: 0.5rem;  /* Added margin below form controls */
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.25);
+}
+
+.form-label {
+    font-weight: 500;
+    margin-bottom: 0.75rem;  /* Increased from 0.5rem to 0.75rem */
+    display: block;  /* Ensure label is on its own line */
+}
+
+.form-group {
+    margin-bottom: 1.5rem;  /* Increased spacing between form groups */
+}
+
+/* Alert styling */
+.alert {
+    border-radius: var(--border-radius);
+    border: none;
+    box-shadow: var(--box-shadow);
+}
+
+/* Badge styling */
+.badge {
+    font-weight: 500;
+    padding: 0.5em 0.8em;
+    border-radius: 30px;
+    margin-right: 0.5rem;  /* Added margin between badges */
+}
+
+/* Tool type badges */
+.badge.bg-primary {
+    background-color: var(--primary-color) !important;
+}
+
+.badge.bg-success {
+    background-color: var(--success-color) !important;
+}
+
+.badge.bg-info {
+    background-color: var(--accent-color) !important;
+}
+
+/* Table styling */
+.table {
+    margin-bottom: 2rem;  /* Added more space below tables */
+}
+
+.table th, .table td {
+    padding: 1rem;  /* Increased cell padding */
+    vertical-align: middle;  /* Center content vertically */
+}
+
+.table th {
+    font-weight: 600;
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Button groups in tables */
+.btn-group {
+    display: flex;
+    flex-wrap: wrap;  /* Allow buttons to wrap on smaller screens */
+    gap: 0.5rem;  /* Add gap between buttons */
+}
+
+.btn-group .btn {
+    margin-bottom: 0.25rem;  /* Add space between buttons when they wrap */
+}
+
+/* Workflow builder styles */
+#workflow-canvas {
+    background-image: 
+        linear-gradient(rgba(200, 200, 200, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(200, 200, 200, 0.1) 1px, transparent 1px);
+    background-size: 20px 20px;
+    border-radius: var(--border-radius);
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+}
+
+.node.connecting {
+    box-shadow: 0 0 0 2px var(--primary-color);
+}
+
+/* Chat styles */
+.chat-container {
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    background-color: white;
+    padding: 1.5rem;  /* Increased from 1rem to 1.5rem */
+}
+
+.chat-messages {
+    min-height: 400px;
+    padding: 1.5rem;  /* Increased from 1rem to 1.5rem */
+    border-radius: var(--border-radius) !important;
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.05);
+    background-color: #f9f9f9;
+}
+
+/* Markdown content styling */
+.markdown-content {
+    line-height: 1.6;
+}
+
+.markdown-content h1, 
+.markdown-content h2, 
+.markdown-content h3, 
+.markdown-content h4, 
+.markdown-content h5, 
+.markdown-content h6 {
+    margin-top: 1.5rem;  /* Increased from 1rem to 1.5rem */
+    margin-bottom: 0.75rem;  /* Increased from 0.5rem to 0.75rem */
+    font-weight: 600;
+}
+
+.markdown-content h1 { font-size: 1.5rem; }
+.markdown-content h2 { font-size: 1.4rem; }
+.markdown-content h3 { font-size: 1.3rem; }
+.markdown-content h4 { font-size: 1.2rem; }
+.markdown-content h5 { font-size: 1.1rem; }
+.markdown-content h6 { font-size: 1rem; }
+
+.markdown-content p {
+    margin-bottom: 1.25rem;  /* Increased from 1rem to 1.25rem */
+}
+
+.markdown-content ul, 
+.markdown-content ol {
+    margin-bottom: 1.25rem;  /* Increased from 1rem to 1.25rem */
+    padding-left: 2rem;
+}
+
+.markdown-content li {
+    margin-bottom: 0.5rem;  /* Increased from 0.25rem to 0.5rem */
+}
+
+.markdown-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+    margin: 1.5rem 0;  /* Increased from 1rem to 1.5rem */
+}
+
+.markdown-content pre {
+    background-color: #f3f3f3;
+    padding: 1.25rem;  /* Increased from 1rem to 1.25rem */
+    border-radius: 4px;
+    overflow-x: auto;
+    margin-bottom: 1.25rem;  /* Increased from 1rem to 1.25rem */
+}
+
+.markdown-content code {
+    font-family: 'Amazon Ember Mono', monospace;
+    font-size: 0.9rem;
+    background-color: #f3f3f3;
+    padding: 0.2rem 0.4rem;
+    border-radius: 3px;
+}
+
+.markdown-content pre code {
+    padding: 0;
+    background-color: transparent;
+}
+
+.markdown-content blockquote {
+    border-left: 4px solid var(--primary-color);
+    padding-left: 1.25rem;  /* Increased from 1rem to 1.25rem */
+    margin-left: 0;
+    color: var(--text-muted);
+}
+
+.markdown-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1.25rem;  /* Increased from 1rem to 1.25rem */
+}
+
+.markdown-content th, 
+.markdown-content td {
+    border: 1px solid #ddd;
+    padding: 0.75rem;  /* Increased from 0.5rem to 0.75rem */
+}
+
+.markdown-content th {
+    background-color: #f3f3f3;
+    font-weight: 600;
+}
+
+/* Code highlighting */
+.codehilite {
+    background-color: #f8f8f8;
+    border-radius: 4px;
+    margin-bottom: 1.25rem;  /* Increased from 1rem to 1.25rem */
+    padding: 1.25rem;  /* Increased from 1rem to 1.25rem */
+    overflow-x: auto;
+}
+
+.chat-messages::-webkit-scrollbar {
+    width: 6px;
+}
+
+.chat-messages::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+.message {
+    margin-bottom: 20px;  /* Increased from 15px to 20px */
+    padding: 20px;  /* Increased from 15px to 20px */
+    border-radius: var(--border-radius);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+.user-message {
+    background-color: #e3f2fd;
+    margin-left: 20%;
+    border-top-right-radius: 4px;
+}
+
+.agent-message {
+    background-color: #f5f5f5;
+    margin-right: 20%;
+    border-top-left-radius: 4px;
+}
+
+.user-message::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: -10px;
+    width: 0;
+    height: 0;
+    border-top: 10px solid #e3f2fd;
+    border-right: 10px solid transparent;
+}
+
+.agent-message::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -10px;
+    width: 0;
+    height: 0;
+    border-top: 10px solid #f5f5f5;
+    border-left: 10px solid transparent;
+}
+
+.typing-indicator {
+    display: flex;
+    align-items: center;
+    padding: 20px;  /* Increased from 15px to 20px */
+    background-color: #f5f5f5;
+    border-radius: var(--border-radius);
+    margin-right: 20%;
+    margin-bottom: 20px;  /* Increased from 15px to 20px */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.typing-indicator span {
+    height: 8px;
+    width: 8px;
+    margin: 0 2px;
+    background-color: #999;
+    border-radius: 50%;
+    display: inline-block;
+    animation: typing 1.4s infinite ease-in-out both;
+}
+
+.typing-indicator span:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.typing-indicator span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.typing-indicator span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes typing {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.5); }
+    100% { transform: scale(1); }
+}
+
+/* Animated waiting dots for markdown content */
+.waiting-dots {
+    display: inline-block;
+    position: relative;
+    height: 1em;
+    line-height: 1;
+}
+
+.waiting-dots span {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background-color: var(--text-muted);
+    border-radius: 50%;
+    margin: 0 2px;
+    animation: waiting 1.4s infinite ease-in-out both;
+}
+
+.waiting-dots span:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.waiting-dots span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.waiting-dots span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes waiting {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.5); }
+    100% { transform: scale(1); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .user-message, .agent-message {
+        margin-left: 5%;
+        margin-right: 5%;
+    }
+    
+    .card-footer .d-flex {
+        flex-direction: column;
+    }
+    
+    .card-footer .btn {
+        margin-bottom: 0.75rem;  /* Increased from 0.5rem to 0.75rem */
+    }
+    
+    /* Improve form layout on mobile */
+    .row > [class*="col-"] {
+        margin-bottom: 1.5rem;
+    }
+}
+
+/* Animation for page transitions */
+.container {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Agent details styling */
+.agent-details {
+    border-radius: var(--border-radius);
+    background-color: white;
+    box-shadow: var(--box-shadow);
+    transition: all var(--transition-speed);
+}
+
+.agent-details:hover {
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+}
+
+.agent-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    margin-right: 1.5rem;  /* Increased from 1rem to 1.5rem */
+}
+
+.agent-status {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 0.75rem;  /* Increased from 0.5rem to 0.75rem */
+}
+
+.agent-status.active {
+    background-color: var(--success-color);
+    box-shadow: 0 0 5px var(--success-color);
+}
+
+.agent-status.inactive {
+    background-color: var(--text-muted);
+}
+
+.agent-tools-badge {
+    background-color: var(--accent-color);
+    color: var(--dark-bg);
+    font-weight: 500;
+    padding: 0.25rem 0.6rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    margin-left: 0.75rem;  /* Increased from 0.5rem to 0.75rem */
+}
+
+.agent-config-section {
+    background-color: var(--light-bg);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;  /* Increased from 1rem to 1.5rem */
+    margin-bottom: 1.5rem;  /* Increased from 1rem to 1.5rem */
+}
+
+.agent-config-title {
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: 1rem;  /* Increased from 0.75rem to 1rem */
+    display: flex;
+    align-items: center;
+}
+
+.agent-config-title i {
+    margin-right: 0.75rem;  /* Increased from 0.5rem to 0.75rem */
+}
+
+.agent-tool-item {
+    display: flex;
+    align-items: center;
+    padding: 1rem;  /* Increased from 0.75rem to 1rem */
+    background-color: white;
+    border-radius: var(--border-radius);
+    margin-bottom: 0.75rem;  /* Increased from 0.5rem to 0.75rem */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: all var(--transition-speed);
+}
+
+.agent-tool-item:hover {
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.agent-tool-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--border-radius);
+    background-color: rgba(67, 97, 238, 0.1);
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1.5rem;  /* Increased from 1rem to 1.5rem */
+}
+
+.agent-tool-info {
+    flex-grow: 1;
+}
+
+.agent-tool-name {
+    font-weight: 500;
+    margin-bottom: 0.5rem;  /* Increased from 0.25rem to 0.5rem */
+}
+
+.agent-tool-description {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.agent-prompt-editor {
+    font-family: 'Amazon Ember Mono', monospace;
+    min-height: 200px;
+    border-radius: var(--border-radius);
+    padding: 1.25rem;  /* Increased from 1rem to 1.25rem */
+    line-height: 1.5;
+    font-size: 0.9rem;
+}
+
+
+/* Row spacing in forms */
+.row {
+    margin-bottom: 1rem;  /* Add space between rows */
+}
+
+/* Add spacing between columns */
+.row > [class*="col-"] {
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+/* Animation */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}

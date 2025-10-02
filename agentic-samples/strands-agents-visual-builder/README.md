@@ -1,4 +1,4 @@
-# Strands GUI
+# Strands Agents Visual Builder
 
 A web interface for visually configuring tools, creating agents, and building workflows.
 

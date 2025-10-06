@@ -1,0 +1,113 @@
+{
+  "Comment": "A description of my state machine",
+  "StartAt": "Invoke LLM",
+  "States": {
+    "Invoke LLM": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Output": "{% $states.result.Payload %}",
+      "Arguments": {
+        "FunctionName": "${AgentLambdaFunction}",
+        "Payload": {
+          "invocationId": "{% $states.context.Execution.Input.invocationId %}",
+          "message": "{% $toolResults ? $toolResults : {'role': 'user', 'content': $states.context.Execution.Input.text} %}"
+        }
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException",
+            "Lambda.TooManyRequestsException"
+          ],
+          "IntervalSeconds": 1,
+          "MaxAttempts": 3,
+          "BackoffRate": 2,
+          "JitterStrategy": "FULL"
+        }
+      ],
+      "Next": "Tools to be invoked ?"
+    },
+    "Tools to be invoked ?": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Next": "Parallel tools Invocations",
+          "Condition": "{% $count($states.input.content[type='tool_use']) > 0 and $states.input.content[type='tool_use'][0].name != 'returnFinalAnswer' %}",
+          "Comment": "Request tool invocations"
+        },
+        {
+          "Next": "Emit Agent Result Event",
+          "Condition": "{% $count($states.input.content[type='tool_use']) > 0 and $states.input.content[type='tool_use'][0].name = 'returnFinalAnswer' %}",
+          "Comment": "Return Final Answer"
+        }
+      ]
+    },
+    "Parallel tools Invocations": {
+      "Type": "Map",
+      "ItemProcessor": {
+        "ProcessorConfig": {
+          "Mode": "INLINE"
+        },
+        "StartAt": "Emit Action Invocation Request Event",
+        "States": {
+          "Emit Action Invocation Request Event": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::events:putEvents.waitForTaskToken",
+            "Arguments": {
+              "Entries": [
+                {
+                  "Detail": {
+                    "toolName": "{% $states.input.name %}",
+                    "arguments": "{% $states.input.input %}",
+                    "invocationId": "{% $states.context.Task.Token %}",
+                    "agentInvocationId": "{% $states.context.Execution.Input.invocationId %}"
+                  },
+                  "DetailType": "ToolInvoked",
+                  "EventBusName": "${ToolUseEventBus}",
+                  "Source": "edagent.orchestrator"
+                }
+              ]
+            },
+            "End": true,
+            "Output": {
+              "tool_use_id": "{% $states.input.id %}",
+              "type": "tool_result",
+              "content": "{% $string($states.result) %}"
+            }
+          }
+        }
+      },
+      "MaxConcurrency": 40,
+      "Items": "{% ($toolUses := $states.input.content[type='tool_use']; $type($toolUses) = 'array' ? $toolUses : [$toolUses]) %}",
+      "Next": "Invoke LLM",
+      "Assign": {
+        "toolResults": {
+          "role": "user",
+          "content": "{% $states.result %}"
+        }
+      }
+    },
+    "Emit Agent Result Event": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::events:putEvents",
+      "Arguments": {
+        "Entries": [
+          {
+            "Detail": {
+              "invocationId": "{% $states.context.Execution.Input.invocationId %}",
+              "summary": "{% $states.input.content[type='tool_use'][0].input.summary %}",
+              "s3Uri": "{% $states.input.content[type='tool_use'][0].input.finalReportS3Uri %}"
+            },
+            "DetailType": "AgentExecuted",
+            "EventBusName": "${ToolUseEventBus}",
+            "Source": "edagent.orchestrator"
+          }
+        ]
+      },
+      "End": true
+    }
+  },
+  "QueryLanguage": "JSONata"
+}

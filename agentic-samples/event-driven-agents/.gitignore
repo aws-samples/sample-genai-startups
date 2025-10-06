@@ -1,0 +1,15 @@
+*.js
+!jest.config.js
+*.d.ts
+node_modules
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# CDK asset staging directory
+.cdk.staging
+cdk.out
+# macOS system files
+.DS_Store

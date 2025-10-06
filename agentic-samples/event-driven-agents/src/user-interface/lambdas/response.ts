@@ -128,7 +128,7 @@ function parseS3Url(s3Uri: string): { bucket: string; key: string } | null {
     return { bucket, key };
   }
   
-  if (s3Uri.includes('.s3.') && s3Uri.includes('.amazonaws.com')) {
+  if (s3Uri.includes('.s3.') && s3Uri.includes('.amazonaws.com/')) {
     const url = new URL(s3Uri);
     const bucket = url.hostname.split('.')[0];
     const key = url.pathname.substring(1);

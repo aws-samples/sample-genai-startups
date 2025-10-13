@@ -16,6 +16,18 @@ This repository provides practical examples, code samples, and architectural pat
 
 - **agentic-samples**: Agentic AI related samples
 
+## Q CLI Agent for building agentic applications
+
+The `qcli-strands-agentcore` directory contains an [Amazon Q Developer CLI custom agent](https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/command-line-custom-agents.html) specialized in Strands and Amazon Bedrock AgentCore development. This agent is equipped with tools, MCP servers, agent steering files, and a knowledge base to ensure agents are developed following best practices.
+
+**Key features:**
+- Pre-configured agent rules for Strands and AgentCore best practices
+- Optional knowledge base integration for code samples and documentation
+- AWS MCP server integrations for enhanced capabilities
+- Conversational interface for building agentic applications
+
+To get started with the Q CLI agent, checkout the [README](qcli-strands-agentcore/README.md) for detailed setup and usage instructions
+
 
 ## Prerequisites
 

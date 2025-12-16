@@ -1,0 +1,47 @@
+COMPREHENSIVE AUTO INSURANCE POLICY
+Policy Number: POL-AUTO-12345
+Policyholder: John Smith
+Vehicle: 2019 Honda Accord, VIN: 11111111111111111, Color: White
+Policy Period: January 1, 2024 - January 1, 2025
+
+COVERAGE DETAILS:
+- Liability Coverage: $100,000/$300,000/$50,000
+- Comprehensive Coverage: $25,000 (Actual Cash Value)
+- Collision Coverage: $25,000 (Actual Cash Value)
+- Uninsured Motorist: $50,000/$100,000
+- Medical Payments: $5,000
+- Rental Car Coverage: $30/day, 30 days maximum
+
+DEDUCTIBLES:
+- Comprehensive: $500
+- Collision: $1,000
+
+PREMIUM: $1,245 annually
+
+SPECIAL CONDITIONS:
+- Good Driver Discount: 15%
+- Multi-Policy Discount: 10%
+- Safety Feature Discount: 5%
+- Claims-free for 3+ years
+
+COVERAGE EXCLUSIONS:
+- Racing or competitive driving
+- Commercial use
+- Intentional damage
+- Wear and tear
+- Mechanical breakdown
+
+CLAIM PROCEDURES:
+- Report claims within 24 hours
+- Police report required for theft/vandalism
+- Repair estimates required over $2,000
+- Pre-authorization needed for rentals
+
+APPROVED REPAIR FACILITIES:
+- Network shops: $0 additional deductible
+- Non-network shops: Standard deductible applies
+
+EMERGENCY ROADSIDE ASSISTANCE:
+- 24/7 towing service
+- Jump start, flat tire, lockout service
+- Up to $100 per incident, 4 incidents per year

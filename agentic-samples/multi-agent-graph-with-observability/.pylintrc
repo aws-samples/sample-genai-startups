@@ -1,0 +1,114 @@
+[MASTER]
+# Use multiple processes to speed up Pylint
+jobs=1
+
+# Pickle collected data for later comparisons
+persistent=yes
+
+# List of plugins (as comma separated values of python modules names) to load
+load-plugins=
+
+[MESSAGES CONTROL]
+# Disable the message, report, category or checker with the given id(s)
+disable=
+    C0114,  # missing-module-docstring
+    C0115,  # missing-class-docstring
+    C0116,  # missing-function-docstring
+    R0903,  # too-few-public-methods
+    R0913,  # too-many-arguments
+    R0914,  # too-many-locals
+    R0915,  # too-many-statements
+    R0912,  # too-many-branches
+    R1702,  # too-many-nested-blocks
+    W0703,  # broad-except
+    C0413,  # wrong-import-position
+    W0611,  # unused-import
+    E1101,  # no-member (often false positives with dynamic imports)
+    E0401,  # import-error (for missing dependencies in dev environment)
+    C0301,  # line-too-long (handled by black formatter)
+    W0613,  # unused-argument
+    W0622,  # redefined-builtin
+
+[REPORTS]
+# Set the output format
+output-format=text
+
+# Tells whether to display a full report or only the messages
+reports=no
+
+[REFACTORING]
+# Maximum number of nested blocks for function / method body
+max-nested-blocks=10
+
+[FORMAT]
+# Maximum number of characters on a single line
+max-line-length=88
+
+# String used as indentation unit
+indent-string='    '
+
+[DESIGN]
+# Maximum number of arguments for function / method
+max-args=10
+
+# Maximum number of locals for function / method body
+max-locals=20
+
+# Maximum number of return / yield for function / method body
+max-returns=6
+
+# Maximum number of branch for function / method body
+max-branches=25
+
+# Maximum number of statements in function / method body
+max-statements=70
+
+# Maximum number of parents for a class (see R0901)
+max-parents=7
+
+# Maximum number of attributes for a class (see R0902)
+max-attributes=15
+
+# Minimum number of public methods for a class (see R0903)
+min-public-methods=1
+
+# Maximum number of public methods for a class (see R0904)
+max-public-methods=25
+
+[SIMILARITIES]
+# Minimum lines number of a similarity
+min-similarity-lines=4
+
+# Ignore comments when computing similarities
+ignore-comments=yes
+
+# Ignore docstrings when computing similarities
+ignore-docstrings=yes
+
+# Ignore imports when computing similarities
+ignore-imports=no
+
+[VARIABLES]
+# Tells whether we should check for unused import in __init__ files
+init-import=no
+
+# A regular expression matching the name of dummy variables
+dummy-variables-rgx=_+$|(_[a-zA-Z0-9_]*[a-zA-Z0-9]+?$)|dummy|^ignored_|^unused_
+
+[CLASSES]
+# List of method names used to declare (i.e. assign) instance attributes
+defining-attr-methods=__init__,__new__,setUp
+
+# List of valid names for the first argument in a class method
+valid-classmethod-first-arg=cls
+
+# List of valid names for the first argument in a metaclass class method
+valid-metaclass-classmethod-first-arg=mcs
+
+[IMPORTS]
+# Allow wildcard imports from modules that define __all__
+allow-wildcard-with-all=no
+
+[EXCEPTIONS]
+# Exceptions that will emit a warning when being caught
+overgeneral-exceptions=Exception

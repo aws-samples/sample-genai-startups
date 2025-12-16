@@ -1,0 +1,74 @@
+[project]
+name = "claims-assistant"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "pydantic>=2.0.0",
+    "boto3",
+    "botocore",
+    "awscli",
+    "opensearch-py",
+    "requests-aws4auth",
+    "pyyaml",
+    "retrying",
+    "strands-agents[otel]",
+    "strands-agents-tools",
+    "strands-agents-builder",
+    "aws-opentelemetry-distro"
+]
+
+[project.optional-dependencies]
+dev = [
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "flake8>=6.0.0",
+    "pylint>=2.17.0",
+]
+ 
+[tool.black]
+line-length = 88
+target-version = ['py38'] 
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
+ 
+
+[tool.pylint.messages_control]
+disable = [
+    "C0114",  # missing-module-docstring
+    "C0115",  # missing-class-docstring
+    "C0116",  # missing-function-docstring
+    "R0903",  # too-few-public-methods
+    "R0913",  # too-many-arguments
+    "R0914",  # too-many-locals
+    "R0915",  # too-many-statements
+    "R0912",  # too-many-branches
+    "R1702",  # too-many-nested-blocks
+    "W0703",  # broad-except
+    "C0413",  # wrong-import-position
+    "W0611",  # unused-import
+]
+
+[tool.pylint.format]
+max-line-length = 100
+
+[tool.pylint.design]
+max-locals = 20
+max-statements = 70
+max-branches = 25
+max-nested-blocks = 10
+ 

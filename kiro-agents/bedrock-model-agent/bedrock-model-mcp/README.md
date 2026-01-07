@@ -31,7 +31,13 @@ Add to your MCP client configuration:
 {
   "mcpServers": {
     "bedrock-model-mcp": {
-      "command": "bedrock-model-mcp"
+      "command": "uv",
+      "args": [
+        "run",
+        "--directory",
+        "<path-to-this-dir>",
+        "bedrock-model-mcp"
+      ]
     }
   }
 }

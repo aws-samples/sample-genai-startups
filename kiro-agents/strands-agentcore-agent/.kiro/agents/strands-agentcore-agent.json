@@ -1,18 +1,14 @@
 {
   "name": "strands-agentcore-agent",
-  "description": "Q CLI custom agent created for building agentic AI application'",
+  "description": "Expert agent for building agentic AI applications with AWS Strands and Amazon Bedrock AgentCore",
   "prompt": "You are an expert in AWS Strands and Amazon Bedrock AgentCore",
   "mcpServers": {
     "awslabs.core-mcp-server": {
       "command": "uvx",
-      "args": [
-        "awslabs.core-mcp-server@latest"
-      ],
+      "args": ["awslabs.core-mcp-server@latest"],
       "env": {
         "FASTMCP_LOG_LEVEL": "ERROR"
-      },
-      "autoApprove": [],
-      "disabled": false
+      }
     },
     "awslabs.aws-documentation-mcp-server": {
       "command": "uvx",
@@ -20,46 +16,24 @@
       "env": {
         "FASTMCP_LOG_LEVEL": "ERROR",
         "AWS_DOCUMENTATION_PARTITION": "aws"
-      },
-      "disabled": false,
-      "autoApprove": []
+      }
     },
     "awslabs.amazon-bedrock-agentcore-mcp-server": {
       "command": "uvx",
       "args": ["awslabs.amazon-bedrock-agentcore-mcp-server@latest"],
       "env": {
         "FASTMCP_LOG_LEVEL": "ERROR"
-      },
-      "disabled": false,
-      "autoApprove": []
+      }
     },
     "strands-agents": {
       "command": "uvx",
       "args": ["strands-agents-mcp-server"],
       "env": {
         "FASTMCP_LOG_LEVEL": "INFO"
-      },
-      "disabled": false,
-      "autoApprove": [
-        "search_docs",
-        "fetch_doc"
-      ]
+      }
     }
   },
-  "tools": [
-    "fs_read",
-    "fs_write",
-    "execute_bash",
-    "use_aws",
-    "thinking",
-    "introspect",
-    "knowledge",
-    "todo_list",
-    "@awslabs.core-mcp-server",
-    "@awslabs.aws-documentation-mcp-server",
-    "@awslabs.amazon-bedrock-agentcore-mcp-server",
-    "@strands-agents"
-  ],
+  "tools": ["*"],
   "toolAliases": {},
   "allowedTools": [
     "fs_read",
@@ -74,22 +48,21 @@
     "@strands-agents/fetch_doc",
     "@strands-agents/search_docs"
   ],
+  "resources": [
+    "file://README.md",
+    "file://.kiro/rules/**/*.md"
+  ],
+  "hooks": {},
   "toolsSettings": {
     "fs_read": {
-      "deniedPaths": ["./.amazonq/**"]
+      "deniedPaths": ["./.kiro/**"]
     },
     "fs_write": {
-      "deniedPaths": ["./.amazonq/**"]
+      "deniedPaths": ["./.kiro/**"]
     },
     "execute_bash": {
       "deniedCommands": [".*git add.*", ".*git commit.*", ".*git push.*"],
       "autoAllowReadonly": true
     }
-  },
-  "resources": [
-    "file://AmazonQ.md",
-    "file://README.md",
-    "file://.amazonq/rules/**/*.md"
-  ],
-  "hooks": {}
+  }
 }

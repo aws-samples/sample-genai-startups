@@ -1,16 +1,16 @@
-# Q CLI Strands AgentCore Agent
+# Kiro Strands AgentCore Agent
 
-An [Amazon Q Developer CLI custom agent](https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/command-line-custom-agents.html) specialized in [Strands](https://strandsagents.com/latest/) and [Amazon Bedrock AgentCore](https://aws.amazon.com/bedrock/agentcore/) development. This agent is equiped with tools, MCP servers, agent steering files, and a knowledge base to ensure agents are developed following best practices.
+A Kiro CLI custom agent specialized in [Strands](https://strandsagents.com/latest/) and [Amazon Bedrock AgentCore](https://aws.amazon.com/bedrock/agentcore/) development. This agent is equipped with tools, MCP servers, agent steering files, and a knowledge base to ensure agents are developed following best practices.
 
 > **⚠️ IMPORTANT DISCLAIMER**  
 > This solutions uses Generative AI. Always review all code, actions, and decisions before using in production environments. Verify that generated code meets your security, performance, and business requirements.
 
-## Install Amazon Q Developer CLI
+## Install Kiro CLI
 
-1. Install and access Q CLI following the instructions [here](https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/command-line-installing.html)
+1. Install and access Kiro CLI
 2. Verify installation
    ```bash
-   q --version
+   kiro-cli --version
    ```
 
 ## Agent Setup
@@ -18,20 +18,19 @@ An [Amazon Q Developer CLI custom agent](https://docs.aws.amazon.com/amazonq/lat
 1. **Clone the repository**
 
 2. **Review agent configuration**
-   - Check agent config file in `qcli-strands-agentcore/.amazonq/cli-agents/strands-agentcore-agent.json`
-   - To understand the schema of this file, please read this [doc](https://github.com/aws/amazon-q-developer-cli/blob/main/docs/agent-format.md)
+   - Check agent config file in `.kiro/agents/strands-agentcore-agent.json`
 
 3. **Review agent rules**
-   - Check files in `qcli-strands-agentcore/.amazonq/rules/`
+   - Check files in `.kiro/rules/`
    - These files steer the agent to follow best practices for Strands and AgentCore 
 
 4. **Add agent config to your project workspace**
    
-   Copy the `.amazonq` directory located in the `qcli-strands-agentcore` directory and store in the root of your project workspace as seen below:
+   Copy the `.kiro` directory located in the `qcli-strands-agentcore` directory and store in the root of your project workspace as seen below:
    ```
    my-project/
-   ├── .amazonq/
-   │       └── cli-agents/
+   ├── .kiro/
+   │       └── agents/
    │       |   └── strands-agentcore-agent.json
    │       └── rules/
    └── src/
@@ -59,18 +58,18 @@ An [Amazon Q Developer CLI custom agent](https://docs.aws.amazon.com/amazonq/lat
    >Note: The `agentic-doc-samples` directory can be located inside or outside of your project. 
 
 
-6. **[OPTIONAL] Create a [Q CLI knowledge base](https://github.com/aws/amazon-q-developer-cli/blob/main/docs/knowledge-management.md) for the agent to search and look up Strands/AgentCore samples and docs. This can help the agent provide more accurate code suggestions**
+6. **[OPTIONAL] Create a [Kiro CLI knowledge base](https://kiro.dev/docs/cli/experimental/knowledge-management/) for the agent to search and look up Strands/AgentCore samples and docs. This can help the agent provide more accurate code suggestions**
 
    This gives the agent a local Retrieval Augmented Generation (RAG)/knowledge base functionality allowing you to search and look up contextual information that persists across chat sessions, protecting the context window.
 
    * Ensure you are in the root of your project directory
-   * Turn on Knowledge feature (this feature is experiemental and requires activation)
+   * Enable knowledge feature (this feature is experimental and requires activation)
    ```bash
-   q settings chat.enableKnowledge true
+   kiro-cli settings chat.enableKnowledge true
    ```
    * Launch the agent
    ```bash
-   q chat --agent strands-agentcore-agent
+   kiro-cli chat --agent strands-agentcore-agent
    ```
     * Create the knowledge base
    ```bash
@@ -88,7 +87,7 @@ An [Amazon Q Developer CLI custom agent](https://docs.aws.amazon.com/amazonq/lat
          Knowledge context for agentic-docs-samples/
          1756 items • Best • 09/30 19:51
    ```
-   * Close the Q CLI chat session to start a fresh session
+   * Close the Kiro CLI chat session to start a fresh session
    ```bash
    /quit
    ```
@@ -106,7 +105,7 @@ An [Amazon Q Developer CLI custom agent](https://docs.aws.amazon.com/amazonq/lat
 
 2. **Launch the agent**
    ```bash
-   q chat --agent strands-agentcore-agent
+   kiro-cli chat --agent strands-agentcore-agent
    ```
 
 3. **Test the agent and its MCP server integrations**

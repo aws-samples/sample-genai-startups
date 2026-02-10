@@ -1012,13 +1012,27 @@ A comprehensive, production-ready architecture for deploying Large Language Mode
 
 ---
 
-#### 2. EKS Endpoints Exposed as MCP Server through AgentCore Gateway
+#### 2. MCPify REST APIs with Amazon Bedrock AgentCore Gateway on EKS
 
-**Status**: Coming Soon
+**Repository**: [sample-mcpify-rest-apis-with-agentcore](./sample-mcpify-rest-apis-with-agentcore/)
 
 **Pattern Type**: Pattern 9 (MCP on EKS), Pattern 8 (Cross-Account Networks)
 
-**Description**: Reference implementation showing how to expose EKS cluster capabilities through Model Context Protocol (MCP) servers, enabling AI agents to interact with Kubernetes resources through standardized interfaces. This pattern will demonstrate integration with Amazon Bedrock AgentCore Gateway for secure, managed access to self-managed EKS infrastructure.
+**Overview**:
+A complete sample demonstrating how to transform existing REST APIs into AI agent tools using Amazon Bedrock AgentCore Gateway and the Model Context Protocol (MCP). Shows the full architecture: Amazon QuickSuite → AgentCore Gateway → EKS Application → DynamoDB.
+
+**Key Components**:
+- **Flask Retail API**: 12 REST endpoints (orders, products, customers, purchases, analytics) running on EKS
+- **AgentCore Gateway Integration**: Converts REST API to MCP-compatible tools via OpenAPI specification
+- **Terraform Infrastructure**: EKS cluster, VPC, DynamoDB with customer-managed KMS encryption, IRSA
+- **Kubernetes Deployment**: Hardened security contexts (non-root, read-only FS, dropped capabilities)
+- **OAuth 2.0 Authentication**: Amazon Cognito integration for secure gateway access
+- **QuickSuite Integration**: Natural language interactions with retail data through AI chat agents
+
+**Architecture**:
+
+
+**Technologies**: Flask, Terraform, Kubernetes, AgentCore Gateway, Cognito, DynamoDB, KMS, IRSA
 
 ---
 
@@ -1107,6 +1121,7 @@ A collection of sample implementations demonstrating how to build AI agents and 
 | Stateless MCP on Lambda | Pattern 1, 9 | Lambda, API Gateway, MCP SDK |
 | Stateful MCP on ECS | Pattern 2, 9 | ECS, ALB, MCP SDK, Sticky Sessions |
 | Lambda Ops MCP Server | Pattern 1, 7, 9 | Lambda, MCP SDK, Runtime Management |
+| MCPify REST APIs with AgentCore Gateway | Pattern 8, 9 | Flask, EKS, AgentCore Gateway, Cognito, DynamoDB, KMS |
 
 ---
 

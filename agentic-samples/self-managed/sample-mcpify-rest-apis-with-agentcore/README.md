@@ -1,5 +1,7 @@
 # Sample: MCPifying APIs with Amazon Bedrock AgentCore Gateway
 
+> **⚠️ Important:** This sample is for learning and demonstration purposes only. It is not intended for production use without additional security controls, testing, and configuration changes appropriate to your environment.
+
 *Transform your EKS applications into intelligent agent tools using Amazon Bedrock AgentCore Gateway and the Model Context Protocol (MCP)*
 
 This AWS sample demonstrates how to "MCPify" existing REST APIs by transforming them into AI agent tools that can be discovered and used through natural language interactions. The sample shows the complete architecture: **Amazon QuickSuite → AgentCore Gateway → EKS Application**.

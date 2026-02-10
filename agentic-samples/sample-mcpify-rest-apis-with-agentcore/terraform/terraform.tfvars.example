@@ -1,0 +1,21 @@
+# Example Terraform variables for EKS retail demo
+# Copy this file to terraform.tfvars and update with your values
+
+# AWS region where resources will be created
+aws_region = "us-east-1"
+
+# Name of the EKS cluster
+cluster_name = "retail-demo-eks"
+
+# Environment tag for resources
+environment = "demo"
+
+# Your custom domain name for the retail API (required for HTTPS)
+# This domain must have an ACM certificate
+domain_name = "api.yourcompany.com"
+
+# Optional: Additional tags for resources
+additional_tags = {
+  Project = "MCPify-Demo"
+  Owner   = "YourName"
+}

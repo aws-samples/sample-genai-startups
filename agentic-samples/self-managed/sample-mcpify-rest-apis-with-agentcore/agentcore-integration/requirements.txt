@@ -1,0 +1,7 @@
+# AgentCore Gateway Requirements
+bedrock-agentcore-starter-toolkit>=0.1.0
+boto3>=1.34.0
+httpx>=0.25.0
+
+# Optional: For YAML OpenAPI specs
+PyYAML>=6.0

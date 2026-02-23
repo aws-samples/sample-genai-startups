@@ -2,128 +2,110 @@
 
 ## Overview
 
-**Self-managed agents** are autonomous software components that operate independently within distributed systems, making decisions and taking actions without constant human intervention. Unlike traditional orchestrated workflows where a central controller directs every step, self-managed agents embody intelligence at the edge—they perceive their environment, reason about state, and execute actions to achieve objectives.
+**Self-managed agents** refers to AI agents where you own the operational concerns—compute provisioning, lifecycle management, scaling, and critically, the security and identity layer. Unlike fully managed platforms such as Amazon Bedrock AgentCore, there is no platform handling these for you. You bring your own agent framework (Strands, LangGraph, CrewAI, custom, etc.) and take responsibility for how agents authenticate, what they're authorized to do, and how that's enforced.
 
-In the context of AWS compute services (ECS, EKS, Lambda), self-managed agents represent a paradigm shift from imperative orchestration to declarative autonomy. These agents:
+This is a deliberate choice, not a limitation. The "self-managed" label describes the operational model, not the agent's intelligence or design.
 
-- **Self-monitor**: Continuously observe system state, metrics, and events
-- **Self-decide**: Apply logic, policies, or ML models to determine appropriate actions
-- **Self-heal**: Detect and remediate issues without external triggers
-- **Self-optimize**: Adjust behavior based on performance feedback
-- **Self-coordinate**: Collaborate with other agents through event-driven patterns
+Typical self-managed deployment targets on AWS:
 
-### When to Choose Self-Managed Agents Over AgentCore
+- **Amazon ECS (Fargate or EC2 launch type)**: Containerized agents as long-running services or tasks
+- **Amazon EKS**: Kubernetes-native deployments—Deployments, DaemonSets, StatefulSets, or custom Operators
+- **Amazon EC2**: Agents running directly on instances, useful for specialized hardware (GPUs, Inferentia) or OS-level access
+- **AWS Lambda**: Serverless agents where the compute is managed by AWS, but the security model—authentication, authorization, token handling, and inter-agent trust—is entirely hand-built by you. Lambda also has a hard 15-minute execution limit per invocation and no native session isolation between invocations, which shapes the kinds of agent tasks it suits well.
 
-While [Amazon Bedrock AgentCore](https://aws.amazon.com/bedrock/agentcore/) provides a fully managed platform for building and deploying agents, self-managed approaches are better suited for specific scenarios:
+The key distinction with Lambda is worth calling out explicitly: Lambda removes infrastructure management (no servers to provision or scale), but it does not remove security management. When you run agents on Lambda outside of AgentCore, you are responsible for building the identity and access control layer that [AgentCore Identity](https://aws.amazon.com/bedrock/agentcore/) provides out of the box—OAuth 2.0 flows, token validation, scoped permissions per agent, and audit trails for agent actions.
 
-**Use Self-Managed Agents When:**
+Beyond security, Lambda's runtime constraints are a meaningful design input. AgentCore supports agent sessions up to 8 hours with session-level isolation—each session gets its own context, memory scope, and identity boundary. Lambda invocations are capped at 15 minutes and are stateless by default; there is no built-in session boundary between invocations. This doesn't prevent you from running agents on Lambda, but it does mean you design differently: tasks must complete within a single invocation or be decomposed across multiple, and session continuity (if needed) has to be reconstructed from external state (DynamoDB, ElastiCache, S3) on each invocation.
 
-1. **Existing Infrastructure Investment**
-   - You already have mature ECS/EKS clusters with established operational patterns
-   - Your team has deep expertise in container orchestration and Kubernetes
-   - Migration costs to a new platform outweigh managed service benefits
-   - You need to leverage existing CI/CD pipelines, monitoring, and security tooling
+### When to Choose Self-Managed Over AgentCore
 
-2. **Fine-Grained Control Requirements**
-   - Custom networking configurations (VPC peering, Transit Gateway, PrivateLink)
-   - Specific kernel-level optimizations or syscall access
-   - Custom container runtimes or specialized hardware (GPUs, Inferentia)
-   - Precise control over resource allocation and scheduling policies
+[Amazon Bedrock AgentCore](https://aws.amazon.com/bedrock/agentcore/) handles the infrastructure and security platform for you—runtime, scaling, patching, observability, and identity. Self-managed makes sense when you need control that a managed platform can't provide, or when you're already invested in your own stack:
 
-3. **Hybrid or Multi-Cloud Deployments**
-   - Agents must run across AWS, on-premises, and other cloud providers
-   - Kubernetes-based portability is a hard requirement
-   - You need consistent agent behavior across heterogeneous environments
-   - Regulatory requirements mandate specific geographic or infrastructure constraints
+**Choose self-managed when:**
 
-4. **Cost Optimization at Scale**
-   - Extremely high-volume, low-latency workloads where managed service overhead matters
-   - Ability to leverage Spot instances, Reserved Instances, or Savings Plans more aggressively
-   - Need for custom bin-packing algorithms to maximize resource utilization
-   - Workloads with predictable patterns that benefit from reserved capacity
+1. **You already have ECS/EKS clusters** — your team has the operational expertise, CI/CD pipelines, and monitoring already in place. Running agents alongside existing workloads is lower friction than adopting a new platform.
 
-5. **Legacy System Integration**
-   - Agents must interact with legacy systems via custom protocols or libraries
-   - Deep integration with existing service meshes (Istio, Linkerd, Consul)
-   - Custom authentication/authorization systems that don't integrate with IAM
-   - Specialized monitoring or observability stacks (Prometheus, Grafana, Datadog)
+2. **You need hardware control** — GPUs, AWS Inferentia, or Trainium instances for model inference; custom container runtimes; or kernel-level access (cgroups, syscalls) that serverless runtimes don't expose.
 
-6. **Advanced Kubernetes-Native Patterns**
-   - Custom Resource Definitions (CRDs) and operators are core to your architecture
-   - Need for Kubernetes-native features like DaemonSets, StatefulSets, or Jobs
-   - Integration with Kubernetes ecosystem tools (Helm, Kustomize, ArgoCD)
-   - Multi-tenancy requirements using Kubernetes namespaces and RBAC
+3. **Long-running, stateful processes** — agents that maintain in-memory state, hold persistent connections (WebSockets, gRPC streams), or run continuously rather than responding to discrete invocations.
 
-7. **Specialized Compliance or Security Requirements**
-   - Air-gapped environments with no internet connectivity
-   - Custom encryption or key management beyond AWS KMS
-   - Specific audit logging formats or retention policies
-   - Need to run agents in FIPS-compliant or hardened environments
+4. **Kubernetes-native patterns are core to your architecture** — DaemonSets for node-level agents, custom Operators with CRDs, service mesh integration (Istio, Linkerd), or multi-cluster federation.
 
-8. **Development Velocity and Experimentation**
-   - Rapid prototyping with full control over the agent runtime
-   - Testing bleeding-edge frameworks or experimental AI models
-   - Need to iterate on agent architecture without platform constraints
-   - Research environments where flexibility trumps operational simplicity
+5. **Hybrid or multi-cloud requirements** — agents that must run consistently across AWS, on-premises, and other clouds; Kubernetes portability is a hard requirement.
 
-**Use AgentCore When:**
+6. **Cost optimization at scale** — high-volume workloads where you want to leverage Spot instances, Reserved Instances, or custom bin-packing; predictable traffic patterns that benefit from reserved capacity.
 
-- You want to focus on agent logic, not infrastructure management
-- You need built-in observability, memory, and code execution capabilities
-- You're building new agent systems without legacy constraints
-- You value faster time-to-market over infrastructure control
-- You want automatic scaling, patching, and operational best practices
+7. **Compliance or air-gapped environments** — no internet connectivity, custom encryption/KMS, specific audit log formats, or FIPS-compliant hardened environments.
 
-**Hybrid Approach:**
+8. **You're running agents on Lambda and need fine-grained control** — Lambda is a valid platform for agents, particularly for discrete, short-lived tasks. The trade-offs to design around are:
+   - **15-minute execution limit**: A single Lambda invocation can run for at most 15 minutes. Agents with long reasoning chains, multi-step tool use, or tasks that take longer must be decomposed—either into chained invocations via Step Functions, or by externalizing state and resuming across invocations.
+   - **No built-in session isolation**: AgentCore provides session-level isolation—each agent session has its own context boundary, memory scope, and identity. Lambda has no equivalent; every invocation is stateless and isolated from others by default. If your agent needs session continuity (conversation history, accumulated context, mid-task state), you build and manage that yourself using DynamoDB, ElastiCache, or S3.
+   - **Custom security model**: Lambda removes compute management but not security management. Auth flows, token validation, and inter-agent trust are yours to implement—AgentCore Identity handles this on the managed platform.
 
-Many organizations use both:
-- **AgentCore** for business logic agents (customer service, data analysis, workflow automation)
-- **Self-Managed** for infrastructure agents (monitoring, security, resource optimization)
+   Lambda is a strong fit for agents doing well-scoped, event-driven tasks that complete within 15 minutes and don't require session continuity. For longer-running or session-aware agents, ECS/EKS or AgentCore are better fits.
 
-This allows teams to leverage managed services where appropriate while maintaining control over critical infrastructure components.
+**Choose AgentCore when:**
+
+- You want to focus on agent logic, not infrastructure or security plumbing
+- You need built-in identity management (AgentCore Identity), memory, code execution, and observability out of the box
+- You're starting fresh without legacy infrastructure constraints
+- Faster time-to-market matters more than control over the security model
+
+**Hybrid approach:**
+
+Many teams run both. AgentCore for agents where the managed security and runtime are a good fit; self-managed ECS/EKS/Lambda for agents that need deep infrastructure access, custom identity flows, or already live alongside existing workloads.
 
 ---
 
 ## Pattern Selection Guide
 
-The following table maps self-managed agent use cases to the architectural patterns that best address them:
+The patterns in this guide cover agent deployments across ECS, EKS, EC2, and Lambda. For ECS/EKS/EC2, "self-managed" means owning the compute and runtime. For Lambda (Patterns 1 and 6), "self-managed" means owning the security model—authentication, authorization, and inter-agent trust that AgentCore Identity would otherwise provide.
 
 | Use Case | Recommended Patterns | Why |
 |----------|---------------------|-----|
-| **Existing Infrastructure Investment** | Pattern 2 (ECS Long-Running), Pattern 3 (EKS DaemonSets), Pattern 4 (EKS Operators) | Leverage existing container orchestration platforms and operational expertise |
-| **Fine-Grained Control** | Pattern 3 (EKS DaemonSets), Pattern 7 (ECS Auto-Scaling) | Direct access to node resources, custom scheduling, and resource management |
-| **Hybrid/Multi-Cloud** | Pattern 4 (EKS Operators), Pattern 9 (MCP on EKS), Pattern 10 (A2A on EKS) | Kubernetes portability, standardized protocols, cloud-agnostic patterns |
-| **Cost Optimization at Scale** | Pattern 1 (Lambda Event-Driven), Pattern 7 (ECS Auto-Scaling) | Pay-per-invocation model, custom scaling algorithms, Spot instance support |
-| **Legacy System Integration** | Pattern 2 (ECS Long-Running), Pattern 9 (MCP on EKS) | Custom protocols, persistent connections, standardized integration layer |
-| **Kubernetes-Native Patterns** | Pattern 3 (EKS DaemonSets), Pattern 4 (EKS Operators), Pattern 10 (A2A on EKS) | CRDs, operators, native Kubernetes resources and APIs |
-| **Specialized Compliance/Security** | Pattern 8 (Cross-Account Networks), Pattern 3 (EKS DaemonSets) | Air-gapped deployments, custom encryption, multi-account isolation |
-| **Development Velocity** | Pattern 1 (Lambda Event-Driven), Pattern 9 (MCP on EKS) | Rapid iteration, standardized interfaces, minimal infrastructure overhead |
-| **Distributed Coordination** | Pattern 5 (Multi-Agent Choreography), Pattern 10 (A2A Communication) | Event-driven coordination, peer-to-peer communication, no central orchestrator |
-| **Complex Workflows** | Pattern 6 (Lambda + Step Functions) | Visual workflow definition, state management, built-in error handling |
+| Existing ECS/EKS investment | Pattern 2 (ECS Long-Running), Pattern 3 (EKS DaemonSets), Pattern 4 (EKS Operators) | Leverage existing container orchestration and operational expertise |
+| Hardware control (GPU/Inferentia) | Pattern 3 (EKS DaemonSets), Pattern 2 (ECS on EC2) | Direct node access, custom instance types, specialized scheduling |
+| Hybrid/Multi-Cloud | Pattern 4 (EKS Operators), Pattern 9 (MCP on EKS), Pattern 10 (A2A on EKS) | Kubernetes portability, standardized protocols, cloud-agnostic patterns |
+| Cost optimization at scale | Pattern 7 (ECS Auto-Scaling), Pattern 2 (ECS on Spot) | Custom scaling algorithms, Spot instance support, reserved capacity |
+| Legacy system integration | Pattern 2 (ECS Long-Running), Pattern 9 (MCP on EKS) | Custom protocols, persistent connections, standardized integration layer |
+| Kubernetes-native patterns | Pattern 3 (EKS DaemonSets), Pattern 4 (EKS Operators), Pattern 10 (A2A on EKS) | CRDs, operators, native Kubernetes resources and APIs |
+| Compliance/air-gapped | Pattern 8 (Cross-Account Networks), Pattern 3 (EKS DaemonSets) | Air-gapped deployments, custom encryption, multi-account isolation |
+| Custom security/identity model on Lambda | Pattern 1 (Lambda Event-Driven), Pattern 6 (Lambda + Step Functions) | Full control over auth flows, token validation, and inter-agent trust policies |
+| Distributed coordination | Pattern 5 (Multi-Agent Choreography), Pattern 10 (A2A Communication) | Event-driven coordination, peer-to-peer communication, no central orchestrator |
+| Complex workflows | Pattern 6 (Lambda + Step Functions) | Visual workflow definition, state management, built-in error handling |
 
 **Pattern Combinations:**
 
-Many real-world implementations combine multiple patterns:
+Real-world implementations often combine multiple patterns:
 
-- **Hybrid Event-Driven System**: Pattern 1 (Lambda) + Pattern 5 (Event Mesh) + Pattern 2 (ECS)
-  - Lambda agents for stateless tasks, ECS for long-running processes, EventBridge for coordination
-  
-- **Kubernetes-Native Platform**: Pattern 3 (DaemonSets) + Pattern 4 (Operators) + Pattern 9 (MCP)
-  - DaemonSets for node-level agents, Operators for resource management, MCP for AI integration
-  
-- **Multi-Agent Collaboration**: Pattern 9 (MCP) + Pattern 10 (A2A) + Pattern 5 (Event Mesh)
-  - MCP for capability exposure, A2A for direct communication, EventBridge for async coordination
-  
-- **Enterprise Multi-Account**: Pattern 8 (Cross-Account) + Pattern 1 (Lambda) + Pattern 2 (ECS)
-  - Central orchestration with distributed execution across organizational boundaries
+- **ECS + Event Mesh**: Pattern 2 (ECS Long-Running) + Pattern 5 (Event Mesh) — ECS agents for stateful processing, EventBridge for async coordination between agent pools
+
+- **Kubernetes-Native Platform**: Pattern 3 (DaemonSets) + Pattern 4 (Operators) + Pattern 9 (MCP) — DaemonSets for node-level agents, Operators for resource management, MCP for AI model integration
+
+- **Multi-Agent Collaboration on EKS**: Pattern 9 (MCP) + Pattern 10 (A2A) + Pattern 5 (Event Mesh) — MCP for capability exposure, A2A for direct agent communication, EventBridge for async coordination
+
+- **Enterprise Multi-Account**: Pattern 8 (Cross-Account) + Pattern 2 (ECS) — central ECS orchestration with distributed execution across organizational boundaries
 
 ---
 
 ## Agentic Patterns on AWS
 
+The patterns in this guide span ECS, EKS, EC2, and Lambda. For ECS/EKS/EC2 patterns, self-managed means owning the compute and runtime. For Lambda patterns (1 and 6), self-managed means owning the security model—you build the authentication, authorization, and inter-agent trust layer that AgentCore Identity provides on the managed platform.
+
 ### Pattern 1: Lambda Event-Driven Agents
 
 **Characteristics**: Stateless, event-triggered agents that react to system events and execute discrete tasks.
+
+**Runtime Constraints vs AgentCore**:
+
+| | Lambda (self-managed) | AgentCore |
+|---|---|---|
+| Max execution time | 15 minutes per invocation | 8 hours per session |
+| Session isolation | None built-in — stateless by default | Native session-level isolation with scoped context and memory |
+| Security/identity | Hand-built (IAM + custom auth) | AgentCore Identity (OAuth 2.0, token validation, audit) |
+| Session continuity | Reconstructed from external state (DynamoDB, ElastiCache) | Managed by platform |
+
+Lambda agents work well for tasks that fit within a single invocation. For agents that need to reason across multiple steps over a longer horizon, or maintain isolated session context per user/conversation, you either chain invocations through Step Functions (Pattern 6) with externalized state, or move to ECS/EKS for persistent processes, or use AgentCore for the managed session model.
 
 **Architecture**:
 ```
@@ -923,11 +905,12 @@ class ScalingAgent:
 
 ## Getting Started
 
-1. **Start Small**: Begin with a single Lambda agent for a well-defined task (e.g., S3 cleanup)
-2. **Add Observability**: Ensure you can see what the agent is doing before adding complexity
-3. **Expand Capabilities**: Graduate to ECS for long-running needs or EKS for Kubernetes-native workflows
-4. **Introduce Coordination**: Use EventBridge or custom CRDs for multi-agent systems
-5. **Iterate on Intelligence**: Start with simple rules, then introduce ML models as needed
+1. **Pick your compute target**: ECS Fargate for simplicity, ECS on EC2 for hardware control, EKS for Kubernetes-native patterns
+2. **Containerize your agent**: Package your agent framework (Strands, LangGraph, custom) as a Docker image with a clear entrypoint
+3. **Add observability first**: Structured logging, CloudWatch metrics, and X-Ray tracing before you add complexity
+4. **Start with a single agent service**: One ECS task or EKS Deployment doing a well-defined job
+5. **Introduce coordination**: EventBridge for async choreography, gRPC/NATS for direct A2A communication, or CRDs for Kubernetes-native state
+6. **Iterate on intelligence**: Start with rules-based logic, then introduce LLM calls or ML models as the agent matures
 
 ---
 

@@ -6,13 +6,18 @@ languages, frameworks, and deployment approaches.
 
 ## Samples
 
-| Sample | Language | Framework | Deployment | Tools | HTTP Server Contract |
-|--------|----------|-----------|------------|-------|----------------------|
-| [SimplePydanticAgent](pydantic-ai-agent/SimplePydanticAgent/) | Python | [Pydantic AI](https://ai.pydantic.dev/) | AgentCore CLI | `add_numbers` | `BedrockAgentCoreApp` |
-| [SimpleSmolAgent](huggingface-smolagents/SimpleSmolAgent/) | Python | [HuggingFace smolagents](https://huggingface.co/docs/smolagents) | AgentCore CLI | `add_numbers` | `BedrockAgentCoreApp` |
-| [SimpleVercelAgent](vercel-ai-sdk/SimpleVercelAgent/) | TypeScript / Node.js | [Vercel AI SDK](https://sdk.vercel.ai/) | CDK L1 (`CfnRuntime`) | `add_numbers` | Manual HTTP server |
-| [SimpleClaudeAgent](claude-agent-sdk/SimpleClaudeAgent/) | Python | [Claude Agent SDK](https://github.com/anthropics/claude-code/tree/main/packages/agent-sdk) | CDK L1 (`CfnRuntime`) | Built-in (`Read`, `Bash`, `Glob`, `Grep`) | `BedrockAgentCoreApp` |
-| [SimpleSpringAgent](spring-ai/SimpleSpringAgent/) | Java | [Spring AI](https://spring.io/projects/spring-ai) + [spring-ai-agentcore](https://github.com/spring-ai-community/spring-ai-agentcore) | CDK L1 (`CfnRuntime`) | `addNumbers` (`@Tool`) | `@AgentCoreInvocation` |
+| | [SimplePydanticAgent](pydantic-ai-agent/SimplePydanticAgent/) | [SimpleSmolAgent](huggingface-smolagents/SimpleSmolAgent/) | [SimpleVercelAgent](vercel-ai-sdk/SimpleVercelAgent/) | [SimpleClaudeAgent](claude-agent-sdk/SimpleClaudeAgent/) | [SimpleSpringAgent](spring-ai/SimpleSpringAgent/) |
+|---|---|---|---|---|---|
+| **Language** | Python | Python | TypeScript / Node.js | Python | Java |
+| **Framework** | [Pydantic AI](https://ai.pydantic.dev/) | [HuggingFace smolagents](https://huggingface.co/docs/smolagents) | [Vercel AI SDK](https://sdk.vercel.ai/) | [Claude Agent SDK](https://github.com/anthropics/claude-code/tree/main/packages/agent-sdk) | [Spring AI](https://spring.io/projects/spring-ai) + [spring-ai-agentcore](https://github.com/spring-ai-community/spring-ai-agentcore) |
+| **Tools** | Custom (`add_numbers`) | Custom (`add_numbers`) | Custom (`add_numbers`) | Built-in (`Read`, `Bash`, `Glob`, `Grep`) | Custom (`addNumbers` via `@Tool`) |
+| **Best for** | Python-native agents with structured outputs | Multi-step tool-calling with HuggingFace models | TypeScript / Node.js agents with custom tools | Code analysis, file inspection, command automation | Java / Spring Boot enterprise agents |
+| **Deployment** | AgentCore CLI (`agentcore deploy`) | AgentCore CLI (`agentcore deploy`) | CDK L1 (`CfnRuntime`) | CDK L1 (`CfnRuntime`) | CDK L1 (`CfnRuntime`) |
+| **Container** | CodeZip — managed `PYTHON_3_12` runtime | CodeZip — managed `PYTHON_3_12` runtime | Custom Docker (Node.js 20 Alpine) | Custom Docker (Python 3.12 + Node.js 20) | Custom Docker (Corretto 21 Alpine) |
+| **HTTP server contract** | `BedrockAgentCoreApp` | `BedrockAgentCoreApp` | Manual `http.createServer` | `BedrockAgentCoreApp` | `@AgentCoreInvocation` (spring-ai-agentcore) |
+| **Auth (local testing)** | AWS profile / env vars | AWS profile / env vars | `fromNodeProviderChain()` | `CLAUDE_CODE_USE_BEDROCK=1` + AWS profile | AWS SDK default credential chain |
+| **Auth (deployed)** | IAM execution role | IAM execution role | IAM execution role | IAM execution role | IAM execution role |
+| **Model** | `claude-sonnet-4-6` via Bedrock Converse | `claude-sonnet-4-6` via Bedrock Converse | `claude-sonnet-4-6` via `@ai-sdk/amazon-bedrock` | `claude-sonnet-4-6` via `CLAUDE_CODE_USE_BEDROCK=1` | `claude-sonnet-4-6` via Spring AI Bedrock Converse |
 
 ## Deployment Approaches
 
@@ -61,7 +66,24 @@ All samples implement the
 
 ## Model
 
-All samples use `global.anthropic.claude-sonnet-4-6` via Amazon Bedrock.
+All samples use `global.anthropic.claude-sonnet-4-6` via Amazon Bedrock for demonstration
+purposes, but this is not a requirement.
+
+**AgentCore is model-agnostic.** The runtime only cares about the
+[service contract](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/runtime-service-contract.html)
+(`POST /invocations` + `GET /ping` on port 8080) — it does not dictate which model your agent
+calls or how. You can use any model your agent framework supports:
+
+- Any model available on [Amazon Bedrock](https://docs.aws.amazon.com/bedrock/latest/userguide/models-supported.html)
+  (Anthropic, Amazon Nova, Meta Llama, Mistral, Cohere, AI21, and others)
+- Models from other providers (OpenAI, Google Gemini, etc.) called directly from within your
+  agent container
+- Self-hosted or fine-tuned models, accessed via any HTTP endpoint
+
+To swap the model in a sample, update the model ID in the framework's configuration
+(e.g., `spring.ai.bedrock.converse.chat.options.model` in `application.properties` for Spring AI,
+or the `bedrock()` call in `src/index.ts` for the Vercel AI SDK). The AgentCore infrastructure
+and service contract remain unchanged.
 
 ## Authentication
 

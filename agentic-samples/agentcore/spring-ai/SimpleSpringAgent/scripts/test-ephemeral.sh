@@ -53,7 +53,7 @@ cd "$CDK_DIR"
 
 npm install
 npm run build
-./node_modules/.bin/cdk deploy --require-approval never
+CDK_DOCKER="${DOCKER:-docker}" ./node_modules/.bin/cdk deploy --require-approval never
 
 echo -e "${GREEN}✓ Stack deployed${NC}"
 echo ""

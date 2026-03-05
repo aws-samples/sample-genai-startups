@@ -53,10 +53,10 @@ echo ""
 
 echo "Step 2: Cleaning up any existing container..."
 
-if docker ps -a | grep -q "${CONTAINER_NAME}"; then
+if ${DOCKER:-docker} ps -a | grep -q "${CONTAINER_NAME}"; then
     echo "  Stopping and removing existing container '${CONTAINER_NAME}'..."
-    docker stop "${CONTAINER_NAME}" 2>/dev/null || true
-    docker rm   "${CONTAINER_NAME}" 2>/dev/null || true
+    ${DOCKER:-docker} stop "${CONTAINER_NAME}" 2>/dev/null || true
+    ${DOCKER:-docker} rm   "${CONTAINER_NAME}" 2>/dev/null || true
 fi
 
 echo -e "${GREEN}✓ Clean${NC}"
@@ -65,7 +65,7 @@ echo ""
 # ── Step 3: build ─────────────────────────────────────────────────────────────
 
 echo "Step 3: Building Docker image '${IMAGE_NAME}:${IMAGE_TAG}'..."
-docker build --platform linux/arm64 -t "${IMAGE_NAME}:${IMAGE_TAG}" "${APP_DIR}"
+${DOCKER:-docker} build --platform linux/arm64 -t "${IMAGE_NAME}:${IMAGE_TAG}" "${APP_DIR}"
 echo -e "${GREEN}✓ Image built successfully${NC}"
 echo ""
 
@@ -73,7 +73,7 @@ echo ""
 
 echo "Step 4: Starting container on port ${PORT}..."
 
-docker run -d \
+${DOCKER:-docker} run -d \
     --name "${CONTAINER_NAME}" \
     --platform linux/arm64 \
     -p "${PORT}:8080" \
@@ -98,19 +98,19 @@ until curl -sf "${BASE_URL}/ping" > /dev/null 2>&1; do
     if [ $elapsed -ge $max_wait ]; then
         echo -e "${RED}✗ Server did not become ready within ${max_wait}s.${NC}"
         echo "Container logs:"
-        docker logs "${CONTAINER_NAME}"
+        ${DOCKER:-docker} logs "${CONTAINER_NAME}"
         exit 1
     fi
 done
 
 echo ""
 echo "Container status:"
-docker ps | grep "${CONTAINER_NAME}" || true
+${DOCKER:-docker} ps | grep "${CONTAINER_NAME}" || true
 
 echo ""
 echo "Container logs:"
 echo "----------------------------------------"
-docker logs "${CONTAINER_NAME}"
+${DOCKER:-docker} logs "${CONTAINER_NAME}"
 echo "----------------------------------------"
 echo ""
 
@@ -131,7 +131,7 @@ run_test() {
     response=$(curl -sf -X POST "${BASE_URL}/invocations" \
         -H "Content-Type: application/json" \
         -d "${payload}" 2>&1) || {
-        echo -e "  ${RED}✗ Request failed (is the container up? check: docker logs ${CONTAINER_NAME})${NC}"
+        echo -e "  ${RED}✗ Request failed (is the container up? check: ${DOCKER:-docker} logs ${CONTAINER_NAME})${NC}"
         echo ""
         return
     }
@@ -146,7 +146,7 @@ run_test "General knowledge"  '{"prompt": "What is the capital of France?"}'
 
 # ── done ──────────────────────────────────────────────────────────────────────
 
-echo "To follow live logs:  docker logs -f ${CONTAINER_NAME}"
+echo "To follow live logs:  ${DOCKER:-docker} logs -f ${CONTAINER_NAME}"
 echo "To stop the container:"
-echo "  docker stop ${CONTAINER_NAME} && docker rm ${CONTAINER_NAME}"
+echo "  ${DOCKER:-docker} stop ${CONTAINER_NAME} && ${DOCKER:-docker} rm ${CONTAINER_NAME}"
 echo ""

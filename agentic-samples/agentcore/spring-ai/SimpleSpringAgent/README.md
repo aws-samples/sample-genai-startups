@@ -9,23 +9,21 @@ The agent (`AgentService`) uses Spring AI's `ChatClient` with Bedrock Converse a
 (`POST /invocations` + `GET /ping` on port 8080) via the `@AgentCoreInvocation` annotation —
 the Java equivalent of Python's `BedrockAgentCoreApp`.
 
-> **Complementary samples — same AgentCore service contract, different SDKs**
->
-> | | [SimpleVercelAgent](../../vercel-ai-sdk/SimpleVercelAgent/) | [SimpleClaudeAgent](../../claude-agent-sdk/SimpleClaudeAgent/) | SimpleSpringAgent (this) |
-> |---|---|---|---|
-> | **Language** | TypeScript / Node.js | Python | Java |
-> | **Framework** | Vercel AI SDK | Claude Agent SDK | Spring AI |
-> | **Tools** | Custom (`add_numbers`) | Built-in (`Read`, `Bash`, `Glob`, `Grep`) | Custom (`addNumbers`) |
-> | **HTTP server** | Node.js `createServer` | `BedrockAgentCoreApp` | `spring-ai-agentcore-runtime-starter` |
-> | **Auth** | `fromNodeProviderChain()` — IAM role | `CLAUDE_CODE_USE_BEDROCK=1` + IAM role | AWS SDK default credential chain — IAM role |
->
-> All samples use the same L1 CDK infrastructure (`CfnRuntime`).
-
 > **Why CDK is used directly**
 >
 > Java requires a custom container image (no managed `JAVA_21` CodeZip runtime exists in AgentCore CLI).
 > We therefore use AWS CDK L1 constructs (`CfnRuntime` from `aws-cdk-lib/aws-bedrockagentcore`) to
-> deploy directly, the same approach as `SimpleVercelAgent` and `SimpleClaudeAgent`.
+> deploy directly.
+
+## Quick Start
+
+```bash
+make test         # build Docker image and run tests against the local container
+make stop         # stop and remove the local test container
+make deploy       # install CDK deps and deploy to AWS
+make deploy-test  # deploy to AWS and run integration tests against the live runtime
+make destroy      # tear down the deployed AWS stack
+```
 
 ## Project Structure
 
@@ -98,7 +96,7 @@ explicit credential provider is needed in production.
 
 ## Prerequisites
 
-- **Docker** (for container builds)
+- **Docker Desktop** or a compatible runtime such as [Finch](https://runfinch.com/) — required for container builds and local testing. Finch (v1.4+) is a confirmed working alternative — use `make test DOCKER=finch`.
 - **AWS CDK CLI** — install with `npm install -g aws-cdk`
 - **AWS credentials** with permissions for Bedrock, ECR, IAM, and CloudFormation
 

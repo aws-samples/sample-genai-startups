@@ -37,6 +37,15 @@ SimpleVercelAgent/
         └── Dockerfile      # Container build definition
 ```
 
+## Quick Start
+
+```bash
+make test      # build Docker image and run tests against the local container
+make stop      # stop and remove the local test container
+make deploy    # install CDK deps and deploy to AWS
+make destroy   # tear down the deployed AWS stack
+```
+
 ## How It Works
 
 `src/index.ts` defines the agent using `ToolLoopAgent` — the Vercel AI SDK's high-level agent
@@ -109,7 +118,7 @@ credentials are provided via the IAM execution role (similar to ECS task roles),
 ## Prerequisites
 
 - **Node.js** 20.x or later
-- **Docker** (for container builds)
+- **Docker Desktop** or a compatible runtime such as [Finch](https://runfinch.com/) — required for container builds and local testing. Finch (v1.4+) is a confirmed working alternative — use `make test DOCKER=finch`.
 - **AWS CDK CLI** — install with `npm install -g aws-cdk`
 - **AWS credentials** with permissions for Bedrock, ECR, IAM, and CloudFormation
 

@@ -57,8 +57,20 @@ if __name__ == "__main__":
 To extend the agent: add tools with `@agent.tool` or `@agent.tool_plain`, update the instructions, or swap the model.
 The runtime contract (`@app.entrypoint` shape) stays the same.
 
+## Quick Start
+
+```bash
+make install   # install Python dependencies
+make dev       # start local development server on port 8080
+make test      # invoke local agent with demo prompts (separate terminal)
+make deploy    # package and deploy to AWS
+make invoke    # invoke the deployed agent
+make status    # show deployment status
+```
+
 ## Prerequisites
 
+- **Docker Desktop** or a compatible runtime such as [Finch](https://runfinch.com/) — required by the AgentCore CLI for container operations. Finch (v1.4+) is a confirmed working alternative.
 - **Node.js** 20.x or later
 - **Python** 3.10+
 - **uv** ([install](https://docs.astral.sh/uv/getting-started/installation/))

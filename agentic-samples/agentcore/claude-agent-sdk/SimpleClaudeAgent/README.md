@@ -9,26 +9,14 @@ autonomously uses built-in tools (`Read`, `Bash`, `Glob`, `Grep`) to complete ta
 The `BedrockAgentCoreApp` wrapper from `bedrock-agentcore` handles the HTTP server contract
 (`POST /invocations` + `GET /ping` on port 8080).
 
-> **Complementary, not competing — Vercel AI SDK vs Claude Agent SDK**
->
-> | | [SimpleVercelAgent](../../vercel-ai-sdk/SimpleVercelAgent/) | SimpleClaudeAgent (this) |
-> |---|---|---|
-> | **Language** | TypeScript / Node.js | Python |
-> | **Tools** | You implement custom tools (`add_numbers`, etc.) | Built-in: `Read`, `Bash`, `Glob`, `Grep`, … |
-> | **Best for** | Domain-specific agents with business logic | Code analysis, file inspection, command automation |
-> | **Auth** | `fromNodeProviderChain()` — IAM role | `CLAUDE_CODE_USE_BEDROCK=1` + IAM role |
-> | **HTTP server** | Node.js `createServer` | `BedrockAgentCoreApp` from `bedrock-agentcore` |
->
-> Both samples use the same AgentCore service contract and the same L1 CDK infrastructure.
-
 > **CLI limitation — why CDK is used directly**
 >
 > The AgentCore CLI (`agentcore dev` / `agentcore deploy`) supports Python `CodeZip` runtimes.
 > However, the Claude Agent SDK Python package works by **spawning Claude Code CLI as a subprocess**
 > (Claude Code is a Node.js tool), so the container requires both Python and Node.js. This rules out
-> the managed `PYTHON_3_12` CodeZip runtime and requires a custom `Container` build — the same
-> situation as SimpleVercelAgent. We therefore use AWS CDK L1 constructs (`CfnRuntime` from
-> `aws-cdk-lib/aws-bedrockagentcore`) to deploy directly.
+> the managed `PYTHON_3_12` CodeZip runtime and requires a custom `Container` build. We therefore
+> use AWS CDK L1 constructs (`CfnRuntime` from `aws-cdk-lib/aws-bedrockagentcore`) to deploy
+> directly.
 >
 > **Future:** Once `agentcore-cli` adds support for custom container images (or once
 > `claude-agent-sdk` no longer requires a Node.js subprocess), this sample will be updated to use
@@ -48,6 +36,16 @@ SimpleClaudeAgent/
         ├── pyproject.toml  # Python dependencies
         ├── samples/        # Sample source files for demo prompts
         └── Dockerfile      # Python 3.12 + Node.js 20 + Claude Code CLI
+```
+
+## Quick Start
+
+```bash
+make test         # build Docker image and run tests against the local container
+make stop         # stop and remove the local test container
+make deploy       # install CDK deps and deploy to AWS
+make deploy-test  # deploy to AWS and run integration tests against the live runtime
+make destroy      # tear down the deployed AWS stack
 ```
 
 ## How It Works
@@ -99,7 +97,7 @@ instead of the Anthropic API. Credentials are provided automatically via the IAM
 
 ## Prerequisites
 
-- **Docker** (for container builds)
+- **Docker Desktop** or a compatible runtime such as [Finch](https://runfinch.com/) — required for container builds and local testing. Finch (v1.4+) is a confirmed working alternative — use `make test DOCKER=finch`.
 - **AWS CDK CLI** — install with `npm install -g aws-cdk`
 - **AWS credentials** with permissions for Bedrock, ECR, IAM, and CloudFormation
 

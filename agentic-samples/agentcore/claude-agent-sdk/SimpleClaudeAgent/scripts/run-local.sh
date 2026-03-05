@@ -53,10 +53,10 @@ echo ""
 
 echo "Step 2: Cleaning up any existing container..."
 
-if docker ps -a | grep -q "${CONTAINER_NAME}"; then
+if ${DOCKER:-docker} ps -a | grep -q "${CONTAINER_NAME}"; then
     echo "  Stopping and removing existing container '${CONTAINER_NAME}'..."
-    docker stop "${CONTAINER_NAME}" 2>/dev/null || true
-    docker rm   "${CONTAINER_NAME}" 2>/dev/null || true
+    ${DOCKER:-docker} stop "${CONTAINER_NAME}" 2>/dev/null || true
+    ${DOCKER:-docker} rm   "${CONTAINER_NAME}" 2>/dev/null || true
 fi
 
 echo -e "${GREEN}✓ Clean${NC}"
@@ -65,7 +65,7 @@ echo ""
 # ── Step 3: build ─────────────────────────────────────────────────────────────
 
 echo "Step 3: Building Docker image '${IMAGE_NAME}:${IMAGE_TAG}'..."
-docker build --platform linux/arm64 -t "${IMAGE_NAME}:${IMAGE_TAG}" "${APP_DIR}"
+${DOCKER:-docker} build --platform linux/arm64 -t "${IMAGE_NAME}:${IMAGE_TAG}" "${APP_DIR}"
 echo -e "${GREEN}✓ Image built successfully${NC}"
 echo ""
 
@@ -73,7 +73,7 @@ echo ""
 
 echo "Step 4: Starting container on port ${PORT}..."
 
-docker run -d \
+${DOCKER:-docker} run -d \
     --name "${CONTAINER_NAME}" \
     --platform linux/arm64 \
     -p "${PORT}:8080" \
@@ -83,6 +83,7 @@ docker run -d \
     -e AWS_SESSION_TOKEN="${AWS_SESSION_TOKEN}" \
     -e CLAUDE_CODE_USE_BEDROCK=1 \
     -e OTEL_SDK_DISABLED=true \
+    -e DOCKER_CONTAINER=1 \
     "${IMAGE_NAME}:${IMAGE_TAG}"
 
 echo -e "${GREEN}✓ Container started${NC}"
@@ -95,12 +96,12 @@ sleep 5
 
 echo ""
 echo "Container status:"
-docker ps | grep "${CONTAINER_NAME}" || true
+${DOCKER:-docker} ps | grep "${CONTAINER_NAME}" || true
 
 echo ""
 echo "Container logs:"
 echo "----------------------------------------"
-docker logs "${CONTAINER_NAME}"
+${DOCKER:-docker} logs "${CONTAINER_NAME}"
 echo "----------------------------------------"
 echo ""
 
@@ -121,7 +122,7 @@ run_test() {
     response=$(curl -sf -X POST "${BASE_URL}/invocations" \
         -H "Content-Type: application/json" \
         -d "${payload}" 2>&1) || {
-        echo -e "  ${RED}✗ Request failed (is the container up? check: docker logs ${CONTAINER_NAME})${NC}"
+        echo -e "  ${RED}✗ Request failed (is the container up? check: ${DOCKER:-docker} logs ${CONTAINER_NAME})${NC}"
         echo ""
         return
     }
@@ -137,7 +138,7 @@ run_test "Search for TODO comments"             '{"prompt": "Search for any TODO
 
 # ── done ──────────────────────────────────────────────────────────────────────
 
-echo "To follow live logs:  docker logs -f ${CONTAINER_NAME}"
+echo "To follow live logs:  ${DOCKER:-docker} logs -f ${CONTAINER_NAME}"
 echo "To stop the container:"
-echo "  docker stop ${CONTAINER_NAME} && docker rm ${CONTAINER_NAME}"
+echo "  ${DOCKER:-docker} stop ${CONTAINER_NAME} && ${DOCKER:-docker} rm ${CONTAINER_NAME}"
 echo ""

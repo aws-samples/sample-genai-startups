@@ -1,0 +1,19 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "OmniAgent"
+version = "0.1.0"
+description = "AgentCore Runtime Application using Pydantic AI"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "aws-opentelemetry-distro",
+    "bedrock-agentcore >= 1.0.3",
+    "boto3 >= 1.35.0",
+    "pydantic-ai[bedrock] >= 0.4.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]

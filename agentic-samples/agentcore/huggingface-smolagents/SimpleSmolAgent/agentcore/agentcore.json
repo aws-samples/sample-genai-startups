@@ -1,0 +1,18 @@
+{
+  "name": "SimpleSmolAgent",
+  "version": 1,
+  "agents": [
+    {
+      "type": "AgentCoreRuntime",
+      "name": "Smolagent",
+      "build": "CodeZip",
+      "entrypoint": "main.py",
+      "codeLocation": "app/Smolagent/",
+      "runtimeVersion": "PYTHON_3_12",
+      "networkMode": "PUBLIC",
+      "modelProvider": "Bedrock"
+    }
+  ],
+  "memories": [],
+  "credentials": []
+}

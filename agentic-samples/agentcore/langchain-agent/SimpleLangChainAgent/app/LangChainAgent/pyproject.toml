@@ -1,0 +1,19 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "LangChainAgent"
+version = "0.1.0"
+description = "AgentCore Runtime Application using LangChain"
+requires-python = ">=3.10"
+dependencies = [
+    "aws-opentelemetry-distro",
+    "bedrock-agentcore >= 1.0.3",
+    "boto3 >= 1.35.0",
+    "langchain >= 1.0.0",
+    "langchain-aws >= 0.2.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]

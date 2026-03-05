@@ -6,18 +6,18 @@ languages, frameworks, and deployment approaches.
 
 ## Samples
 
-| | [SimplePydanticAgent](pydantic-ai-agent/SimplePydanticAgent/) | [SimpleSmolAgent](huggingface-smolagents/SimpleSmolAgent/) | [SimpleVercelAgent](vercel-ai-sdk/SimpleVercelAgent/) | [SimpleClaudeAgent](claude-agent-sdk/SimpleClaudeAgent/) | [SimpleSpringAgent](spring-ai/SimpleSpringAgent/) |
-|---|---|---|---|---|---|
-| **Language** | Python | Python | TypeScript / Node.js | Python | Java |
-| **Framework** | [Pydantic AI](https://ai.pydantic.dev/) | [HuggingFace smolagents](https://huggingface.co/docs/smolagents) | [Vercel AI SDK](https://sdk.vercel.ai/) | [Claude Agent SDK](https://github.com/anthropics/claude-code/tree/main/packages/agent-sdk) | [Spring AI](https://spring.io/projects/spring-ai) + [spring-ai-agentcore](https://github.com/spring-ai-community/spring-ai-agentcore) |
-| **Tools** | Custom (`add_numbers`) | Custom (`add_numbers`) | Custom (`add_numbers`) | Built-in (`Read`, `Bash`, `Glob`, `Grep`) | Custom (`addNumbers` via `@Tool`) |
-| **Best for** | Python-native agents with structured outputs | Multi-step tool-calling with HuggingFace models | TypeScript / Node.js agents with custom tools | Code analysis, file inspection, command automation | Java / Spring Boot enterprise agents |
-| **Deployment** | AgentCore CLI (`agentcore deploy`) | AgentCore CLI (`agentcore deploy`) | CDK L1 (`CfnRuntime`) | CDK L1 (`CfnRuntime`) | CDK L1 (`CfnRuntime`) |
-| **Container** | CodeZip — managed `PYTHON_3_12` runtime | CodeZip — managed `PYTHON_3_12` runtime | Custom Docker (Node.js 20 Alpine) | Custom Docker (Python 3.12 + Node.js 20) | Custom Docker (Corretto 21 Alpine) |
-| **HTTP server contract** | `BedrockAgentCoreApp` | `BedrockAgentCoreApp` | Manual `http.createServer` | `BedrockAgentCoreApp` | `@AgentCoreInvocation` (spring-ai-agentcore) |
-| **Auth (local testing)** | AWS profile / env vars | AWS profile / env vars | `fromNodeProviderChain()` | `CLAUDE_CODE_USE_BEDROCK=1` + AWS profile | AWS SDK default credential chain |
-| **Auth (deployed)** | IAM execution role | IAM execution role | IAM execution role | IAM execution role | IAM execution role |
-| **Model** | `claude-sonnet-4-6` via Bedrock Converse | `claude-sonnet-4-6` via Bedrock Converse | `claude-sonnet-4-6` via `@ai-sdk/amazon-bedrock` | `claude-sonnet-4-6` via `CLAUDE_CODE_USE_BEDROCK=1` | `claude-sonnet-4-6` via Spring AI Bedrock Converse |
+| | [SimplePydanticAgent](pydantic-ai-agent/SimplePydanticAgent/) | [SimpleSmolAgent](huggingface-smolagents/SimpleSmolAgent/) | [SimpleLangChainAgent](langchain-agent/SimpleLangChainAgent/) | [SimpleVercelAgent](vercel-ai-sdk/SimpleVercelAgent/) | [SimpleClaudeAgent](claude-agent-sdk/SimpleClaudeAgent/) | [SimpleSpringAgent](spring-ai/SimpleSpringAgent/) |
+|---|---|---|---|---|---|---|
+| **Language** | Python | Python | Python | TypeScript / Node.js | Python | Java |
+| **Framework** | [Pydantic AI](https://ai.pydantic.dev/) | [HuggingFace smolagents](https://huggingface.co/docs/smolagents) | [LangChain](https://python.langchain.com/) (`create_agent`) | [Vercel AI SDK](https://sdk.vercel.ai/) | [Claude Agent SDK](https://github.com/anthropics/claude-code/tree/main/packages/agent-sdk) | [Spring AI](https://spring.io/projects/spring-ai) + [spring-ai-agentcore](https://github.com/spring-ai-community/spring-ai-agentcore) |
+| **Tools** | Custom (`add_numbers`) | Custom (`add_numbers`) | Custom (`add_numbers`) | Custom (`add_numbers`) | Built-in (`Read`, `Bash`, `Glob`, `Grep`) | Custom (`addNumbers` via `@Tool`) |
+| **Best for** | Python-native agents with structured outputs | Multi-step tool-calling with HuggingFace models | Graph-based agents with the LangChain 1.0 `create_agent` API | TypeScript / Node.js agents with custom tools | Code analysis, file inspection, command automation | Java / Spring Boot enterprise agents |
+| **Deployment** | AgentCore CLI (`agentcore deploy`) | AgentCore CLI (`agentcore deploy`) | AgentCore CLI (`agentcore deploy`) | CDK L1 (`CfnRuntime`) | CDK L1 (`CfnRuntime`) | CDK L1 (`CfnRuntime`) |
+| **Container** | CodeZip — managed `PYTHON_3_12` runtime | CodeZip — managed `PYTHON_3_12` runtime | CodeZip — managed `PYTHON_3_12` runtime | Custom Docker (Node.js 20 Alpine) | Custom Docker (Python 3.12 + Node.js 20) | Custom Docker (Corretto 21 Alpine) |
+| **HTTP server contract** | `BedrockAgentCoreApp` | `BedrockAgentCoreApp` | `BedrockAgentCoreApp` | Manual `http.createServer` | `BedrockAgentCoreApp` | `@AgentCoreInvocation` (spring-ai-agentcore) |
+| **Auth (local testing)** | AWS profile / env vars | AWS profile / env vars | AWS profile / env vars | `fromNodeProviderChain()` | `CLAUDE_CODE_USE_BEDROCK=1` + AWS profile | AWS SDK default credential chain |
+| **Auth (deployed)** | IAM execution role | IAM execution role | IAM execution role | IAM execution role | IAM execution role | IAM execution role |
+| **Model** | `claude-sonnet-4-6` via Bedrock Converse | `claude-sonnet-4-6` via Bedrock Converse | `claude-sonnet-4-6` via `ChatBedrockConverse` | `claude-sonnet-4-6` via `@ai-sdk/amazon-bedrock` | `claude-sonnet-4-6` via `CLAUDE_CODE_USE_BEDROCK=1` | `claude-sonnet-4-6` via Spring AI Bedrock Converse |
 
 ## Deployment Approaches
 
@@ -60,7 +60,7 @@ All samples implement the
 
 | Approach | Used by |
 |----------|---------|
-| `BedrockAgentCoreApp` (Python) | SimplePydanticAgent, SimpleSmolAgent, SimpleClaudeAgent |
+| `BedrockAgentCoreApp` (Python) | SimplePydanticAgent, SimpleSmolAgent, SimpleLangChainAgent, SimpleClaudeAgent |
 | Manual `http.createServer` (Node.js) | SimpleVercelAgent |
 | `spring-ai-agentcore-runtime-starter` (`@AgentCoreInvocation`) | SimpleSpringAgent |
 

@@ -1,0 +1,18 @@
+{
+  "name": "SimplePydanticAgent",
+  "version": 1,
+  "agents": [
+    {
+      "type": "AgentCoreRuntime",
+      "name": "OmniAgent",
+      "build": "CodeZip",
+      "entrypoint": "main.py",
+      "codeLocation": "app/OmniAgent/",
+      "runtimeVersion": "PYTHON_3_12",
+      "networkMode": "PUBLIC",
+      "modelProvider": "Bedrock"
+    }
+  ],
+  "memories": [],
+  "credentials": []
+}

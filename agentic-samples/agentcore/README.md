@@ -32,11 +32,16 @@ Key commands:
 
 | Command | Description |
 |---------|-------------|
-| `agentcore init` | Scaffold a new agent project |
-| `agentcore dev` | Run and test your agent locally |
-| `agentcore deploy` | Build, push image to ECR, and deploy to AgentCore |
-| `agentcore invoke` | Invoke a deployed agent runtime |
-| `agentcore delete` | Tear down a deployed runtime |
+| `agentcore create` | Create a new AgentCore project |
+| `agentcore dev` | Launch local development server |
+| `agentcore deploy` | Deploy Bedrock AgentCore agent |
+| `agentcore invoke` | Invoke Bedrock AgentCore endpoint |
+| `agentcore status` | Retrieve details of deployed AgentCore resources |
+| `agentcore add` | Add resources to your project (memory, identity, targets) |
+| `agentcore remove` | Remove AgentCore resources and project |
+| `agentcore package` | Package Bedrock AgentCore runtime artifacts |
+| `agentcore validate` | Validate `agentcore/` config files |
+| `agentcore update` | Check for and install CLI updates |
 
 The CLI uses a `agentcore.json` configuration file as the source of truth for agent name,
 build type (CodeZip or Container), network mode, and model provider. It currently supports

@@ -199,14 +199,16 @@ type definitions in `agentcore/.llm-context/`, then run `agentcore deploy` to ap
 
 | Command              | Description                                        |
 |----------------------|----------------------------------------------------|
-| `agentcore dev`      | Start local development server on port 8080        |
-| `agentcore invoke`   | Invoke the agent (with dev server running for local) |
-| `agentcore deploy`   | Package and deploy to AWS                          |
-| `agentcore status`   | Show deployment status                             |
-| `agentcore add`      | Add resources (memory, identity, targets)          |
+| `agentcore create`   | Create a new AgentCore project                     |
+| `agentcore add`      | Add resources (agent, memory, identity, target)    |
 | `agentcore remove`   | Remove resources from the project                  |
-| `agentcore validate` | Validate `agentcore.json` against the schema       |
-| `agentcore package`  | Package agent artifacts without deploying          |
+| `agentcore dev`      | Launch local development server                    |
+| `agentcore deploy`   | Deploy Bedrock AgentCore agent                     |
+| `agentcore status`   | Retrieve details of deployed AgentCore resources   |
+| `agentcore invoke`   | Invoke Bedrock AgentCore endpoint                  |
+| `agentcore package`  | Package Bedrock AgentCore runtime artifacts        |
+| `agentcore validate` | Validate `agentcore/` config files                 |
+| `agentcore update`   | Check for and install CLI updates                  |
 
 ## Documentation
 

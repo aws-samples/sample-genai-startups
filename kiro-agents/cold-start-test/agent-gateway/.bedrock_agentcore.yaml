@@ -1,0 +1,44 @@
+default_agent: agent
+agents:
+  agent:
+    name: agent
+    entrypoint: /Users/sequdian/Documents/Repos/sample-genai-startups/kiro-agents/cold-start-test/agent-gateway/agent.py
+    platform: linux/arm64
+    container_runtime: none
+    source_path: /Users/sequdian/Documents/Repos/sample-genai-startups/kiro-agents/cold-start-test/agent-gateway
+    aws:
+      execution_role: arn:aws:iam::982567305797:role/AmazonBedrockAgentCoreSDKRuntime-us-east-1-d4f0bc5a29
+      execution_role_auto_create: false
+      account: '982567305797'
+      region: us-east-1
+      ecr_repository: 982567305797.dkr.ecr.us-east-1.amazonaws.com/bedrock-agentcore-agent
+      ecr_auto_create: false
+      network_configuration:
+        network_mode: PUBLIC
+        network_mode_config: null
+      protocol_configuration:
+        server_protocol: HTTP
+      observability:
+        enabled: true
+      lifecycle_configuration:
+        idle_runtime_session_timeout: null
+        max_lifetime: null
+    bedrock_agentcore:
+      agent_id: agent-g6FSYa4so0
+      agent_arn: arn:aws:bedrock-agentcore:us-east-1:982567305797:runtime/agent-g6FSYa4so0
+      agent_session_id: 51e2318c-e20d-4cec-b5bf-547f85a2b94b
+    codebuild:
+      project_name: bedrock-agentcore-agent-builder
+      execution_role: arn:aws:iam::982567305797:role/AmazonBedrockAgentCoreSDKCodeBuild-us-east-1-d4f0bc5a29
+      source_bucket: bedrock-agentcore-codebuild-sources-982567305797-us-east-1
+    memory:
+      mode: STM_ONLY
+      memory_id: agent_mem-6n2FjGDhpF
+      memory_arn: arn:aws:bedrock-agentcore:us-east-1:982567305797:memory/agent_mem-6n2FjGDhpF
+      memory_name: agent_mem
+      event_expiry_days: 30
+      first_invoke_memory_check_done: true
+      was_created_by_toolkit: true
+    authorizer_configuration: null
+    request_header_configuration: null
+    oauth_configuration: null

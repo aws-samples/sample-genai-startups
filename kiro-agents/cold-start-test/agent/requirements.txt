@@ -1,0 +1,4 @@
+bedrock-agentcore
+mcp>=1.10.0
+httpx
+boto3

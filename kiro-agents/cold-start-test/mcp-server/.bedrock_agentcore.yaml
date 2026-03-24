@@ -1,0 +1,44 @@
+default_agent: mcp_latency_test
+agents:
+  mcp_latency_test:
+    name: mcp_latency_test
+    entrypoint: /Users/sequdian/Documents/Repos/sample-genai-startups/kiro-agents/cold-start-test/mcp-server/mcp_server.py
+    platform: linux/arm64
+    container_runtime: none
+    source_path: /Users/sequdian/Documents/Repos/sample-genai-startups/kiro-agents/cold-start-test/mcp-server
+    aws:
+      execution_role: arn:aws:iam::982567305797:role/AmazonBedrockAgentCoreSDKRuntime-us-west-2-ae92a8c5f9
+      execution_role_auto_create: false
+      account: '982567305797'
+      region: us-west-2
+      ecr_repository: 982567305797.dkr.ecr.us-west-2.amazonaws.com/bedrock-agentcore-mcp_latency_test
+      ecr_auto_create: false
+      network_configuration:
+        network_mode: PUBLIC
+        network_mode_config: null
+      protocol_configuration:
+        server_protocol: MCP
+      observability:
+        enabled: true
+      lifecycle_configuration:
+        idle_runtime_session_timeout: null
+        max_lifetime: null
+    bedrock_agentcore:
+      agent_id: mcp_latency_test-WdwYMX36Ag
+      agent_arn: arn:aws:bedrock-agentcore:us-west-2:982567305797:runtime/mcp_latency_test-WdwYMX36Ag
+      agent_session_id: null
+    codebuild:
+      project_name: bedrock-agentcore-mcp_latency_test-builder
+      execution_role: arn:aws:iam::982567305797:role/AmazonBedrockAgentCoreSDKCodeBuild-us-west-2-ae92a8c5f9
+      source_bucket: bedrock-agentcore-codebuild-sources-982567305797-us-west-2
+    memory:
+      mode: STM_ONLY
+      memory_id: mcp_latency_test_mem-SHfs1s2oF9
+      memory_arn: arn:aws:bedrock-agentcore:us-west-2:982567305797:memory/mcp_latency_test_mem-SHfs1s2oF9
+      memory_name: mcp_latency_test_mem
+      event_expiry_days: 30
+      first_invoke_memory_check_done: true
+      was_created_by_toolkit: true
+    authorizer_configuration: null
+    request_header_configuration: null
+    oauth_configuration: null

@@ -1,0 +1,50 @@
+KRAS Inhibitor IC50 Statistical Analysis
+=========================================
+Date of Analysis : 2026-04-01
+Analyst          : AI-assisted biostatistics pipeline (Claude / biotech-researcher-agent)
+
+DATA SUMMARY
+------------
+Source file      : kras_inhibitor_assay.csv
+Assay types included : cellular, enzymatic  (combo rows excluded)
+Total observations after filtering : 19
+
+Observations per compound:
+  Sotorasib     : 5
+  Adagrasib     : 5
+  BRX-471       : 9
+
+DESCRIPTIVE STATISTICS
+----------------------
+Compound      n      Mean (nM)     SD (nM)       Median (nM)    Min (nM)      Max (nM)    
+------------------------------------------------------------------------------------------
+Sotorasib     5      209.360       383.085       68.400         6.800         892.300     
+Adagrasib     5      269.900       545.837       45.200         4.900         1245.600    
+BRX-471       9      32.467        39.335        22.800         2.900         128.400     
+
+ANOVA RESULTS
+-------------
+Test            : One-way ANOVA (scipy.stats.f_oneway)
+Null hypothesis : Mean IC50 is equal across all three compounds
+Groups          : Sotorasib, Adagrasib, BRX-471
+
+  F-statistic : 0.9489
+  p-value     : 0.407909
+  Significant : No (p >= 0.05)
+
+Post-Hoc Tukey HSD
+------------------
+Not performed (ANOVA was not statistically significant, p >= 0.05).
+
+CONCLUSION
+----------
+One-way ANOVA did not reveal a statistically significant difference in IC50 values across the three compounds (F=0.9489, p=0.407909). No post-hoc testing was warranted. Larger sample sizes may be needed to detect meaningful differences if they exist.
+
+OUTPUT FILES
+------------
+  Bar chart : /Users/sequdian/Documents/DASamples/sample-genai-startups/agentic-samples/biotech-researcher-agent/output/kras_ic50_comparison.png
+  Report    : /Users/sequdian/Documents/DASamples/sample-genai-startups/agentic-samples/biotech-researcher-agent/output/kras_ic50_analysis.txt
+
+DISCLAIMER
+----------
+AI-generated analysis — requires expert review.

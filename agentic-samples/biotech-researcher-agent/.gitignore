@@ -1,0 +1,7 @@
+.env
+.venv/
+output/*.png
+__pycache__/
+*.pyc
+.DS_Store
+__MACOSX/

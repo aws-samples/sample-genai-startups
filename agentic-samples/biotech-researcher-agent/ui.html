@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self'">
+<title>Biotech-Research</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0d1117; color: #c9d1d9; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 14px; }
+  #header { padding: 20px 24px; border-bottom: 1px solid #21262d; display: flex; align-items: center; gap: 16px; }
+  #header h1 { font-size: 18px; color: #f0f6fc; font-weight: 600; }
+  #input-row { display: flex; gap: 8px; flex: 1; max-width: 800px; }
+  #question { flex: 1; background: #161b22; border: 1px solid #30363d; border-radius: 6px; padding: 8px 12px; color: #f0f6fc; font-family: inherit; font-size: 14px; outline: none; }
+  #question:focus { border-color: #58a6ff; }
+  button { background: #238636; border: none; border-radius: 6px; padding: 8px 16px; color: #fff; font-family: inherit; font-size: 14px; cursor: pointer; }
+  button:hover { background: #2ea043; }
+  button:disabled { opacity: 0.5; cursor: default; }
+  #cancel-btn { background: #da3633; display: none; }
+  #cancel-btn:hover { background: #f85149; }
+  #output { padding: 16px 24px; overflow-y: auto; height: calc(100vh - 72px); }
+  .event { margin: 2px 0; line-height: 1.5; white-space: pre-wrap; word-wrap: break-word; }
+  .agent-start { color: #f0f6fc; font-weight: 600; margin-top: 16px; padding: 4px 0; border-left: 3px solid; padding-left: 10px; }
+  .agent-end { opacity: 0.7; margin-bottom: 8px; padding-left: 13px; }
+  .thinking { opacity: 0.5; font-style: italic; padding-left: 13px; }
+  .text { padding-left: 13px; }
+  .tool { color: #8b949e; padding-left: 13px; }
+  .result { margin-top: 20px; padding: 16px; background: #161b22; border: 1px solid #30363d; border-radius: 8px; }
+  .result-header { color: #f0f6fc; font-weight: 600; margin-bottom: 12px; font-size: 16px; }
+  .meta { color: #8b949e; font-size: 12px; margin-top: 12px; }
+  .error { color: #f85149; }
+  /* agent colors */
+  .agent-data-analyst { color: #79c0ff; border-color: #79c0ff; }
+  .agent-literature-reviewer { color: #7ee787; border-color: #7ee787; }
+  .agent-synthesizer { color: #d2a8ff; border-color: #d2a8ff; }
+</style>
+</head>
+<body>
+<div id="header">
+  <h1>🧬 Biotech-Research</h1>
+  <div id="input-row">
+    <input id="question" placeholder="Research question…" autofocus
+           onkeydown="if(event.key==='Enter')start()">
+    <button id="go-btn" onclick="start()">Run</button>
+    <button id="cancel-btn" onclick="stop()">Stop</button>
+  </div>
+</div>
+<div id="output"></div>
+
+<script>
+let source, runId;
+const out = document.getElementById('output');
+const goBtn = document.getElementById('go-btn');
+const cancelBtn = document.getElementById('cancel-btn');
+const input = document.getElementById('question');
+
+function agentClass(name) {
+  if (!name) return '';
+  const n = name.toLowerCase();
+  if (n.includes('data-analyst') || n.includes('data analyst')) return 'agent-data-analyst';
+  if (n.includes('literature')) return 'agent-literature-reviewer';
+  if (n.includes('synth') || n.includes('hypothesis')) return 'agent-synthesizer';
+  return '';
+}
+
+function add(cls, html, agentName) {
+  const div = document.createElement('div');
+  div.className = `event ${cls} ${agentClass(agentName)}`;
+  div.innerHTML = html;
+  out.appendChild(div);
+  out.scrollTop = out.scrollHeight;
+}
+
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+function start() {
+  const q = input.value.trim();
+  if (!q) return;
+  out.innerHTML = '';
+  goBtn.disabled = true;
+  cancelBtn.style.display = 'inline-block';
+
+  source = new EventSource(`/stream?question=${encodeURIComponent(q)}`);
+
+  source.addEventListener('run_id', e => { runId = JSON.parse(e.data).id; });
+  source.addEventListener('agent_start', e => {
+    const d = JSON.parse(e.data);
+    add('agent-start', `┌─ [${esc(d.agent)}]`, d.agent);
+  });
+  source.addEventListener('agent_end', e => {
+    const d = JSON.parse(e.data);
+    const icon = d.status === 'completed' ? '✓' : '✗';
+    add('agent-end', `└─ ${icon} ${esc(d.status)}`, d.agent);
+  });
+  source.addEventListener('thinking', e => {
+    const d = JSON.parse(e.data);
+    const lines = d.text.split('\n');
+    add('thinking', `💭 ${esc(lines[0])}`, d.agent);
+  });
+  source.addEventListener('text', e => {
+    const d = JSON.parse(e.data);
+    add('text', esc(d.text), d.agent);
+  });
+  source.addEventListener('tool', e => {
+    const d = JSON.parse(e.data);
+    const detail = d.detail ? ` → "${esc(d.detail)}"` : '';
+    add('tool', `🔧 ${esc(d.name)}${detail}`, d.agent);
+  });
+  source.addEventListener('result', e => {
+    const d = JSON.parse(e.data);
+    let meta = '';
+    if (d.cost) meta += `Cost: $${d.cost.toFixed(4)}`;
+    if (d.turns) meta += ` | Turns: ${d.turns}`;
+    if (d.duration_ms) meta += ` | ${(d.duration_ms/1000).toFixed(1)}s`;
+    add('result',
+      `<div class="result-header">Research Brief</div>${esc(d.text)}<div class="meta">${meta}</div>`);
+  });
+  source.addEventListener('error', e => {
+    try { add('error', `Error: ${esc(JSON.parse(e.data).message)}`); } catch {}
+  });
+  source.addEventListener('cancelled', () => add('meta', '⏹ Cancelled'));
+  source.addEventListener('done', () => finish());
+  source.onerror = () => finish();
+}
+
+function stop() {
+  if (runId) fetch(`/cancel/${runId}`, { method: 'POST' });
+  finish();
+}
+
+function finish() {
+  if (source) { source.close(); source = null; }
+  goBtn.disabled = false;
+  cancelBtn.style.display = 'none';
+}
+</script>
+</body>
+</html>

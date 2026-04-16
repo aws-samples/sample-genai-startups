@@ -1,4 +1,4 @@
-# Biotech Research Assistant Demo
+# Biotech Research Assistant Sample
 
 > **⚠️ Security Disclaimer:** This is sample code for demonstration purposes only — not production-ready. It should not be used for clinical decisions or deployed in a production environment without a thorough security review. All AI-generated outputs require expert human verification. See [SECURITY.md](SECURITY.md) for details.
 

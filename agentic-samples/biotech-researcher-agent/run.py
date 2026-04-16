@@ -14,7 +14,7 @@ from pathlib import Path
 from claude_agent_sdk import query
 from claude_agent_sdk.types import (
     AssistantMessage, ClaudeAgentOptions, ResultMessage,
-    TextBlock, ThinkingBlock, ToolUseBlock,
+    TextBlock, ThinkingBlock, ToolUseBlock, SdkPluginConfig,
 )
 ROOT = Path(__file__).parent
 DATA_DIR = ROOT / "data"
@@ -26,6 +26,14 @@ TOOLS = [
     "Read", "Write", "Bash", "Glob", "Grep",
     "mcp__pubmed__*", "mcp__chembl__*", "mcp__clinicaltrials__*",
     "mcp__biorxiv__*", "mcp__opentargets__*",
+]
+
+PLUGINS = [
+    SdkPluginConfig(type="local", path="pubmed@life-sciences"),
+    SdkPluginConfig(type="local", path="chembl@life-sciences"),
+    SdkPluginConfig(type="local", path="clinical-trials@life-sciences"),
+    SdkPluginConfig(type="local", path="biorxiv@life-sciences"),
+    SdkPluginConfig(type="local", path="open-targets@life-sciences"),
 ]
 
 
@@ -61,6 +69,7 @@ async def main():
                 options=ClaudeAgentOptions(
                     model="opus",
                     allowed_tools=TOOLS,
+                    plugins=PLUGINS,
                     # SECURITY: bypassPermissions is for demo/sandboxed use only.
                     # For production, use permission_mode="requireApproval".
                     permission_mode="bypassPermissions",

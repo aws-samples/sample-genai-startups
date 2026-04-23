@@ -1,4 +1,4 @@
-# Couple's Todo MCP App
+# MCP App Sample
 
 This repository demonstrates how to build an MCP server with interactive UI capabilities, deployed to AWS Lambda. The project showcases the MCP Apps extension pattern, which enables rich, sandboxed web interfaces that communicate back to the MCP host through secure postMessage channels. This unlocks new possibilities for building collaborative, cloud-backed tools that integrate seamlessly with Claude and other MCP-compatible hosts.
 

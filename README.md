@@ -6,28 +6,19 @@ Curated GenAI implementation samples and resources for startup customers, create
 
 This repository provides practical examples, code samples, and architectural patterns specifically designed for startups building GenAI applications on AWS. Each sample addresses common challenges and use cases encountered by startup customers.
 
+It also includes an agentic coding library — a collection of steering documents, prompts, agents, and powers that turn AI coding assistants like Kiro and Claude Code into AWS domain experts. These assets help startup engineering teams move faster by embedding AWS best practices directly into their development workflow.
+
 ## Getting Started
 
-1. Browse the `agentic-samples/` directory for relevant use cases
-2. Check `resources/` for relevant resources
-3. Follow individual sample README files for setup instructions
+1. Browse the `agentic-samples/` directory for agentic AI use cases
+2. Browse the `agentic-coding-library/` for AI coding assistant configurations
+3. Check `resources/` for relevant resources
+4. Follow individual sample README files for setup instructions
 
 ## Sample Categories
 
 - **agentic-samples**: Agentic AI related samples
-
-## Q CLI Agent for building agentic applications
-
-The `qcli-strands-agentcore` directory contains an [Amazon Q Developer CLI custom agent](https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/command-line-custom-agents.html) specialized in Strands and Amazon Bedrock AgentCore development. This agent is equipped with tools, MCP servers, agent steering files, and a knowledge base to ensure agents are developed following best practices.
-
-**Key features:**
-- Pre-configured agent rules for Strands and AgentCore best practices
-- Optional knowledge base integration for code samples and documentation
-- AWS MCP server integrations for enhanced capabilities
-- Conversational interface for building agentic applications
-
-To get started with the Q CLI agent, checkout the [README](qcli-strands-agentcore/README.md) for detailed setup and usage instructions
-
+- **agentic-coding-library**: Steering documents, prompts, agents, and powers that turn AI coding assistants into AWS domain experts
 
 ## Prerequisites
 
@@ -40,7 +31,6 @@ To get started with the Q CLI agent, checkout the [README](qcli-strands-agentcor
 For questions or feedback:
 - Open an issue in this repository
 - Join our community discussions
-
 
 ## Security
 

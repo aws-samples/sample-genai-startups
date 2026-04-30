@@ -1,0 +1,43 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Owner Information API",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/owners/{ownerId}": {
+      "get": {
+        "operationId": "getOwnerInfo",
+        "summary": "Get owner information by owner ID",
+        "description": "Retrieves the profile of a private jet owner including their name and home airport.",
+        "parameters": [
+          {
+            "name": "ownerId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Unique identifier of the jet owner (UUID format)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Owner information retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "string" },
+                    "firstname": { "type": "string" },
+                    "lastname": { "type": "string" },
+                    "homeAirport": { "type": "string", "description": "ICAO code (e.g. KJFK)" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

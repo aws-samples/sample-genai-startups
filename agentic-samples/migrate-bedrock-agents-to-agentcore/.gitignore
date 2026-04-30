@@ -1,0 +1,35 @@
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+.pytest_cache/
+*.egg-info/
+dist/
+build/
+
+# Node
+node_modules/
+
+# CDK synth output (contains real account IDs)
+cdk.out/
+.cdk.staging/
+
+# AgentCore CLI local state (contains real ARNs and deploy logs).
+# Exclude files inside .cli, not the directory itself, so per-project
+# .gitignore negations for .cli/deployed-state.json can take effect.
+**/.cli/*
+
+# AgentCore staging cache (contains pip package metadata with emails)
+.cache/
+
+# Local env overrides
+.env
+.env.local
+.envrc

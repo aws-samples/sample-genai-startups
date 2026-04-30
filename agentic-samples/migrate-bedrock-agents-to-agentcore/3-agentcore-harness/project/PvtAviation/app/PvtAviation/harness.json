@@ -1,0 +1,19 @@
+{
+  "name": "PvtAviation",
+  "model": {
+    "provider": "bedrock",
+    "modelId": "global.anthropic.claude-sonnet-4-6"
+  },
+  "tools": [
+    {
+      "type": "agentcore_gateway",
+      "name": "aviation-tools",
+      "config": {
+        "agentCoreGateway": {
+          "gatewayArn": "arn:aws:bedrock-agentcore:us-east-1:123456789012:gateway/pvtaviation-aviation-tools-XXXXXXXXXX"
+        }
+      }
+    }
+  ],
+  "skills": []
+}

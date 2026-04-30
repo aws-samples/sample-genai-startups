@@ -1,0 +1,8 @@
+{
+  "lambda_role_arn": "arn:aws:iam::123456789012:role/PrivateAviationHarness-LambdaRole",
+  "lambda_arns": {
+    "get_owner_info": "arn:aws:lambda:us-east-1:123456789012:function:PrivateAviationHarness-get_owner_info",
+    "get_passengers": "arn:aws:lambda:us-east-1:123456789012:function:PrivateAviationHarness-get_passengers",
+    "book_reservation": "arn:aws:lambda:us-east-1:123456789012:function:PrivateAviationHarness-book_reservation"
+  }
+}

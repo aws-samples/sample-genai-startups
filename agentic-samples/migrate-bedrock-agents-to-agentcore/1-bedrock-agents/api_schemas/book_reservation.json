@@ -1,0 +1,91 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Reservation Booking API",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/reservations": {
+      "post": {
+        "operationId": "bookReservation",
+        "summary": "Book a private jet reservation",
+        "description": "Creates a new flight reservation for the owner and their passengers.",
+        "parameters": [
+          {
+            "name": "ownerId",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Unique identifier of the jet owner."
+          },
+          {
+            "name": "firstname",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "First name of the primary passenger."
+          },
+          {
+            "name": "lastname",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Last name of the primary passenger."
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Flight date and time in ISO 8601 format."
+          },
+          {
+            "name": "departureAirport",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "ICAO code of the departure airport (e.g. KJFK)."
+          },
+          {
+            "name": "arrivalAirport",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "ICAO code of the arrival airport (e.g. KMCO for Orlando)."
+          },
+          {
+            "name": "passengers",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "JSON-encoded array of additional passenger objects with firstname, lastname, and age."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Reservation confirmed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "confirmationId": { "type": "string" },
+                    "ownerId": { "type": "string" },
+                    "primaryPassenger": { "type": "string" },
+                    "date": { "type": "string" },
+                    "departure": { "type": "string" },
+                    "arrival": { "type": "string" },
+                    "passengers": { "type": "array", "items": { "type": "object" } },
+                    "totalPassengers": { "type": "integer" },
+                    "status": { "type": "string" },
+                    "bookedAt": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

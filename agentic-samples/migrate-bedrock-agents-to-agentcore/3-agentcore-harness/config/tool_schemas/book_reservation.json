@@ -1,0 +1,39 @@
+[
+  {
+    "name": "book_reservation",
+    "description": "Book a private jet reservation for the owner and their passengers.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "ownerId": {"type": "string"},
+        "firstname": {"type": "string"},
+        "lastname": {"type": "string"},
+        "date": {
+          "type": "string",
+          "description": "Flight date and time in ISO 8601 format."
+        },
+        "departureAirport": {
+          "type": "string",
+          "description": "ICAO code, e.g. KJFK."
+        },
+        "arrivalAirport": {
+          "type": "string",
+          "description": "ICAO code, e.g. KMCO."
+        },
+        "passengers": {
+          "type": "array",
+          "items": {"type": "object"},
+          "description": "Additional passenger objects with firstname, lastname, and age."
+        }
+      },
+      "required": [
+        "ownerId",
+        "firstname",
+        "lastname",
+        "date",
+        "departureAirport",
+        "arrivalAirport"
+      ]
+    }
+  }
+]

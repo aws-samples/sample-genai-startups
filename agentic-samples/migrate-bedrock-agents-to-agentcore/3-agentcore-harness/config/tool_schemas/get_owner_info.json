@@ -1,0 +1,16 @@
+[
+  {
+    "name": "get_owner_info",
+    "description": "Retrieve the profile of a private jet owner — name and home airport — by owner ID.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "owner_id": {
+          "type": "string",
+          "description": "Unique identifier of the jet owner (UUID format)."
+        }
+      },
+      "required": ["owner_id"]
+    }
+  }
+]

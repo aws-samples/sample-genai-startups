@@ -1,0 +1,16 @@
+[
+  {
+    "name": "get_passengers",
+    "description": "List the family members and registered passengers associated with an owner.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "owner_id": {
+          "type": "string",
+          "description": "Unique identifier of the jet owner (UUID format)."
+        }
+      },
+      "required": ["owner_id"]
+    }
+  }
+]

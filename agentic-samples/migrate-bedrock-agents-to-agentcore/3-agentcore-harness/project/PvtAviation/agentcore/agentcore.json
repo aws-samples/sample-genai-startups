@@ -1,0 +1,57 @@
+{
+  "$schema": "https://schema.agentcore.aws.dev/v1/agentcore.json",
+  "name": "PvtAviation",
+  "version": 1,
+  "managedBy": "CDK",
+  "tags": {
+    "agentcore:created-by": "agentcore-cli",
+    "agentcore:project-name": "PvtAviation"
+  },
+  "runtimes": [],
+  "memories": [],
+  "credentials": [],
+  "evaluators": [],
+  "onlineEvalConfigs": [],
+  "agentCoreGateways": [
+    {
+      "name": "aviation-tools",
+      "description": "Exposes private-aviation Lambdas as MCP tools",
+      "targets": [
+        {
+          "name": "get-owner-info",
+          "targetType": "lambdaFunctionArn",
+          "lambdaFunctionArn": {
+            "lambdaArn": "arn:aws:lambda:us-east-1:123456789012:function:PrivateAviationHarness-get_owner_info",
+            "toolSchemaFile": "config/tool_schemas/get_owner_info.json"
+          }
+        },
+        {
+          "name": "get-passengers",
+          "targetType": "lambdaFunctionArn",
+          "lambdaFunctionArn": {
+            "lambdaArn": "arn:aws:lambda:us-east-1:123456789012:function:PrivateAviationHarness-get_passengers",
+            "toolSchemaFile": "config/tool_schemas/get_passengers.json"
+          }
+        },
+        {
+          "name": "book-reservation",
+          "targetType": "lambdaFunctionArn",
+          "lambdaFunctionArn": {
+            "lambdaArn": "arn:aws:lambda:us-east-1:123456789012:function:PrivateAviationHarness-book_reservation",
+            "toolSchemaFile": "config/tool_schemas/book_reservation.json"
+          }
+        }
+      ],
+      "authorizerType": "NONE",
+      "enableSemanticSearch": false,
+      "exceptionLevel": "NONE"
+    }
+  ],
+  "policyEngines": [],
+  "harnesses": [
+    {
+      "name": "PvtAviation",
+      "path": "app/PvtAviation"
+    }
+  ]
+}

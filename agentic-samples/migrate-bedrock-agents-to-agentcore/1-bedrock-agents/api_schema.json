@@ -1,0 +1,170 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Private Aviation Reservation API",
+    "version": "1.0.0",
+    "description": "APIs for managing private jet owner information, passengers, and flight reservations."
+  },
+  "paths": {
+    "/owners/{ownerId}": {
+      "get": {
+        "operationId": "getOwnerInfo",
+        "summary": "Get owner information by owner ID",
+        "description": "Retrieves the profile of a private jet owner including their name and home airport.",
+        "parameters": [
+          {
+            "name": "ownerId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Unique identifier of the jet owner (UUID format)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Owner information retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "string", "description": "Owner ID" },
+                    "firstname": { "type": "string", "description": "Owner first name" },
+                    "lastname": { "type": "string", "description": "Owner last name" },
+                    "homeAirport": { "type": "string", "description": "ICAO code of the owner's home airport (e.g. KJFK)" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/owners/{ownerId}/passengers": {
+      "get": {
+        "operationId": "getPassengers",
+        "summary": "Get passengers associated with an owner",
+        "description": "Retrieves the list of family members and registered passengers for a jet owner.",
+        "parameters": [
+          {
+            "name": "ownerId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Unique identifier of the jet owner (UUID format)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Passenger list retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ownerId": { "type": "string" },
+                    "passengers": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "firstname": { "type": "string" },
+                          "lastname": { "type": "string" },
+                          "homeAirport": { "type": "string" },
+                          "ownerRelationship": { "type": "string", "description": "Relationship to the owner (e.g. Wife, Daughter, Son)" },
+                          "age": { "type": "integer" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reservations": {
+      "post": {
+        "operationId": "bookReservation",
+        "summary": "Book a private jet reservation",
+        "description": "Creates a new flight reservation for the owner and their passengers.",
+        "parameters": [
+          {
+            "name": "ownerId",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Unique identifier of the jet owner."
+          },
+          {
+            "name": "firstname",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "First name of the primary passenger."
+          },
+          {
+            "name": "lastname",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Last name of the primary passenger."
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Flight date and time in ISO 8601 format."
+          },
+          {
+            "name": "departureAirport",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "ICAO code of the departure airport (e.g. KJFK)."
+          },
+          {
+            "name": "arrivalAirport",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "ICAO code of the arrival airport (e.g. KMCO for Orlando)."
+          },
+          {
+            "name": "passengers",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "JSON-encoded array of additional passenger objects with firstname, lastname, and age."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Reservation confirmed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "confirmationId": { "type": "string", "description": "Unique reservation confirmation ID" },
+                    "ownerId": { "type": "string" },
+                    "primaryPassenger": { "type": "string" },
+                    "date": { "type": "string" },
+                    "departure": { "type": "string" },
+                    "arrival": { "type": "string" },
+                    "passengers": { "type": "array", "items": { "type": "object" } },
+                    "totalPassengers": { "type": "integer" },
+                    "status": { "type": "string" },
+                    "bookedAt": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

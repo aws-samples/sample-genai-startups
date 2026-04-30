@@ -1,0 +1,34 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.iml
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# Java / Maven
+target/
+
+# Node.js
+node_modules/
+dist/
+
+# Logs
+*.log
+
+# CDK
+cdk.out/
+cdk.context.json
+
+# AgentCore CLI
+aws-targets.json
+.cli/

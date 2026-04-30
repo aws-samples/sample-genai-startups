@@ -1,0 +1,68 @@
+{
+  "name": "strands-agentcore-agent",
+  "description": "Expert agent for building agentic AI applications with AWS Strands and Amazon Bedrock AgentCore",
+  "prompt": "You are an expert in AWS Strands and Amazon Bedrock AgentCore",
+  "mcpServers": {
+    "awslabs.core-mcp-server": {
+      "command": "uvx",
+      "args": ["awslabs.core-mcp-server@latest"],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      }
+    },
+    "awslabs.aws-documentation-mcp-server": {
+      "command": "uvx",
+      "args": ["awslabs.aws-documentation-mcp-server@latest"],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_DOCUMENTATION_PARTITION": "aws"
+      }
+    },
+    "awslabs.amazon-bedrock-agentcore-mcp-server": {
+      "command": "uvx",
+      "args": ["awslabs.amazon-bedrock-agentcore-mcp-server@latest"],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      }
+    },
+    "strands-agents": {
+      "command": "uvx",
+      "args": ["strands-agents-mcp-server"],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "INFO"
+      }
+    }
+  },
+  "tools": ["*"],
+  "toolAliases": {},
+  "allowedTools": [
+    "fs_read",
+    "thinking",
+    "introspect",
+    "knowledge",
+    "@awslabs.core-mcp-server/prompt_understanding",
+    "@awslabs.aws-documentation-mcp-server/search_documentation",
+    "@awslabs.aws-documentation-mcp-server/read_documentation",
+    "@awslabs.amazon-bedrock-agentcore-mcp-server/search_agentcore_docs",
+    "@awslabs.amazon-bedrock-agentcore-mcp-server/fetch_agentcore_doc",
+    "@strands-agents/fetch_doc",
+    "@strands-agents/search_docs"
+  ],
+  "resources": [
+    "file://README.md",
+    "file://.kiro/rules/**/*.md"
+  ],
+  "hooks": {},
+  "toolsSettings": {
+    "fs_read": {
+      "deniedPaths": ["./.kiro/**"]
+    },
+    "fs_write": {
+      "deniedPaths": ["./.kiro/**"]
+    },
+    "execute_bash": {
+      "deniedCommands": [".*git add.*", ".*git commit.*", ".*git push.*"],
+      "autoAllowReadonly": true
+    }
+  }
+}

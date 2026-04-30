@@ -1,0 +1,17 @@
+{
+  "name": "SimpleVercelAgent",
+  "version": 1,
+  "agents": [
+    {
+      "type": "AgentCoreRuntime",
+      "name": "VercelAgent",
+      "build": "Container",
+      "entrypoint": "src/index.ts",
+      "codeLocation": "app/VercelAgent/",
+      "networkMode": "PUBLIC",
+      "modelProvider": "Bedrock"
+    }
+  ],
+  "memories": [],
+  "credentials": []
+}

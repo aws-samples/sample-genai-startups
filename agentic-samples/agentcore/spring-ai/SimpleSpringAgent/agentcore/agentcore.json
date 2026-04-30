@@ -1,0 +1,16 @@
+{
+  "name": "SimpleSpringAgent",
+  "version": 1,
+  "agents": [
+    {
+      "type": "AgentCoreRuntime",
+      "name": "SpringAgent",
+      "build": "Container",
+      "codeLocation": "app/SpringAgent/",
+      "networkMode": "PUBLIC",
+      "modelProvider": "Bedrock"
+    }
+  ],
+  "memories": [],
+  "credentials": []
+}

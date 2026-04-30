@@ -1,0 +1,16 @@
+{
+  "name": "SimpleClaudeAgent",
+  "version": 1,
+  "agents": [
+    {
+      "type": "AgentCoreRuntime",
+      "name": "ClaudeAgent",
+      "build": "Container",
+      "codeLocation": "app/ClaudeAgent/",
+      "networkMode": "PUBLIC",
+      "modelProvider": "Bedrock"
+    }
+  ],
+  "memories": [],
+  "credentials": []
+}

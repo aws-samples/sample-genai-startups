@@ -1,0 +1,15 @@
+# Gitleaks ignore file - suppress false positives for documentation examples
+
+# README.md contains example credentials for documentation purposes only
+README.md:108
+README.md:149
+README.md:547
+README.md:548
+README.md:642
+README.md:643
+
+# Files that don't exist in the repository
+upload_image.py:13
+agentcore-integration/MCPifying_Applications_with_AgentCore_Gateway.md:488
+agentcore-integration/MCPifying_Applications_with_AgentCore_Gateway.md:489
+

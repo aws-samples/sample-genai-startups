@@ -66,9 +66,8 @@ LICENSE                 MIT-0
 - AWS CLI configured with credentials
 - Python 3.10 or later
 - AWS CDK CLI (`npm install -g aws-cdk`)
-- [AgentCore CLI](https://www.npmjs.com/package/@aws/agentcore) for Phase 2 (`npm install -g @aws/agentcore`)
 - [AgentCore CLI preview](https://www.npmjs.com/package/@aws/agentcore) for Phase 3 (`npm install -g @aws/agentcore@preview`, v1.0.0-preview or later for first-class Harness support)
-- Access to Claude Sonnet 4 on Amazon Bedrock
+- Access to Claude Sonnet 4.6 on Amazon Bedrock
 - AgentCore Harness preview access (Phase 3) in one of: `us-east-1`, `us-west-2`, `ap-southeast-2`, `eu-central-1`
 
 All three phases default to `us-east-1`.
@@ -136,9 +135,3 @@ Teardown: see [`3-agentcore-harness/README.md#clean-up`](3-agentcore-harness/REA
 ```bash
 agentcore traces list --last 1h
 ```
-
----
-
-## License
-
-This sample is licensed under the terms of the [MIT-0 License](LICENSE).

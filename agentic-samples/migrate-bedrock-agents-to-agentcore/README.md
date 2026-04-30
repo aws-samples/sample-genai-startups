@@ -6,7 +6,7 @@ A single agent, rebuilt three times, to make the evolution of agent development 
 2. **Amazon Bedrock AgentCore Runtime (2025)** — bring-your-own-agent on a managed runtime; your code, your loop, every Bedrock feature and every model provider
 3. **Amazon Bedrock AgentCore Harness (2026, preview)** — managed loop with a configurable ceiling; declarative by default, custom containers and shell access when the workload needs them
 
-> A companion blog post walks through the evolution and the architectural trade-offs in depth. **Link will be added here once published.**
+> A companion [blog post](https://mahadhir.substack.com/p/evolving-agent-development-on-aws) walks through the evolution and the architectural trade-offs in depth.
 
 ---
 

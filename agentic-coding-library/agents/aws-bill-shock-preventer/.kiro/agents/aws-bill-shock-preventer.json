@@ -1,0 +1,48 @@
+{
+  "name": "aws-bill-shock-preventer",
+  "description": "Scans your AWS account for cost waste, idle resources, right-sizing opportunities, and missing governance — then provides a prioritized savings report",
+  "prompt": "file://../context/aws-bill-shock-preventer/prompt.md",
+  "tools": [
+    "read",
+    "write",
+    "aws",
+    "thinking"
+  ],
+  "allowedTools": [
+    "read",
+    "write",
+    "aws",
+    "thinking"
+  ],
+  "toolsSettings": {
+    "write": {
+      "allowedPaths": ["result.json", "reports/report-*.md"]
+    },
+    "aws": {
+      "autoAllowReadonly": true
+    }
+  },
+  "resources": [
+    "file://.kiro/context/aws-bill-shock-preventer/prompt.md",
+    "file://.kiro/context/aws-bill-shock-preventer/cost-reference.md",
+    "file://.kiro/context/aws-bill-shock-preventer/execution-rules.md",
+    "file://.kiro/context/aws-bill-shock-preventer/guidelines.md",
+    "file://.kiro/context/aws-bill-shock-preventer/startup-patterns.md"
+  ],
+  "hooks": {
+    "agentSpawn": [
+      {
+        "command": "aws sts get-caller-identity --output json 2>&1 || echo '{\"error\": \"No valid AWS credentials found\"}'",
+        "timeout_ms": 5000
+      }
+    ],
+    "preToolUse": [
+      {
+        "command": "echo \"$(date -u +%Y-%m-%dT%H:%M:%SZ) - Tool invoked\" >> /tmp/bill-shock-audit.log"
+      }
+    ]
+  },
+  "includeMcpJson": false,
+  "model": "claude-sonnet-4.6",
+  "welcomeMessage": "I'll scan your AWS account for cost waste and bill shock risks. Which region should I analyze?"
+}

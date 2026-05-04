@@ -1,0 +1,12 @@
+[project]
+name = "aws-multi-account-mcp"
+version = "0.1.0"
+description = "MCP server for AWS multi-account migration workload discovery and dependency analysis"
+requires-python = ">=3.10"
+dependencies = ["mcp[cli]>=1.24.0", "boto3>=1.34.0"]
+
+[project.scripts]
+aws-multi-account-mcp = "aws_multi_account_mcp.server:main"
+
+[tool.uv]
+package = true

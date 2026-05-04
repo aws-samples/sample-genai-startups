@@ -1,0 +1,13 @@
+{
+  "name": "Verify MCP Tool Allowlist",
+  "version": "1.0.0",
+  "description": "Blocks MCP tool calls that are not in the allowed set for the multi-account-architect agent",
+  "when": {
+    "type": "preToolUse",
+    "toolTypes": ["@aws-multi-account.*"]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Verify this MCP tool call is within the allowed set: audit_workloads, check_dependencies, get_migration_state, update_migration_state, write_migration_report. Block anything else."
+  }
+}

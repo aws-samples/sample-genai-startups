@@ -1,0 +1,35 @@
+{
+  "name" : "aws-db-advisor",
+  "description" : "Expert AWS database advisor for architecture, selection, migration, cost optimisation, HA/DR, and performance tuning. Covers Aurora PostgreSQL, RDS, DynamoDB, ElastiCache/Valkey, OpenSearch, DocumentDB, Neptune, MemoryDB, DSQL, and heterogeneous migrations (Oracle, MSSQL).",
+  "prompt" : "file://POWER.md",
+  "mcpServers" : {
+    "aws-knowledge-mcp-server" : {
+      "command" : "npx",
+      "args" : [ "mcp-remote@0.1.38", "https://knowledge-mcp.global.api.aws" ],
+      "disabled" : false,
+      "timeout" : 15000
+    }
+  },
+  "tools" : [ "read", "write", "@aws-knowledge-mcp-server" ],
+  "allowedTools" : [ "read", "write", "@aws-knowledge-mcp-server/aws___get_regional_availability", "@aws-knowledge-mcp-server/aws___list_regions", "@aws-knowledge-mcp-server/aws___read_documentation", "@aws-knowledge-mcp-server/aws___recommend", "@aws-knowledge-mcp-server/aws___search_documentation" ],
+  "toolsSettings" : {
+    "write" : {
+      "allowedPaths" : [ "./output/**", "./result.json" ],
+      "requireConfirmation" : true
+    }
+  },
+  "hooks" : {
+    "preToolUse" : [ {
+      "matcher" : "*",
+      "command" : "echo \"[$(date -u +%Y-%m-%dT%H:%M:%SZ)] TOOL_CALL: $(cat)\" >> .kiro/audit.log"
+    }, {
+      "matcher" : "fs_write",
+      "command" : "echo \"[$(date -u +%Y-%m-%dT%H:%M:%SZ)] WRITE: $(cat)\" >> .kiro/audit.log"
+    } ],
+    "postToolUse" : [ {
+      "matcher" : "*",
+      "command" : "echo \"[$(date -u +%Y-%m-%dT%H:%M:%SZ)] TOOL_COMPLETE\" >> .kiro/audit.log"
+    } ]
+  },
+  "resources" : [ "file://.kiro/context/aws-db-advisor/aurora-architecture.md", "file://.kiro/context/aws-db-advisor/aws-database-essentials.md", "file://.kiro/context/aws-db-advisor/connectivity-and-proxy.md", "file://.kiro/context/aws-db-advisor/cost-optimisation.md", "file://.kiro/context/aws-db-advisor/decision-matrix.md", "file://.kiro/context/aws-db-advisor/decoupling-and-patterns.md", "file://.kiro/context/aws-db-advisor/elasticache-and-valkey.md", "file://.kiro/context/aws-db-advisor/ha-and-dr.md", "file://.kiro/context/aws-db-advisor/migration.md", "file://.kiro/context/aws-db-advisor/migration-mssql-to-postgresql.md", "file://.kiro/context/aws-db-advisor/migration-oracle-to-rds.md", "file://.kiro/context/aws-db-advisor/multi-tenant.md", "file://.kiro/context/aws-db-advisor/performance-and-operations.md", "file://.kiro/context/aws-db-advisor/upgrades.md", "file://.kiro/context/aws-db-advisor/vector-and-ai.md" ]
+}

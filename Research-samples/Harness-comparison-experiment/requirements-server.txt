@@ -1,0 +1,4 @@
+# Optional backend for the live negotiation path (server.py).
+# The front end runs fully offline in replay mode without these.
+fastapi>=0.110
+uvicorn[standard]>=0.29

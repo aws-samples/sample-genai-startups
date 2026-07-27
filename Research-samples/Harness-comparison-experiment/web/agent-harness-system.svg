@@ -1,0 +1,91 @@
+<svg width="1600" height="1600" viewBox="0 0 1600 1600" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="160" y1="120" x2="1440" y2="1480" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F8F1E7"/>
+      <stop offset="1" stop-color="#E7EEF5"/>
+    </linearGradient>
+    <radialGradient id="coreGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(800 800) rotate(90) scale(220)">
+      <stop stop-color="#FFB58A" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#FFB58A" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="shadow" x="0" y="0" width="1600" height="1600" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="18" stdDeviation="24" flood-color="#1F2A37" flood-opacity="0.12"/>
+    </filter>
+    <filter id="softShadow" x="0" y="0" width="1600" height="1600" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="8" stdDeviation="14" flood-color="#1F2A37" flood-opacity="0.10"/>
+    </filter>
+    <style>
+      .title { font: 700 54px Georgia, 'Times New Roman', serif; fill: #172033; }
+      .subtitle { font: 400 24px Georgia, 'Times New Roman', serif; fill: #516079; }
+      .ringLabel { font: 700 24px Arial, Helvetica, sans-serif; letter-spacing: 0.22em; fill: #6B7A90; }
+      .coreLabel { font: 700 48px Arial, Helvetica, sans-serif; letter-spacing: 0.18em; fill: #7A1D1D; }
+      .pillTitle { font: 700 28px Arial, Helvetica, sans-serif; fill: #142033; }
+      .pillBody { font: 400 22px Arial, Helvetica, sans-serif; fill: #4A5870; }
+      .smallTag { font: 700 18px Arial, Helvetica, sans-serif; letter-spacing: 0.18em; fill: #A55D3B; }
+    </style>
+  </defs>
+
+  <rect width="1600" height="1600" fill="url(#bg)"/>
+
+  <text x="800" y="108" text-anchor="middle" class="title">The Model Is The Core. The Harness Makes It A System.</text>
+  <text x="800" y="150" text-anchor="middle" class="subtitle">A model sits at the center; the harness is the engineered layer around it.</text>
+
+  <g filter="url(#shadow)">
+    <circle cx="800" cy="800" r="470" fill="#F6F8FB" stroke="#D6DEE8" stroke-width="2"/>
+    <circle cx="800" cy="800" r="355" fill="#FFFFFF" stroke="#DCE4ED" stroke-width="2"/>
+    <circle cx="800" cy="800" r="228" fill="#FFF9F4" stroke="#EFC9AF" stroke-width="3"/>
+    <circle cx="800" cy="800" r="170" fill="url(#coreGlow)"/>
+    <circle cx="800" cy="800" r="136" fill="#FFF3EB" stroke="#E89E73" stroke-width="4"/>
+  </g>
+
+  <text x="800" y="470" text-anchor="middle" class="ringLabel">AGENT SYSTEM</text>
+  <text x="800" y="585" text-anchor="middle" class="ringLabel">HARNESS</text>
+
+  <text x="800" y="877" text-anchor="middle" class="coreLabel">MODEL</text>
+
+  <g filter="url(#softShadow)">
+    <g transform="translate(800 275)">
+      <line x1="0" y1="94" x2="0" y2="170" stroke="#C8D2DE" stroke-width="4" stroke-linecap="round"/>
+      <rect x="-180" y="0" width="360" height="98" rx="28" fill="#FFFFFF" stroke="#D6DEE8" stroke-width="2"/>
+      <text x="0" y="40" text-anchor="middle" class="pillTitle">Tools</text>
+      <text x="0" y="69" text-anchor="middle" class="pillBody">calculator, validators, APIs</text>
+    </g>
+
+    <g transform="translate(1185 438)">
+      <line x1="-73" y1="73" x2="-126" y2="126" stroke="#C8D2DE" stroke-width="4" stroke-linecap="round"/>
+      <rect x="0" y="0" width="340" height="98" rx="28" fill="#FFFFFF" stroke="#D6DEE8" stroke-width="2"/>
+      <text x="170" y="40" text-anchor="middle" class="pillTitle">Verification Loop</text>
+      <text x="170" y="69" text-anchor="middle" class="pillBody">check, retry, commit gates</text>
+    </g>
+
+    <g transform="translate(1215 988)">
+      <line x1="-77" y1="25" x2="-154" y2="50" stroke="#C8D2DE" stroke-width="4" stroke-linecap="round"/>
+      <rect x="0" y="0" width="300" height="98" rx="28" fill="#FFFFFF" stroke="#D6DEE8" stroke-width="2"/>
+      <text x="150" y="40" text-anchor="middle" class="pillTitle">Observability</text>
+      <text x="150" y="69" text-anchor="middle" class="pillBody">traces, logs, replay</text>
+    </g>
+
+    <g transform="translate(800 1218)">
+      <line x1="0" y1="-72" x2="0" y2="-146" stroke="#C8D2DE" stroke-width="4" stroke-linecap="round"/>
+      <rect x="-230" y="0" width="460" height="98" rx="28" fill="#FFFFFF" stroke="#D6DEE8" stroke-width="2"/>
+      <text x="0" y="40" text-anchor="middle" class="pillTitle">Safety &amp; Human-in-the-Loop</text>
+      <text x="0" y="69" text-anchor="middle" class="pillBody">approval boundaries, escalation, oversight</text>
+    </g>
+
+    <g transform="translate(255 988)">
+      <line x1="77" y1="25" x2="154" y2="50" stroke="#C8D2DE" stroke-width="4" stroke-linecap="round"/>
+      <rect x="0" y="0" width="350" height="98" rx="28" fill="#FFFFFF" stroke="#D6DEE8" stroke-width="2"/>
+      <text x="175" y="40" text-anchor="middle" class="pillTitle">Context Management</text>
+      <text x="175" y="69" text-anchor="middle" class="pillBody">selection, truncation, retrieval</text>
+    </g>
+
+    <g transform="translate(188 438)">
+      <line x1="73" y1="73" x2="126" y2="126" stroke="#C8D2DE" stroke-width="4" stroke-linecap="round"/>
+      <rect x="0" y="0" width="355" height="98" rx="28" fill="#FFFFFF" stroke="#D6DEE8" stroke-width="2"/>
+      <text x="177.5" y="40" text-anchor="middle" class="pillTitle">State &amp; Memory</text>
+      <text x="177.5" y="69" text-anchor="middle" class="pillBody">working memory, summaries, history</text>
+    </g>
+  </g>
+
+  <text x="800" y="1468" text-anchor="middle" class="smallTag">MODEL × HARNESS = AGENT CAPABILITY</text>
+</svg>

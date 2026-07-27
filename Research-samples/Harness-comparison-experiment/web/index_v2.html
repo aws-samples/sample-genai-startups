@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>BAZAAR-80 — the harness makes the trader</title>
+<style>
+  :root{
+    --bg:#0b0420; --panel:#15093a; --ink:#e8e6ff; --dim:#9a8fd0;
+    --cyan:#2ff3e0; --mag:#f000ff; --yel:#ffe600; --grn:#39ff14; --red:#ff3864; --org:#ff9e3d;
+    --good:#39ff14; --raw:#2ff3e0; --bad:#ff3864;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:"Courier New",ui-monospace,Menlo,Consolas,monospace;
+    letter-spacing:.5px; overflow-x:hidden;
+  }
+  /* CRT scanlines + vignette */
+  body::after{
+    content:""; position:fixed; inset:0; pointer-events:none; z-index:999;
+    background:repeating-linear-gradient(0deg,rgba(0,0,0,.18) 0 1px,transparent 1px 3px);
+    mix-blend-mode:multiply;
+  }
+  body::before{
+    content:""; position:fixed; inset:0; pointer-events:none; z-index:998;
+    background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.55) 100%);
+  }
+  .wrap{max-width:1000px;margin:0 auto;padding:16px 16px 50px}
+  .blink{animation:blink 1s steps(2,start) infinite}
+  @keyframes blink{to{visibility:hidden}}
+
+  /* ---- header: tight, one hook line ---- */
+  .top{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:4px}
+  h1{font-size:30px;margin:0;color:var(--yel);
+    text-shadow:3px 3px 0 var(--mag),5px 5px 0 rgba(0,0,0,.5);letter-spacing:3px}
+  .mode{font-size:15px;color:var(--mag);letter-spacing:2px;align-self:center}
+  .hook{color:var(--cyan);font-size:14px;margin:2px 0 14px;line-height:1.4}
+  .hook b{color:var(--yel)}
+
+  /* GOAL callout — answers "what am I rooting for?" at a glance */
+  .goal{border:2px solid var(--grn);border-radius:6px;background:#0d2410;
+    padding:10px 13px;margin:0 0 14px;font-size:13px;line-height:1.5;color:var(--ink)}
+  .goal .gt{display:inline-block;background:var(--grn);color:#062b00;font-weight:bold;
+    font-size:11px;letter-spacing:1px;padding:2px 7px;border-radius:3px;margin-right:8px}
+  .goal b{color:var(--grn)}
+  .goal .knob{display:block;margin:5px 0 0 14px;color:#cfe9c2;font-size:12.5px}
+  .goal .knob b{color:var(--yel)}
+  .goal .warn{display:block;margin:8px 0 0;color:var(--org);font-size:12.5px}
+  .goal .warn b{color:var(--org)}
+
+  /* collapsible "how it works" — keeps the wall of text out of the way */
+  details.how{margin:0 0 16px;border:2px solid #3a2a6e;border-radius:5px;background:#0e0630}
+  details.how summary{cursor:pointer;padding:8px 12px;font-size:12px;color:var(--dim);letter-spacing:1px;list-style:none}
+  details.how summary::-webkit-details-marker{display:none}
+  details.how summary::before{content:"\25B8 ";color:var(--cyan)}
+  details.how[open] summary::before{content:"\25BE "}
+  details.how .body{padding:0 14px 12px;font-size:12.5px;line-height:1.6;color:var(--ink)}
+  details.how .body b{color:var(--cyan)}
+  details.how .body p{margin:6px 0}
+
+  .card{background:var(--panel);border:3px solid var(--cyan);border-radius:6px;
+    box-shadow:0 0 0 3px rgba(0,0,0,.4),0 8px 0 rgba(0,0,0,.35);padding:14px}
+
+  /* ---- step labels ---- */
+  .step{font-size:12px;color:var(--yel);letter-spacing:2px;margin:2px 0 8px;display:flex;align-items:center;gap:8px}
+  .step .n{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;
+    border-radius:50%;background:var(--yel);color:#1a1206;font-size:12px;font-weight:bold}
+
+  /* ---- harness picker: 4 cards, the only choice ---- */
+  .pick{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:8px}
+  @media(max-width:760px){.pick{grid-template-columns:repeat(2,1fr)}}
+  .opt{cursor:pointer;border:2px solid #3a2a6e;border-radius:6px;background:#0e0630;
+    padding:11px 11px 13px;transition:transform .08s,border-color .1s,box-shadow .1s;position:relative}
+  .opt:hover{transform:translateY(-3px);border-color:var(--ink)}
+  .opt.sel{border-color:var(--yel);box-shadow:0 0 14px rgba(255,230,0,.4)}
+  .opt .sz{font-size:11px;color:var(--dim);letter-spacing:1px}
+  .opt .mdl{font-size:13px;color:var(--ink);margin:3px 0 8px;line-height:1.3;min-height:32px}
+  .opt .hb{display:inline-block;padding:3px 8px;border-radius:3px;font-size:11px;font-weight:bold}
+  .hb.good{background:var(--good);color:#062b00} .hb.default{background:var(--cyan);color:#012b29}
+  .hb.raw{background:#3a2a6e;color:var(--ink)} .hb.bad{background:var(--bad);color:#2b000a}
+  .opt .tip{font-size:10.5px;color:var(--dim);margin-top:7px;line-height:1.35}
+
+  /* ---- VS strip (compact, supporting) ---- */
+  .vs{display:grid;grid-template-columns:1fr 50px 1fr;align-items:center;gap:8px;margin:14px 0 10px}
+  .fighter{padding:9px 11px;border:2px solid var(--ink);border-radius:6px;background:#0e0630}
+  .fighter.seller{border-color:var(--grn)} .fighter.buyer{border-color:var(--raw)}
+  .fighter .who{font-size:10px;color:var(--dim);letter-spacing:1px}
+  .fighter .nm{font-size:14px;color:var(--ink);margin-top:2px}
+  .fighter .hb{margin-top:6px}
+  .vsmid{font-size:22px;color:var(--mag);text-align:center;text-shadow:2px 2px 0 #000}
+
+  /* ---- pipeline ---- */
+  .pipe{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:4px 0 10px;min-height:36px}
+  .stn{padding:6px 8px;border:2px solid #3a2a6e;border-radius:4px;font-size:11px;color:var(--dim);
+    background:#0e0630;transition:all .15s}
+  .stn.on{color:#001;background:var(--cyan);border-color:#fff;box-shadow:0 0 12px var(--cyan)}
+  .stn.good.on{background:var(--good);box-shadow:0 0 12px var(--good)}
+  .stn.err{background:var(--red);color:#fff;border-color:#fff;box-shadow:0 0 14px var(--red);animation:shake .25s}
+  @keyframes shake{25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
+  .arrow{color:#5a4a9e}
+
+  /* ---- dialogue stage: the STAR ---- */
+  .stage{min-height:300px;display:flex;flex-direction:column;gap:8px;padding:6px 2px}
+  .bub{max-width:80%;padding:9px 12px;border-radius:10px;font-size:14px;line-height:1.45;
+    animation:pop .2s;position:relative;cursor:pointer}
+  @keyframes pop{from{transform:scale(.9);opacity:0}}
+  .bub.s{align-self:flex-start;background:#10371a;border:2px solid var(--grn)}
+  .bub.b{align-self:flex-end;background:#0d2f3a;border:2px solid var(--raw)}
+  .bub .lab{font-size:10px;color:var(--dim);margin-bottom:3px}
+  .bub .deal{font-size:12px;color:var(--yel);margin-top:5px}
+  .bub.glitch{border-style:dashed;border-color:var(--red)}
+  .bub .peek{position:absolute;top:4px;right:8px;font-size:10px;color:var(--cyan)}
+
+  /* thinking panel (prose is the star) */
+  .think{align-self:flex-start;max-width:86%;background:#1a1206;border:2px dashed var(--org);
+    border-radius:10px;padding:10px 13px;animation:pop .2s}
+  .think .thd{font-size:10px;color:var(--org);letter-spacing:1px;margin-bottom:7px}
+  .think .thd .cur{animation:blink 1s steps(2,start) infinite}
+  .think .line{color:#fff3df;font-size:14.5px;line-height:1.55;margin:7px 0;opacity:0;animation:fadein .4s forwards}
+  .think .line::before{content:"\203A ";color:var(--org)}
+  .think .tcall{color:#7fa8a3;font-size:10.5px;margin:2px 0 2px 6px;opacity:0;animation:fadein .3s forwards}
+  .think .tcall b{color:#9a8fd0} .think .tcall .res{color:#6fae5a}
+  @keyframes fadein{to{opacity:1}}
+  /* one-shot output */
+  .think.raw{background:#06222a;border-color:var(--raw)}
+  .think.raw .thd{color:var(--raw)}
+  .think.raw .oneshot{color:#bdeee9;font-size:13px;line-height:1.5;margin:6px 0 0;white-space:pre-wrap;opacity:0;animation:fadein .4s forwards}
+  .think.raw.bad{background:#2a0610;border-color:var(--bad)}
+  .think.raw.bad .thd{color:var(--bad)} .think.raw.bad .oneshot{color:#ffc9d4}
+
+  /* ---- controls ---- */
+  .btn{font-family:inherit;cursor:pointer;background:#23105e;color:var(--ink);
+    border:2px solid var(--cyan);border-radius:4px;padding:10px 16px;font-size:13px;
+    letter-spacing:1px;box-shadow:0 3px 0 rgba(0,0,0,.5);transition:transform .05s}
+  .btn:hover{background:#30157e} .btn:active{transform:translateY(2px);box-shadow:none}
+  .btn.primary{border-color:var(--yel);color:var(--yel)}
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .spacer{flex:1}
+  .hint{font-size:11px;color:var(--dim)}
+
+  /* ---- scoreboard ---- */
+  .score{margin-top:12px}
+  .score .hl{font-size:20px;color:var(--yel);letter-spacing:1px}
+  .bar{height:24px;background:#0e0630;border:2px solid #3a2a6e;border-radius:3px;position:relative;margin:6px 0;overflow:hidden}
+  .bar > i{position:absolute;left:0;top:0;bottom:0;display:block}
+  .bar .seg.s{background:var(--grn)} .bar .seg.b{background:var(--raw)} .bar .seg.d{background:var(--red)}
+  .bar span{position:absolute;right:8px;top:3px;font-size:12px;color:#fff;text-shadow:1px 1px 0 #000}
+  .lbl{font-size:11px;color:var(--dim);margin-top:6px;line-height:1.5}
+
+  /* modal */
+  .modal{position:fixed;inset:0;background:rgba(2,1,12,.85);display:none;z-index:1000;align-items:center;justify-content:center;padding:20px}
+  .modal.show{display:flex}
+  .modal .box{max-width:680px;max-height:80vh;overflow:auto;width:100%}
+  .modal pre{white-space:pre-wrap;font-size:12px;color:var(--cyan);line-height:1.5}
+  .tool{border-left:3px solid var(--mag);padding:4px 10px;margin:6px 0;font-size:12px;color:var(--ink)}
+  .hidden{display:none}
+  a{color:var(--cyan)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <h1>BAZAAR&#8209;80</h1>
+    <div class="mode">// THE HARNESS MAKES THE TRADER</div>
+  </div>
+  <div class="hook">The buyer opens with an <b>insulting offer</b>. Pick your trader's
+    harness and watch &mdash; does it <b>hold firm and claim the deal</b>, or fold?</div>
+
+  <div class="goal">
+    <span class="gt">GOAL</span>
+    The seller's real objective is to <b>maximize its own cut of the fixed pot</b>, which has two knobs:
+    <span class="knob">&#9656; <b>price</b> &mdash; higher is better (each $1/unit = $300 more for the seller)</span>
+    <span class="knob">&#9656; <b>payment terms</b> &mdash; getting paid now is best; 30 days to pay costs the seller $150, 60 days costs $300</span>
+    <span class="warn">&#9888; but push too hard and the buyer <b>walks</b> &mdash; then both get nothing.</span>
+  </div>
+
+  <details class="how">
+    <summary>HOW IT WORKS</summary>
+    <div class="body">
+      <p>A <b>seller</b> and a <b>buyer</b> split a fixed pot of money on one
+      300-widget order. They trade just two things: the <b>price</b> per unit and the
+      <b>payment terms</b> (pay now, in 30 days, or in 60).</p>
+      <p>Every dollar one side wins, the other loses, and each can <b>walk away</b> to a
+      backup deal. The buyer is a fixed small model with no harness &mdash; <b>you choose
+      the seller's harness</b> below, and that's the only thing that changes.</p>
+    </div>
+  </details>
+
+  <div class="card">
+    <div class="step"><span class="n">1</span> CHOOSE THE SELLER'S HARNESS</div>
+    <div class="pick" id="pick"></div>
+
+    <div class="vs" id="vs" class="hidden">
+      <div class="fighter seller" id="fSeller"></div>
+      <div class="vsmid">VS</div>
+      <div class="fighter buyer" id="fBuyer"></div>
+    </div>
+
+    <div id="arena" class="hidden">
+      <div class="step"><span class="n">2</span> WATCH THE TRADER WORK</div>
+      <div class="pipe" id="pipe"></div>
+      <div class="stage" id="stage"></div>
+
+      <div class="row" style="margin-top:8px">
+        <button class="btn primary" id="runBtn">&#9654; RUN</button>
+        <div class="spacer"></div>
+        <div class="hint" id="hint">press RUN to watch them haggle</div>
+      </div>
+
+      <div class="score hidden" id="score"></div>
+    </div>
+  </div>
+</div>
+
+<!-- scratchpad inspector -->
+<div class="modal" id="modal">
+  <div class="card box">
+    <div class="row"><div style="color:var(--yel);font-size:16px">&#128221; TRADER'S NOTEPAD</div>
+      <div class="spacer"></div><button class="btn" id="closeModal">CLOSE</button></div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<script src="traces.js"></script>
+<script>
+"use strict";
+const DATA = window.BAZAAR_TRACES || {pie:1290, scenarios:{}};
+const PIE = DATA.pie || 1290;
+const SCEN_ID = "anchor_war";                 // v2 is the single "Opening Offer" scenario
+const $ = (id) => document.getElementById(id);
+const el = (tag, cls, html) => { const e=document.createElement(tag); if(cls)e.className=cls; if(html!=null)e.innerHTML=html; return e; };
+
+// The selectable seller cells for the LOWBALL replay. First = "same as buyer"
+// (bare Nova, the ~50/50 mirror baseline).
+const OPTIONS = [
+  {cell:"small+RAW",     mdl:"Small LLM",    tip:"same as the buyer — no harness, just the bare model"},
+  {cell:"small+DEFAULT", mdl:"Small LLM",    tip:"prebuilt harness: tools + agent loop, untuned"},
+  {cell:"small+GOOD",    mdl:"Small LLM",    tip:"engineered harness: tools + verification loop + state and memory"},
+  {cell:"large+GOOD",    mdl:"Frontier LLM", tip:"frontier model + the engineered harness"},
+  {cell:"large+BAD",     mdl:"Frontier LLM", tip:"frontier model + a clumsy guardrail that hurts execution"},
+];
+const PIPE_STATIONS = {
+  good:    ["TOOLS","VERIFICATION","STATE & MEMORY","OFFER"],
+  default: ["TOOLS","OFFER"],
+  raw:     ["MODEL","OFFER"],
+  bad:     ["SAFETY OVERRIDE","MODEL","OFFER"],
+};
+
+let cur = { scen:null, cellLabel:null, playing:false, timers:[], speed:1.8 };  // SLOW (fixed)
+// shuffle-cycle bags per cell: walk a shuffled order of all captured replays,
+// reshuffle when exhausted, so RUN feels live (no immediate repeats).
+const bags = {};
+function nextReplay(cell, label){
+  const pool = (cell.replays && cell.replays.length) ? cell.replays : [cell.replay];
+  if(pool.length === 1) return pool[0];
+  let bag = bags[label];
+  if(!bag || !bag.length){
+    bag = pool.map((_,i)=>i);
+    // Fisher-Yates shuffle
+    for(let i=bag.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [bag[i],bag[j]]=[bag[j],bag[i]]; }
+    // avoid an immediate repeat of the last-shown index across reshuffles
+    if(bags[label+"_last"]!=null && bag[bag.length-1]===bags[label+"_last"] && bag.length>1){
+      [bag[0],bag[bag.length-1]]=[bag[bag.length-1],bag[0]];
+    }
+    bags[label]=bag;
+  }
+  const idx = bag.pop();
+  bags[label+"_last"]=idx;
+  return pool[idx];
+}
+
+/* ---------- boot ---------- */
+function boot(){
+  cur.scen = (DATA.scenarios||{})[SCEN_ID];
+  if(!cur.scen){
+    $("pick").innerHTML = "<div class='card'>Traces not bundled. Run "+
+      "<code>python scripts/validate.py --scenario anchor_war --save-traces</code> "+
+      "then <code>python scripts/bundle_traces.py</code>.</div>";
+    return;
+  }
+  renderPicker();
+}
+
+function renderPicker(){
+  const p = $("pick"); p.innerHTML="";
+  OPTIONS.forEach(opt=>{
+    const cell = cur.scen.cells[opt.cell];
+    if(!cell) return;
+    const kind = cell.seller.kind;
+    const c = el("div","opt");
+    c.dataset.cell = opt.cell;
+    c.appendChild(el("div","sz", cell.seller.size));
+    c.appendChild(el("div","mdl", opt.mdl));
+    c.appendChild(el("span","hb "+kind, cell.seller.harness));
+    c.appendChild(el("div","tip", opt.tip));
+    c.onclick = ()=> selectCell(opt.cell);
+    p.appendChild(c);
+  });
+}
+
+function selectCell(label){
+  cur.cellLabel = label;
+  stopReplay();
+  document.querySelectorAll(".opt").forEach(o=>o.classList.toggle("sel", o.dataset.cell===label));
+  const cell = cur.scen.cells[label];
+  const s = cell.seller, b = cell.buyer;
+  $("fSeller").innerHTML = `<div class="who">SELLER</div><div class="nm">${s.model}</div>`+
+    `<span class="hb ${s.kind}">${s.harness}</span>`;
+  $("fBuyer").innerHTML = `<div class="who">BUYER (fixed opponent)</div><div class="nm">${b.model}</div>`+
+    `<span class="hb raw">${b.harness}</span>`;
+  $("vs").classList.remove("hidden");
+  $("arena").classList.remove("hidden");
+  renderPipe(s.kind, -1, false);
+  $("stage").innerHTML=""; $("score").classList.add("hidden");
+  $("hint").textContent = "press RUN to watch them haggle";
+  $("arena").scrollIntoView({behavior:"smooth", block:"nearest"});
+}
+
+function curCell(){ return cur.scen.cells[cur.cellLabel]; }
+
+/* ---------- pipeline ---------- */
+function renderPipe(kind, activeIdx, err){
+  const p = $("pipe"); p.innerHTML="";
+  const stns = PIPE_STATIONS[kind] || PIPE_STATIONS.raw;
+  stns.forEach((name,i)=>{
+    const on = i<=activeIdx;
+    const cls = "stn "+(kind==="good"?"good ":"")+(on?"on ":"")+(err&&i===activeIdx?"err":"");
+    p.appendChild(el("div",cls.trim(),name));
+    if(i<stns.length-1) p.appendChild(el("span","arrow","&#9656;"));
+  });
+}
+
+function stopReplay(){ cur.playing=false; cur.timers.forEach(clearTimeout); cur.timers=[]; }
+
+/* ---------- reasoning extraction (prose is the star) ---------- */
+function reasoningLines(txt){
+  if(!txt) return [];
+  // strip the committed JSON move (nested braces -> greedy); genuine reasoning
+  // has no braces, so a bare RAW blurt becomes empty (nothing to "think").
+  const prose = txt.replace(/\{[\s\S]*\}/g," ").replace(/\s+/g," ").trim();
+  if(prose.length < 8) return [];
+  return prose.split(/(?<=[.!?])\s+(?=[A-Z0-9"$])/)
+    .map(s=>s.trim()).filter(s=>s.length>3).slice(0,10);
+}
+
+/* ---------- replay ---------- */
+function runReplay(){
+  stopReplay();
+  $("stage").innerHTML=""; $("score").classList.add("hidden");
+  const cell = curCell();
+  // shuffle-cycle: each RUN draws a different real captured negotiation
+  const replay = nextReplay(cell, cur.cellLabel);
+  cur.replay = replay;
+  const ev = replay.events.filter(e=>e.action!=null || e.message);
+  cur.playing=true;
+  const S = cur.speed;
+  let t=0;
+  ev.forEach((e)=>{ cur.timers.push(setTimeout(()=>playEvent(e, cell), t)); t += eventDuration(e)*S; });
+  cur.timers.push(setTimeout(()=>{ showScore(cell, replay.score); cur.playing=false; }, t+250*S));
+  $("hint").textContent = "haggling...";
+}
+
+function eventDuration(e){
+  if(e.side!=="seller") return 1100;
+  const lines = reasoningLines(e.scratchpad).length;
+  const tools = (e.tool_calls||[]).length;
+  return 700 + lines*1500 + tools*220 + 1100;
+}
+
+function playEvent(e, cell){
+  const isSeller = e.side==="seller";
+  const kind = isSeller ? cell.seller.kind : "raw";
+  const S = cur.speed;
+
+  if(isSeller){
+    const stns = PIPE_STATIONS[kind];
+    const err = !!e.glitch || e.invalid;
+    const lines = reasoningLines(e.scratchpad);
+    const tools = e.tool_calls||[];
+    let d = 0;
+
+    if(lines.length || tools.length){
+      const panel = el("div","think");
+      panel.appendChild(el("div","thd","&#128221; "+cell.seller.harness+" &middot; THINKING<span class='cur'>_</span>"));
+      cur.timers.push(setTimeout(()=>{ $("stage").appendChild(panel); scrollStage(); }, d));
+      cur.timers.push(setTimeout(()=>renderPipe(kind,0,false), d));
+      d += 500*S;
+      lines.forEach((ln)=>{
+        cur.timers.push(setTimeout(()=>{ panel.appendChild(el("div","line",escapeHtml(ln))); scrollStage(); }, d));
+        d += 1500*S;
+      });
+      tools.forEach((tc,i)=>{
+        const stnIdx = Math.min(1+i, stns.length-2);
+        cur.timers.push(setTimeout(()=>{
+          renderPipe(kind, stnIdx, false);
+          panel.appendChild(el("div","tcall",
+            `&#128295; <b>${tc.tool}</b>(${escapeHtml(compactArgs(tc.input))}) `+
+            `&rarr; <span class="res">${escapeHtml(compactResult(tc.result))}</span>`));
+          scrollStage();
+        }, d));
+        d += 220*S;
+      });
+    } else {
+      const garbled = !!e.glitch || e.invalid;
+      const hd = kind==="bad"
+        ? "&#9888; "+cell.seller.harness+" &middot; SAFETY OVERRIDE OUTPUT (no harness pipeline)"
+        : "&#9889; "+cell.seller.harness+" &middot; ONE-SHOT OUTPUT (no tools, no verification)";
+      const panel = el("div","think raw"+(kind==="bad"?" bad":""));
+      panel.appendChild(el("div","thd", hd));
+      cur.timers.push(setTimeout(()=>{
+        renderPipe(kind,0,garbled);
+        panel.appendChild(el("pre","oneshot", escapeHtml(oneShotText(e))));
+        $("stage").appendChild(panel); scrollStage();
+      }, d));
+      d += 900*S;
+    }
+
+    cur.timers.push(setTimeout(()=>{ renderPipe(kind, stns.length-1, err); addBubble(e); }, d + 250*S));
+    return;
+  }
+  addBubble(e);
+}
+
+function scrollStage(){ const s=$("stage"); s.scrollTop=s.scrollHeight; }
+
+function oneShotText(e){
+  if(e.glitch || e.invalid || !e.action) return e.message || "(garbled / unparseable response)";
+  const move = {action: e.action};
+  const deal = e.deal || e.snapped_deal;
+  if(deal) move.deal = {unit_price: deal.unit_price, payment_terms: deal.payment_terms};
+  if(e.message) move.message = e.message;
+  return JSON.stringify(move, null, 2);
+}
+function compactArgs(input){
+  if(input==null) return "";
+  if(typeof input!=="object") return String(input);
+  return Object.entries(input).map(([k,v])=>`${k}=${v}`).join(", ");
+}
+function compactResult(res){
+  let r=res; try{ r=JSON.parse(res); }catch(e){ return String(res).slice(0,80); }
+  if(r&&typeof r==="object"){
+    if("your_surplus"in r) return "your cut = $"+Math.round(r.your_surplus);
+    if("valid"in r) return r.valid?"OK to send":"REJECTED: "+(r.reason||"");
+    if("walkaway_value"in r) return "walk-away = $"+Math.round(r.walkaway_value);
+  }
+  return String(res).slice(0,80);
+}
+
+function addBubble(e){
+  const side = e.side==="seller" ? "s":"b";
+  const bub = el("div","bub "+side+(e.glitch?" glitch":""));
+  const who = e.side==="seller" ? "SELLER" : "BUYER";
+  bub.appendChild(el("div","lab",who + (e.action?(" &middot; "+e.action):"")));
+  bub.appendChild(el("div",null, e.message || "(garbled response)"));
+  const deal = e.deal || e.snapped_deal;
+  if(deal) bub.appendChild(el("div","deal","&#9656; $"+deal.unit_price+"/unit &times; 300 units &middot; "+deal.payment_terms));
+  if(e.side==="seller" && (e.scratchpad || (e.tool_calls||[]).length)) bub.appendChild(el("div","peek","SELECT &#9656;"));
+  bub.onclick=()=>openNotepad(e);
+  $("stage").appendChild(bub);
+  scrollStage();
+}
+
+/* ---------- scoreboard ---------- */
+function bar(label, segs){
+  const wrap = el("div");
+  wrap.appendChild(el("div","lbl",label));
+  const b = el("div","bar");
+  let total=0;
+  segs.forEach(s=>{ const i=el("i","seg "+s.cls); i.style.left=(100*total/PIE)+"%"; i.style.width=(100*s.val/PIE)+"%"; b.appendChild(i); total+=s.val; });
+  b.appendChild(el("span",null,segs.map(s=>"$"+Math.round(s.val)).join(" / ")));
+  wrap.appendChild(b);
+  return wrap;
+}
+
+function showScore(cell, overrideScore){
+  const sc = overrideScore || cell.replay.score;
+  const agg = cell.agg;
+  const box = $("score"); box.classList.remove("hidden"); box.innerHTML="";
+  const deal = sc.deal_reached;
+  box.appendChild(el("div","hl", deal ? "&#129309; THEY SHOOK HANDS" : "&#10060; WALKED AWAY — NO DEAL"));
+  if(deal){
+    box.appendChild(bar("SELLER'S CUT vs BUYER'S CUT", [{cls:"s",val:sc.seller_surplus},{cls:"b",val:sc.buyer_surplus}]));
+  } else {
+    box.appendChild(bar("EVERYONE'S BACKUP (deal collapsed)", [{cls:"s",val:sc.seller_surplus},{cls:"b",val:sc.buyer_surplus},{cls:"d",val:sc.surplus_destroyed}]));
+  }
+  const left = sc.surplus_destroyed||0;
+  box.appendChild(el("div","lbl",
+    `MONEY LEFT ON THE TABLE: <b style="color:${left>0?'var(--red)':'var(--grn)'}">$${Math.round(left)}</b>`+
+    ` &nbsp;|&nbsp; across ${agg.n} runs: <b>${agg.deal_rate}%</b> shook hands, seller averaged <b>$${Math.round(agg.seller_surplus)}</b>`));
+  box.appendChild(el("div","lbl","&#9656; pick another harness above to compare"));
+}
+
+/* ---------- notepad inspector ---------- */
+function openNotepad(e){
+  const body = $("modalBody"); body.innerHTML="";
+  const who = e.side==="seller"?"SELLER":"BUYER";
+  body.appendChild(el("div","lbl",`${who} &middot; round ${(e.round??0)+1} &middot; ${e.action||"—"}`));
+  if(e.scratchpad){
+    body.appendChild(el("div","lbl","private reasoning (the other side never sees this):"));
+    body.appendChild(el("pre",null, escapeHtml(e.scratchpad)));
+  }
+  (e.tool_calls||[]).forEach(t=>{
+    body.appendChild(el("div","tool", `&#128295; <b>${t.tool}</b>(${escapeHtml(JSON.stringify(t.input))}) &rarr; ${escapeHtml(String(t.result))}`));
+  });
+  if(e.glitch) body.appendChild(el("div","tool", `&#9888; glitch: ${e.glitch}`));
+  if(!e.scratchpad && !(e.tool_calls||[]).length && !e.glitch)
+    body.appendChild(el("pre",null,"(no harness here — the bare model just answered, nothing to inspect)"));
+  $("modal").classList.add("show");
+}
+function escapeHtml(s){ return (s||"").replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); }
+
+/* ---------- controls ---------- */
+$("runBtn").onclick = ()=>{ if(cur.cellLabel) runReplay(); };
+$("closeModal").onclick = ()=> $("modal").classList.remove("show");
+$("modal").onclick = (e)=>{ if(e.target.id==="modal") $("modal").classList.remove("show"); };
+
+boot();
+</script>
+</body>
+</html>

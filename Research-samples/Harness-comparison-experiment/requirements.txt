@@ -1,0 +1,8 @@
+# Bazaar-80 runs every harness tier on the real Strands Agents SDK (the same
+# open-source agent loop AWS Bedrock AgentCore Harness runs in its microVM), so
+# "local" and "managed AgentCore" are the SAME engine, different runner. boto3
+# provides the Bedrock model access plus the AgentCore control/data-plane clients
+# for the optional managed-harness promotion path. The game logic/scoring need
+# no third-party deps and run with no AWS credentials.
+strands-agents>=1.44.0
+boto3>=1.40.0

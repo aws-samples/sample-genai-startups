@@ -1,0 +1,145 @@
+"""Bundle saved negotiation traces into a single JS file the front end loads.
+
+The booth front end (web/index.html) is a static page with NO backend: it reads
+window.BAZAAR_TRACES from web/traces.js. This script reads traces/<scenario>/*.json
+(produced by `validate.py --save-traces`), aggregates per-cell stats, picks one
+representative match per cell for replay, and writes web/traces.js.
+
+Run:  python bundle_traces.py        (after a validate run has populated traces/)
+"""
+
+from __future__ import annotations
+
+from pathlib import Path
+import sys
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+import glob
+import json
+import statistics
+from collections import defaultdict
+
+from bazaar80.game import PIE
+from bazaar80.scenarios import SCENARIOS_BY_ID
+
+ROOT = PROJECT_ROOT   # scripts/ -> project root
+WEB = ROOT / "web"
+CELL_ORDER = ["small+RAW", "small+DEFAULT", "small+GOOD",
+              "large+RAW", "large+DEFAULT", "large+GOOD", "large+BAD"]
+
+MODEL_DISPLAY = {
+    "us.amazon.nova-2-lite-v1:0": "Small LLM",
+    "us.anthropic.claude-sonnet-4-6": "Frontier LLM",
+}
+HARNESS_DISPLAY = {"good": "ENGINEERED HARNESS", "default": "PREBUILT HARNESS",
+                   "raw": "NO HARNESS", "bad": "BAD HARNESS"}
+SIZE_DISPLAY = {"us.amazon.nova-2-lite-v1:0": "SMALL", "us.anthropic.claude-sonnet-4-6": "LARGE"}
+
+
+def _representative(matches: list) -> dict:
+    """Pick the match whose seller surplus is the median for the cell (typical)."""
+    if not matches:
+        return None
+    ordered = sorted(matches, key=lambda m: m["score"]["seller_surplus"])
+    return ordered[len(ordered) // 2]
+
+
+def _replay_view(m: dict) -> dict:
+    """The slim per-match payload the front end needs to replay one negotiation."""
+    return {
+        "outcome": m["outcome"],
+        "rounds": m["rounds"],
+        "final_deal": m["final_deal"],
+        "score": m["score"],
+        "events": m["events"],
+    }
+
+
+def _agg(matches: list) -> dict:
+    n = len(matches)
+    deals = [m for m in matches if m["outcome"] == "deal"]
+    mean = lambda xs: round(statistics.mean(xs), 1) if xs else 0.0
+    ss = mean([m["score"]["seller_surplus"] for m in matches])
+    return {
+        "n": n,
+        "deal_rate": round(100.0 * len(deals) / n, 0) if n else 0.0,
+        "seller_surplus": round(ss, 0),
+        "seller_share_pct": round(100.0 * ss / PIE, 0),
+        "buyer_surplus": round(mean([m["score"]["buyer_surplus"] for m in matches]), 0),
+        "surplus_destroyed": round(mean([m["score"]["surplus_destroyed"] for m in matches]), 0),
+        "cost_per_deal": round(statistics.mean([m["total_cost_usd"] for m in matches]), 5) if n else 0.0,
+    }
+
+
+def build() -> dict:
+    out = {"pie": PIE, "scenarios": {}}
+    for scen_id, scen in SCENARIOS_BY_ID.items():
+        files = glob.glob(str(ROOT / "traces" / scen_id / "*.json"))
+        if not files:
+            continue
+        by_cell = defaultdict(list)
+        for f in files:
+            d = json.loads(Path(f).read_text())
+            by_cell[d["cell"]].append(d)
+
+        cells = {}
+        for label in CELL_ORDER:
+            matches = by_cell.get(label)
+            if not matches:
+                continue
+            rep = _representative(matches)
+            seller = rep["seller"]
+            buyer = rep["buyer"]
+            cells[label] = {
+                "label": label,
+                "seller": {
+                    "size": SIZE_DISPLAY.get(seller["model"], "?"),
+                    "model": MODEL_DISPLAY.get(seller["model"], seller["model"]),
+                    "harness": HARNESS_DISPLAY.get(seller["kind"], seller["kind"]),
+                    "kind": seller["kind"],
+                },
+                "buyer": {
+                    "model": MODEL_DISPLAY.get(buyer["model"], buyer["model"]),
+                    "harness": HARNESS_DISPLAY.get(buyer["kind"], buyer["kind"]),
+                },
+                "agg": _agg(matches),
+                # `replay` = one representative match (kept for back-compat).
+                # `replays` = ALL captured matches for this cell, so the front end
+                # can shuffle-cycle through them for live-feeling random variation.
+                "replay": _replay_view(rep),
+                "replays": [_replay_view(m) for m in matches],
+            }
+        if cells:
+            out["scenarios"][scen_id] = {
+                "id": scen.id,
+                "name": scen.name,
+                "tagline": scen.tagline,
+                "teaches": scen.teaches,
+                "seller_batna": scen.seller_batna,
+                "buyer_batna": scen.buyer_batna,
+                "max_rounds": scen.max_rounds,
+                "cells": cells,
+            }
+    return out
+
+
+def main() -> None:
+    WEB.mkdir(exist_ok=True)
+    data = build()
+    n_scen = len(data["scenarios"])
+    n_cells = sum(len(s["cells"]) for s in data["scenarios"].values())
+    js = "// Auto-generated by bundle_traces.py -- do not edit.\n"
+    js += "window.BAZAAR_TRACES = " + json.dumps(data, separators=(",", ":")) + ";\n"
+    (WEB / "traces.js").write_text(js)
+    kb = len(js) / 1024
+    print(f"wrote web/traces.js  ({n_scen} scenarios, {n_cells} cells, {kb:.0f} KB)")
+    for sid, s in data["scenarios"].items():
+        cells = ", ".join(s["cells"].keys())
+        print(f"  {sid:<13} [{cells}]")
+
+
+if __name__ == "__main__":
+    main()

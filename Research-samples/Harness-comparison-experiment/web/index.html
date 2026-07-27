@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>BAZAAR-80 — the harness makes the trader</title>
+<style>
+  :root{
+    --bg:#0b0420; --panel:#15093a; --ink:#e8e6ff; --dim:#9a8fd0;
+    --cyan:#2ff3e0; --mag:#f000ff; --yel:#ffe600; --grn:#39ff14; --red:#ff3864; --org:#ff9e3d;
+    --good:#39ff14; --raw:#2ff3e0; --bad:#ff3864;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:"Courier New",ui-monospace,Menlo,Consolas,monospace;
+    letter-spacing:.5px; overflow-x:hidden;
+  }
+  /* CRT scanlines + vignette */
+  body::after{
+    content:""; position:fixed; inset:0; pointer-events:none; z-index:999;
+    background:repeating-linear-gradient(0deg,rgba(0,0,0,.18) 0 1px,transparent 1px 3px);
+    mix-blend-mode:multiply;
+  }
+  body::before{
+    content:""; position:fixed; inset:0; pointer-events:none; z-index:998;
+    background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.55) 100%);
+  }
+  .wrap{max-width:1080px;margin:0 auto;padding:18px 16px 60px}
+  h1{font-size:34px;margin:6px 0 0;color:var(--yel);text-shadow:3px 3px 0 var(--mag),6px 6px 0 rgba(0,0,0,.5);letter-spacing:3px}
+  .sub{color:var(--cyan);font-size:13px;margin:4px 0 18px}
+  .blink{animation:blink 1s steps(2,start) infinite}
+  @keyframes blink{to{visibility:hidden}}
+
+  .card{background:var(--panel);border:3px solid var(--cyan);border-radius:6px;
+    box-shadow:0 0 0 3px rgba(0,0,0,.4),0 8px 0 rgba(0,0,0,.35);padding:14px}
+  .grid{display:grid;gap:14px}
+  .scn-grid{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+  .scn{cursor:pointer;transition:transform .08s, border-color .1s;border-color:var(--mag)}
+  .scn:hover{transform:translateY(-3px);border-color:var(--yel)}
+  .scn .name{color:var(--yel);font-size:20px;letter-spacing:2px}
+  .scn .tag{color:var(--dim);font-size:12px;margin-top:8px;line-height:1.5}
+  .scn .teach{color:var(--grn);font-size:11px;margin-top:10px}
+
+  .btn{font-family:inherit;cursor:pointer;background:#23105e;color:var(--ink);
+    border:2px solid var(--cyan);border-radius:4px;padding:10px 14px;font-size:13px;
+    letter-spacing:1px;box-shadow:0 3px 0 rgba(0,0,0,.5);transition:transform .05s}
+  .btn:hover{background:#30157e}
+  .btn:active{transform:translateY(2px);box-shadow:none}
+  .btn.primary{border-color:var(--yel);color:var(--yel)}
+  .btn.swap{border-color:var(--mag);color:var(--mag)}
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .spacer{flex:1}
+
+  /* VS header */
+  .vs{display:grid;grid-template-columns:1fr 70px 1fr;align-items:center;gap:8px;margin-bottom:12px}
+  .fighter{padding:12px;border:2px solid var(--ink);border-radius:6px;background:#0e0630}
+  .fighter.seller{border-color:var(--grn)}
+  .fighter.buyer{border-color:var(--raw)}
+  .fighter .who{font-size:12px;color:var(--dim)}
+  .fighter .size{font-size:22px;color:var(--yel);letter-spacing:2px}
+  .fighter .model{font-size:12px;color:var(--ink);margin-top:2px}
+  .badge{display:inline-block;margin-top:8px;padding:4px 8px;border-radius:3px;font-size:12px;font-weight:bold}
+  .badge.good{background:var(--good);color:#062b00}
+  .badge.raw{background:var(--raw);color:#012b29}
+  .badge.bad{background:var(--bad);color:#2b000a}
+  .vsmid{font-size:26px;color:var(--mag);text-align:center;text-shadow:2px 2px 0 #000}
+
+  /* pipeline */
+  .pipe{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:6px 0 12px;min-height:42px}
+  .stn{padding:7px 9px;border:2px solid #3a2a6e;border-radius:4px;font-size:11px;color:var(--dim);
+    background:#0e0630;transition:all .15s}
+  .stn.on{color:#001;background:var(--cyan);border-color:#fff;box-shadow:0 0 12px var(--cyan)}
+  .stn.good.on{background:var(--good);box-shadow:0 0 12px var(--good)}
+  .stn.err{background:var(--red);color:#fff;border-color:#fff;box-shadow:0 0 14px var(--red);animation:shake .25s}
+  @keyframes shake{25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
+  .arrow{color:#5a4a9e}
+
+  /* dialogue */
+  .stage{min-height:230px;display:flex;flex-direction:column;gap:8px;padding:6px 2px}
+  .bub{max-width:78%;padding:9px 12px;border-radius:10px;font-size:13px;line-height:1.45;
+    animation:pop .2s;position:relative;cursor:pointer}
+  @keyframes pop{from{transform:scale(.9);opacity:0}}
+  .bub.s{align-self:flex-start;background:#10371a;border:2px solid var(--grn)}
+  .bub.b{align-self:flex-end;background:#0d2f3a;border:2px solid var(--raw)}
+  .bub .lab{font-size:10px;color:var(--dim);margin-bottom:3px}
+  .bub .deal{font-size:11px;color:var(--yel);margin-top:5px}
+  .bub.glitch{border-style:dashed;border-color:var(--red)}
+  .bub .peek{position:absolute;top:4px;right:8px;font-size:10px;color:var(--cyan)}
+
+  /* inline "thinking" notepad — the agent's reasoning revealed before the offer */
+  .think{align-self:flex-start;max-width:82%;background:#1a1206;border:2px dashed var(--org);
+    border-radius:10px;padding:9px 12px;font-size:12.5px;line-height:1.5;animation:pop .2s}
+  .think .thd{font-size:10px;color:var(--org);letter-spacing:1px;margin-bottom:7px}
+  .think .thd .cur{animation:blink 1s steps(2,start) infinite}
+  /* prose reasoning is the STAR: larger, bright, roomy */
+  .think .line{color:#fff3df;font-size:14px;line-height:1.55;margin:7px 0;
+    opacity:0;animation:fadein .4s forwards}
+  .think .line::before{content:"\203A ";color:var(--org)}
+  /* tool calls are SECONDARY: small, muted, compact — the receipts, not the story */
+  .think .tcall{color:#7fa8a3;font-size:10.5px;margin:2px 0 2px 6px;opacity:0;
+    animation:fadein .3s forwards}
+  .think .tcall b{color:#9a8fd0}
+  .think .tcall .res{color:#6fae5a}
+  @keyframes fadein{to{opacity:1}}
+  .decis{align-self:flex-start;font-size:10px;color:var(--org);margin:-2px 0 -2px 6px;
+    opacity:0;animation:fadein .3s forwards}
+  /* RAW one-shot output panel: cyan-tinted (no harness), shows the literal blurt */
+  .think.raw{background:#06222a;border-color:var(--raw)}
+  .think.raw .thd{color:var(--raw)}
+  .think.raw .oneshot{color:#bdeee9;font-size:12px;line-height:1.5;margin:6px 0 0;
+    white-space:pre-wrap;opacity:0;animation:fadein .4s forwards}
+  .think.raw.bad{background:#2a0610;border-color:var(--bad)}
+  .think.raw.bad .thd{color:var(--bad)}
+  .think.raw.bad .oneshot{color:#ffc9d4}
+
+  /* scoreboard */
+  .score{margin-top:10px}
+  .score .hl{font-size:18px;color:var(--yel);letter-spacing:1px}
+  .bar{height:22px;background:#0e0630;border:2px solid #3a2a6e;border-radius:3px;position:relative;margin:5px 0;overflow:hidden}
+  .bar > i{position:absolute;left:0;top:0;bottom:0;display:block}
+  .bar .seg.s{background:var(--grn)} .bar .seg.b{background:var(--raw)} .bar .seg.d{background:var(--red)}
+  .bar span{position:absolute;right:8px;top:2px;font-size:12px;color:#fff;text-shadow:1px 1px 0 #000}
+  .lbl{font-size:11px;color:var(--dim);margin-top:6px}
+
+  /* comparison strip */
+  .compare{margin-top:14px}
+  .crow{display:grid;grid-template-columns:120px 1fr 64px;gap:8px;align-items:center;margin:4px 0;font-size:12px}
+  .crow .cb{height:16px;background:#0e0630;border:1px solid #3a2a6e;position:relative}
+  .crow .cb > i{position:absolute;left:0;top:0;bottom:0}
+  .tag-good{color:var(--good)} .tag-raw{color:var(--raw)} .tag-bad{color:var(--bad)}
+
+  /* modal */
+  .modal{position:fixed;inset:0;background:rgba(2,1,12,.85);display:none;z-index:1000;
+    align-items:center;justify-content:center;padding:20px}
+  .modal.show{display:flex}
+  .modal .box{max-width:680px;max-height:80vh;overflow:auto;width:100%}
+  .modal pre{white-space:pre-wrap;font-size:12px;color:var(--cyan);line-height:1.5}
+  .tool{border-left:3px solid var(--mag);padding:4px 10px;margin:6px 0;font-size:12px;color:var(--ink)}
+  .hidden{display:none}
+  .intro{border-color:var(--yel);font-size:14px;line-height:1.6;color:var(--ink)}
+  .intro b{color:var(--cyan)}
+  .intro p{margin:0 0 11px}
+  .intro p:last-child{margin-bottom:0}
+  .intro p:first-child{color:var(--ink);padding-bottom:11px;border-bottom:1px solid #3a2a6e}
+  .foot{margin-top:24px;color:var(--dim);font-size:11px;line-height:1.6}
+  a{color:var(--cyan)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>BAZAAR&#8209;80</h1>
+  <div class="sub">THE HARNESS MAKES THE TRADER &nbsp;|&nbsp; same model, flip the harness, watch the outcome flip <span class="blink">_</span></div>
+
+  <!-- SELECT SCENARIO -->
+  <section id="selectView">
+    <div class="card intro">
+      <p>Two AI traders haggle over one 300-widget order<br/>
+      A <b>seller</b> and a <b>buyer</b> splitting a fixed pot of money: they trade just
+      two things: the <b>price</b> per unit and the <b>payment terms</b> (pay now, in 30
+      days, or in 60).<br/>
+      Every dollar one side wins, the other loses, and each can <b>walk away</b> to a
+      backup deal.</p>
+      <p>Both run on the same Amazon Bedrock models &mdash; only the <b>harness</b> (the
+      scaffolding: tools, verification loop, state &amp; memory) changes.</p>
+      <p><b>SWAP HARNESS</b> moves it between a small and a large model: the advantage
+      follows the harness, not the model size.</p>
+    </div>
+    <div class="lbl" style="margin:18px 0 8px">&#9654; SELECT A SCENARIO</div>
+    <div id="scnGrid" class="grid scn-grid"></div>
+  </section>
+
+  <!-- MATCH -->
+  <section id="matchView" class="hidden">
+    <div class="row" style="margin-bottom:10px">
+      <button class="btn" id="backBtn">&#9664; SCENARIOS</button>
+      <div class="spacer"></div>
+      <div id="scnTitle" style="color:var(--yel);font-size:16px"></div>
+    </div>
+
+    <div class="card">
+      <div class="vs">
+        <div class="fighter seller" id="fSeller"></div>
+        <div class="vsmid">VS</div>
+        <div class="fighter buyer" id="fBuyer"></div>
+      </div>
+
+      <div class="lbl">SELLER PIPELINE</div>
+      <div class="pipe" id="pipe"></div>
+
+      <div class="stage" id="stage"></div>
+
+      <div class="row" style="margin-top:8px">
+        <button class="btn primary" id="runBtn">&#9654; RUN</button>
+        <button class="btn swap" id="swapBtn">&#8644; SWAP HARNESS</button>
+        <div class="spacer"></div>
+        <div class="lbl" id="hint">watch the trader think, then deal &mdash; click any bubble to inspect</div>
+      </div>
+
+      <div class="score hidden" id="score"></div>
+    </div>
+
+    <div class="card compare" id="compareCard">
+      <div class="lbl">RESULTS SO FAR (run different harnesses to fill this in)</div>
+      <div id="compare"></div>
+    </div>
+  </section>
+
+  <div class="foot">
+    Models: Amazon <b>Nova&nbsp;2&nbsp;Lite</b> (small) vs <b>Claude&nbsp;Sonnet&nbsp;4.6</b>
+    (large), on Amazon Bedrock. Every tier runs on the real Strands Agents SDK &mdash;
+    the same agent loop AWS AgentCore Harness runs &mdash; so the harness is a config
+    object, identical local vs. managed.
+  </div>
+</div>
+
+<!-- scratchpad inspector -->
+<div class="modal" id="modal">
+  <div class="card box">
+    <div class="row"><div style="color:var(--yel);font-size:16px">&#128221; TRADER'S NOTEPAD</div>
+      <div class="spacer"></div><button class="btn" id="closeModal">CLOSE</button></div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<script src="traces.js"></script>
+<script>
+"use strict";
+const DATA = window.BAZAAR_TRACES || {pie:1290, scenarios:{}};
+const PIE = DATA.pie || 1290;
+const $ = (id) => document.getElementById(id);
+const el = (tag, cls, html) => { const e=document.createElement(tag); if(cls)e.className=cls; if(html!=null)e.innerHTML=html; return e; };
+
+// SWAP order: walk the ladder (no harness -> prebuilt -> engineered) on the
+// small model, then the large model, then the bad guardrail.
+const SWAP_ORDER = ["small+RAW","small+DEFAULT","small+GOOD",
+                    "large+RAW","large+DEFAULT","large+GOOD","large+BAD"];
+const PIPE_STATIONS = {
+  good:    ["TOOLS","VERIFICATION","STATE & MEMORY","OFFER"],
+  default: ["TOOLS","OFFER"],
+  raw:     ["MODEL","OFFER"],
+  bad:     ["SAFETY OVERRIDE","MODEL","OFFER"],
+};
+
+let cur = { scen:null, cellIdx:0, cells:[], playing:false, timers:[], results:{}, speed:1.8 };  // SLOW (fixed)
+// shuffle-cycle bags per cell: walk a shuffled order of all captured replays,
+// reshuffle when exhausted, so RUN feels live (no immediate repeats).
+const bags = {};
+function nextReplay(cell, label){
+  const pool = (cell.replays && cell.replays.length) ? cell.replays : [cell.replay];
+  if(pool.length === 1) return pool[0];
+  let bag = bags[label];
+  if(!bag || !bag.length){
+    bag = pool.map((_,i)=>i);
+    for(let i=bag.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [bag[i],bag[j]]=[bag[j],bag[i]]; }
+    if(bags[label+"_last"]!=null && bag[bag.length-1]===bags[label+"_last"] && bag.length>1){
+      [bag[0],bag[bag.length-1]]=[bag[bag.length-1],bag[0]];
+    }
+    bags[label]=bag;
+  }
+  const idx = bag.pop();
+  bags[label+"_last"]=idx;
+  return pool[idx];
+}
+
+/* ---------- SELECT SCENARIO ---------- */
+function renderScenarios(){
+  const g = $("scnGrid"); g.innerHTML="";
+  const scns = DATA.scenarios || {};
+  const ids = Object.keys(scns);
+  if(!ids.length){ g.appendChild(el("div","card","No traces bundled yet. Run <code>python validate.py --scenario &lt;id&gt; --save-traces</code> then <code>python bundle_traces.py</code>.")); return; }
+  ids.forEach(id=>{
+    const s = scns[id];
+    const c = el("div","card scn");
+    c.appendChild(el("div","name",s.name));
+    c.appendChild(el("div","tag",s.tagline));
+    c.appendChild(el("div","teach","&#9656; tests: "+(s.teaches||"").split(":")[0]));
+    c.onclick=()=>enterScenario(id);
+    g.appendChild(c);
+  });
+}
+
+function enterScenario(id){
+  cur.scen = DATA.scenarios[id];
+  cur.cells = SWAP_ORDER.filter(l => cur.scen.cells[l]);
+  // Open on the cell with the RICHEST visible reasoning (the large engineered
+  // harness narrates most), so the first thing a visitor sees is the trader
+  // thinking out loud — then SWAP walks down to RAW where the panel vanishes.
+  cur.cellIdx = pickReasoningRichCell();
+  cur.results = {};
+  $("selectView").classList.add("hidden");
+  $("matchView").classList.remove("hidden");
+  $("scnTitle").textContent = cur.scen.name;
+  renderCompare();
+  loadCell();
+}
+
+/* ---------- MATCH ---------- */
+function curCell(){ return cur.scen.cells[cur.cells[cur.cellIdx]]; }
+
+// index (into cur.cells) of the cell whose replay shows the most prose
+// reasoning — prefer that as the opening view so the "think then deal" story
+// is immediate. Falls back to 0 if nothing has reasoning.
+function pickReasoningRichCell(){
+  let best=0, bestScore=-1;
+  cur.cells.forEach((label,idx)=>{
+    const cell = cur.scen.cells[label];
+    const lines = (cell.replay.events||[])
+      .filter(e=>e.side==="seller")
+      .reduce((n,e)=>n+reasoningLines(e.scratchpad).length, 0);
+    if(lines>bestScore){ bestScore=lines; best=idx; }
+  });
+  return best;
+}
+
+function loadCell(){
+  stopReplay();
+  const cell = curCell();
+  const s = cell.seller, b = cell.buyer;
+  $("fSeller").innerHTML =
+    `<div class="who">SELLER</div><div class="size">${s.size}</div>`+
+    `<div class="model">${s.model}</div><span class="badge ${s.kind}">${s.harness}</span>`;
+  $("fBuyer").innerHTML =
+    `<div class="who">BUYER (fixed opponent)</div><div class="size">RIVAL</div>`+
+    `<div class="model">${b.model}</div><span class="badge raw">${b.harness}</span>`;
+  renderPipe(s.kind, -1, false);
+  $("stage").innerHTML="";
+  $("score").classList.add("hidden");
+  $("hint").textContent = "press RUN to watch them haggle";
+}
+
+function renderPipe(kind, activeIdx, err){
+  const p = $("pipe"); p.innerHTML="";
+  const stns = PIPE_STATIONS[kind] || PIPE_STATIONS.raw;
+  stns.forEach((name,i)=>{
+    const on = i<=activeIdx;
+    const cls = "stn "+(kind==="good"?"good ":"")+(on?"on ":"")+(err&&i===activeIdx?"err":"");
+    p.appendChild(el("div",cls.trim(),name));
+    if(i<stns.length-1) p.appendChild(el("span","arrow","&#9656;"));
+  });
+}
+
+function stopReplay(){ cur.playing=false; cur.timers.forEach(clearTimeout); cur.timers=[]; }
+
+// split a scratchpad into readable lines (sentence-ish), capped so the panel
+// stays booth-readable rather than dumping a wall of text. Strips any raw JSON
+// move blobs that leaked into the scratchpad: a bare model (RAW) only emits the
+// move itself, so after filtering it shows NOTHING to think about — which is the
+// whole point (no harness = no visible reasoning).
+function reasoningLines(txt){
+  if(!txt) return [];
+  // drop the committed JSON move. It has nested braces ("deal":{...}), so strip
+  // greedily from the first '{' to the last '}'. Genuine reasoning never contains
+  // braces, so this only removes leaked move JSON (and empties a RAW blurt).
+  const prose = txt.replace(/\{[\s\S]*\}/g," ").replace(/\s+/g," ").trim();
+  if(prose.length < 8) return [];
+  return prose
+    .split(/(?<=[.!?])\s+(?=[A-Z0-9"$])/)
+    .map(s=>s.trim()).filter(s=>s.length>3).slice(0,10);
+}
+
+function runReplay(){
+  stopReplay();
+  $("stage").innerHTML=""; $("score").classList.add("hidden");
+  const cell = curCell();
+  // shuffle-cycle: each RUN draws a different real captured negotiation
+  const replay = nextReplay(cell, cur.cells[cur.cellIdx]);
+  const ev = replay.events.filter(e=>e.action!=null || e.message);
+  cur.playing=true;
+  const S = cur.speed;
+  let t=0;
+  ev.forEach((e)=>{
+    cur.timers.push(setTimeout(()=>playEvent(e, cell), t));
+    t += eventDuration(e) * S;
+  });
+  cur.timers.push(setTimeout(()=>{ showScore(cell, replay.score); cur.playing=false; }, t+250*S));
+  $("hint").textContent = "haggling...";
+}
+
+// how long this event's animation occupies the timeline (pre-speed-scale).
+function eventDuration(e){
+  if(e.side!=="seller") return 1100;          // buyer just speaks
+  const lines = reasoningLines(e.scratchpad).length;
+  const tools = (e.tool_calls||[]).length;
+  // prose reasoning gets the time (it's the story); tools are a quick beat.
+  return 700 + lines*1500 + tools*220 + 1100;
+}
+
+function playEvent(e, cell){
+  const isSeller = e.side==="seller";
+  const kind = isSeller ? cell.seller.kind : "raw";
+  const S = cur.speed;
+
+  // ---- SELLER: reveal the thinking first, paced, then the offer ----
+  if(isSeller){
+    const stns = PIPE_STATIONS[kind];
+    const err = !!e.glitch || e.invalid;
+    const lines = reasoningLines(e.scratchpad);
+    const tools = e.tool_calls||[];
+    let d = 0;                                  // local delay within this turn
+
+    // a "thinking" panel that fills in line-by-line (only if there's anything)
+    if(lines.length || tools.length){
+      const panel = el("div","think");
+      panel.appendChild(el("div","thd",
+        "&#128221; "+cell.seller.harness+" &middot; THINKING<span class='cur'>_</span>"));
+      cur.timers.push(setTimeout(()=>{ $("stage").appendChild(panel); scrollStage(); }, d));
+      // pipeline: first station (TOOLS) lights first
+      cur.timers.push(setTimeout(()=>renderPipe(kind,0,false), d));
+      d += 500*S;
+
+      lines.forEach((ln)=>{
+        cur.timers.push(setTimeout(()=>{
+          const L=el("div","line",escapeHtml(ln)); panel.appendChild(L); scrollStage();
+        }, d));
+        d += 1500*S;                              // dwell on each thought
+      });
+
+      // each tool call advances the pipeline through the middle stations —
+      // a quick, muted receipt under the reasoning, not the main event
+      tools.forEach((tc,i)=>{
+        const stnIdx = Math.min(1+i, stns.length-2);   // VERIFICATION, STATE & MEMORY, ...
+        cur.timers.push(setTimeout(()=>{
+          renderPipe(kind, stnIdx, false);
+          const row = el("div","tcall",
+            `&#128295; <b>${tc.tool}</b>(${escapeHtml(compactArgs(tc.input))}) `+
+            `&rarr; <span class="res">${escapeHtml(compactResult(tc.result))}</span>`);
+          panel.appendChild(row); scrollStage();
+        }, d));
+        d += 220*S;
+      });
+    } else {
+      // RAW / no-notepad: no reasoning, no tools — the bare model just emits its
+      // answer in ONE pass. Show that raw one-shot output so the contrast is
+      // explicit (no tools, no verification — just the blurt).
+      const garbled = !!e.glitch || e.invalid;
+      const hd = kind==="bad"
+        ? "&#9888; "+cell.seller.harness+" &middot; SAFETY OVERRIDE OUTPUT (no harness pipeline)"
+        : "&#9889; "+cell.seller.harness+" &middot; ONE-SHOT OUTPUT (no tools, no verification)";
+      const panel = el("div","think raw"+(kind==="bad"?" bad":""));
+      panel.appendChild(el("div","thd", hd));
+      cur.timers.push(setTimeout(()=>{
+        renderPipe(kind,0,garbled);
+        panel.appendChild(el("pre","oneshot", escapeHtml(oneShotText(e))));
+        $("stage").appendChild(panel); scrollStage();
+      }, d));
+      d += 900*S;
+    }
+
+    // a one-line "decision" cue, then the offer bubble lands as the culmination
+    cur.timers.push(setTimeout(()=>{
+      renderPipe(kind, stns.length-1, err);       // light OFFER (or err)
+      addBubble(e);
+    }, d + 250*S));
+    return;
+  }
+
+  // ---- BUYER: just the speech bubble ----
+  addBubble(e);
+}
+
+function scrollStage(){ const s=$("stage"); s.scrollTop=s.scrollHeight; }
+
+// the bare model's literal one-shot answer: prefer the raw text it emitted;
+// otherwise reconstruct the JSON move it produced (action + deal + message).
+function oneShotText(e){
+  // A malformed/garbled turn (BAD's redactor) didn't yield a usable move — show
+  // the raw text it actually emitted, not a tidy reconstructed JSON object.
+  if(e.glitch || e.invalid || !e.action){
+    return e.message || "(garbled / unparseable response)";
+  }
+  const move = {action: e.action};
+  const deal = e.deal || e.snapped_deal;
+  if(deal) move.deal = {unit_price: deal.unit_price, payment_terms: deal.payment_terms};
+  if(e.message) move.message = e.message;
+  return JSON.stringify(move, null, 2);
+}
+
+function compactArgs(input){
+  if(input==null) return "";
+  if(typeof input!=="object") return String(input);
+  return Object.entries(input).map(([k,v])=>`${k}=${v}`).join(", ");
+}
+function compactResult(res){
+  let r=res; try{ r=JSON.parse(res); }catch(e){ return String(res).slice(0,80); }
+  if(r&&typeof r==="object"){
+    if("your_surplus"in r) return "your cut = $"+Math.round(r.your_surplus);
+    if("valid"in r) return r.valid?"OK to send":"REJECTED: "+(r.reason||"");
+    if("walkaway_value"in r) return "walk-away = $"+Math.round(r.walkaway_value);
+  }
+  return String(res).slice(0,80);
+}
+
+function addBubble(e){
+  const side = e.side==="seller" ? "s":"b";
+  const bub = el("div","bub "+side+(e.glitch?" glitch":""));
+  const who = e.side==="seller" ? "SELLER" : "BUYER";
+  bub.appendChild(el("div","lab",who + (e.action?(" &middot; "+e.action):"")));
+  bub.appendChild(el("div",null, e.message || "(garbled response)"));
+  const deal = e.deal || e.snapped_deal;
+  if(deal) bub.appendChild(el("div","deal","&#9656; $"+deal.unit_price+"/unit &middot; "+deal.payment_terms));
+  if(e.side==="seller" && (e.scratchpad || (e.tool_calls||[]).length)) bub.appendChild(el("div","peek","SELECT &#9656;"));
+  bub.onclick=()=>openNotepad(e);
+  $("stage").appendChild(bub);
+  scrollStage();
+}
+
+function bar(label, segs){
+  // segs: [{cls,val}], scaled to PIE
+  const wrap = el("div");
+  wrap.appendChild(el("div","lbl",label));
+  const b = el("div","bar");
+  let total=0;
+  segs.forEach(s=>{
+    const i = el("i","seg "+s.cls); i.style.left=(100*total/PIE)+"%"; i.style.width=(100*s.val/PIE)+"%";
+    b.appendChild(i); total+=s.val;
+  });
+  b.appendChild(el("span",null,segs.map(s=>"$"+Math.round(s.val)).join(" / ")));
+  wrap.appendChild(b);
+  return wrap;
+}
+
+function showScore(cell, overrideScore, overrideCost, isLive){
+  const sc = overrideScore || cell.replay.score;
+  const agg = cell.agg;
+  const cost = (overrideCost!=null) ? overrideCost : (agg.cost_per_deal||0);
+  const box = $("score"); box.classList.remove("hidden"); box.innerHTML="";
+  const deal = sc.deal_reached;
+  box.appendChild(el("div","hl", deal ? "&#129309; THEY SHOOK HANDS" : "&#10060; WALKED AWAY \u2014 NO DEAL"));
+  if(deal){
+    box.appendChild(bar("SELLER'S CUT vs BUYER'S CUT",
+      [{cls:"s",val:sc.seller_surplus},{cls:"b",val:sc.buyer_surplus}]));
+  } else {
+    box.appendChild(bar("EVERYONE'S BACKUP (deal collapsed)",
+      [{cls:"s",val:sc.seller_surplus},{cls:"b",val:sc.buyer_surplus},{cls:"d",val:sc.surplus_destroyed}]));
+  }
+  const left = sc.surplus_destroyed||0;
+  const tail = isLive
+    ? `this was a <b style="color:var(--yel)">LIVE</b> Bedrock run`
+    : `across ${agg.n} live runs: <b>${agg.deal_rate}%</b> shook hands, seller averaged <b>$${Math.round(agg.seller_surplus)}</b>`;
+  box.appendChild(el("div","lbl",
+    `MONEY LEFT ON THE TABLE: <b style="color:${left>0?'var(--red)':'var(--grn)'}">$${Math.round(left)}</b>`+
+    ` &nbsp;|&nbsp; COST TO RUN THIS DEAL: <b>$${(cost||0).toFixed(4)}</b> &nbsp;|&nbsp; `+tail));
+  // record for comparison strip
+  cur.results[cell.label] = isLive
+    ? {n:"live", deal_rate: deal?100:0, seller_surplus: sc.seller_surplus, cost_per_deal: cost}
+    : agg;
+  renderCompare();
+}
+
+function renderCompare(){
+  const c = $("compare"); c.innerHTML="";
+  cur.cells.forEach(label=>{
+    const cell = cur.scen.cells[label];
+    const agg = cur.results[label];
+    const kind = cell.seller.kind;
+    const row = el("div","crow");
+    row.appendChild(el("div","tag-"+kind, label.replace("+"," + ")));
+    const bar = el("div","cb");
+    if(agg){ const i=el("i"); i.style.width=(100*agg.seller_surplus/PIE)+"%";
+      i.style.background = kind==="good"?"var(--good)":kind==="bad"?"var(--bad)":"var(--raw)"; bar.appendChild(i); }
+    row.appendChild(bar);
+    row.appendChild(el("div",null, agg?("$"+Math.round(agg.seller_surplus)):"&mdash;"));
+    c.appendChild(row);
+  });
+}
+
+/* ---------- notepad inspector ---------- */
+function openNotepad(e){
+  const body = $("modalBody"); body.innerHTML="";
+  const who = e.side==="seller"?"SELLER":"BUYER";
+  body.appendChild(el("div","lbl",`${who} &middot; round ${(e.round??0)+1} &middot; ${e.action||"\u2014"}`));
+  if(e.scratchpad){
+    body.appendChild(el("div","lbl","private reasoning (the other side never sees this):"));
+    body.appendChild(el("pre",null, escapeHtml(e.scratchpad)));
+  }
+  (e.tool_calls||[]).forEach(t=>{
+    body.appendChild(el("div","tool", `&#128295; <b>${t.tool}</b>(${escapeHtml(JSON.stringify(t.input))}) &rarr; ${escapeHtml(String(t.result))}`));
+  });
+  if(e.glitch) body.appendChild(el("div","tool", `&#9888; glitch: ${e.glitch}`));
+  if(!e.scratchpad && !(e.tool_calls||[]).length && !e.glitch)
+    body.appendChild(el("pre",null,"(no harness here \u2014 the bare model just answered, nothing to inspect)"));
+  $("modal").classList.add("show");
+}
+function escapeHtml(s){ return (s||"").replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); }
+
+/* ---------- controls ---------- */
+$("runBtn").onclick = runReplay;
+$("swapBtn").onclick = ()=>{ stopReplay(); cur.cellIdx=(cur.cellIdx+1)%cur.cells.length; loadCell(); };
+$("backBtn").onclick = ()=>{ stopReplay(); $("matchView").classList.add("hidden"); $("selectView").classList.remove("hidden"); };
+$("closeModal").onclick = ()=> $("modal").classList.remove("show");
+$("modal").onclick = (e)=>{ if(e.target.id==="modal") $("modal").classList.remove("show"); };
+
+renderScenarios();
+</script>
+</body>
+</html>

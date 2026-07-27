@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bazaar80"
+version = "0.1.0"
+description = "Bazaar-80 — the harness makes the trader: a zero-sum haggling demo where the same Bedrock model wins or loses on its harness config alone."
+requires-python = ">=3.10"
+# Runtime deps are pinned in requirements.txt (core) and requirements-server.txt
+# (optional backend); kept there so installation stays a simple `pip install -r`.
+# This file exists so `bazaar80/` imports as a package.
+dependencies = []
+
+[tool.setuptools]
+packages = ["bazaar80"]

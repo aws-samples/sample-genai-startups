@@ -1,0 +1,1949 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: MIT-0
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  Aurora PostgreSQL Serverless v2 cluster with RDS Data API enabled,
+  Secrets Manager integration, and a custom resource that creates and
+  populates the product_sales table from a CSV in S3.
+
+Parameters:
+  EnvironmentName:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, staging, prod]
+    Description: Environment name for resource tagging
+
+  DBName:
+    Type: String
+    Default: querytraining
+    MinLength: 1
+    MaxLength: 63
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9_]*'
+    Description: Initial database name
+
+  DBMasterUsername:
+    Type: String
+    Default: dbadmin
+    MinLength: 1
+    MaxLength: 63
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9_]*'
+    Description: Primary database admin username
+
+  MinACU:
+    Type: Number
+    Default: 0.5
+    MinValue: 0.5
+    MaxValue: 128
+    Description: Minimum Aurora Capacity Units for Serverless v2 scaling
+
+  MaxACU:
+    Type: Number
+    Default: 4
+    MinValue: 0.5
+    MaxValue: 128
+    Description: Maximum Aurora Capacity Units for Serverless v2 scaling
+
+  AssetsBucketName:
+    Type: String
+    Description: Name of the S3 bucket containing workshop assets (cosmetics_sales_synthetic_data.csv and queries.txt)
+
+  AssetsBucketPrefix:
+    Type: String
+    Description: S3 prefix path for workshop assets in the source bucket
+
+  AuroraEngineVersion:
+    Type: String
+    Default: '16.11'
+    Description: Aurora PostgreSQL engine version for the Serverless v2 cluster
+
+  LambdaRuntime:
+    Type: String
+    Default: python3.12
+    AllowedValues: [python3.12, python3.13]
+    Description: >-
+      Python runtime for the DbInit and CopyAssets Lambda functions. Both
+      functions share one runtime; the inline code targets 3.12+.
+
+  DbInitFunctionTimeout:
+    Type: Number
+    Default: 900
+    MinValue: 60
+    MaxValue: 900
+    Description: >-
+      Timeout (seconds) for DbInitFunction. It seeds product_sales and replays
+      ~250 queries serially against a cold Serverless v2 cluster, so it needs
+      substantial headroom. 900 is the Lambda maximum.
+
+  DbInitFunctionMemorySize:
+    Type: Number
+    Default: 512
+    MinValue: 128
+    MaxValue: 10240
+    Description: >-
+      Memory (MB) for DbInitFunction. The seed/replay workload is I/O-bound on
+      the Data API rather than memory-heavy, so 512 is ample for the ~250-query
+      dataset; raise it if the dataset grows substantially. 128-10240 is the
+      Lambda-supported range.
+
+  CopyAssetsFunctionTimeout:
+    Type: Number
+    Default: 300
+    MinValue: 30
+    MaxValue: 900
+    Description: >-
+      Timeout (seconds) for CopyAssetsFunction, which copies workshop assets on
+      Create and empties both S3 buckets on Delete.
+
+  JupyterLabInstanceType:
+    Type: String
+    Default: ml.t3.xlarge
+    Description: >-
+      Instance type for the JupyterLab space. The notebooks run cell-by-cell and
+      offload all heavy compute to SageMaker training/evaluation jobs, so a
+      modest instance is sufficient.
+
+  DbInitRetryAttempts:
+    Type: Number
+    Default: 10
+    MinValue: 1
+    MaxValue: 60
+    Description: >-
+      How many times DbInitFunction probes the Aurora Data API before giving up,
+      while a cold Serverless v2 cluster resumes. attempts x DbInitRetryDelay is
+      the maximum wait, so keep the product below the function timeout.
+
+  DbInitRetryDelay:
+    Type: Number
+    Default: 15
+    MinValue: 1
+    MaxValue: 60
+    Description: >-
+      Seconds DbInitFunction waits between Data API resume probes.
+
+  DbInitQueryDelay:
+    Type: Number
+    Default: 0.1
+    MinValue: 0
+    MaxValue: 5
+    Description: >-
+      Seconds DbInitFunction pauses between the ~250 warm-up queries it replays
+      into pg_stat_statements. 0 disables the pause; raise it only if the cluster
+      throttles under the serial load.
+
+  BackupRetentionPeriod:
+    Type: Number
+    Default: 1
+    MinValue: 1
+    MaxValue: 35
+    Description: >-
+      Days of Aurora automated backup retention. Aurora ALWAYS keeps automated
+      backups -- the minimum is 1 day, there is no "off", so this cannot make the
+      cluster backup-free. Defaulted to 1 (the minimum) for this disposable
+      workshop: backup storage within the cluster's volume size is free, and the
+      whole cluster plus its backups is removed on stack delete
+      (DeletionPolicy: Delete). Raise it (up to 35) for a non-disposable
+      deployment that needs point-in-time recovery.
+
+Resources:
+  # ---------------------------------------------------------------------------
+  # Secrets Manager
+  # ---------------------------------------------------------------------------
+  RDSSecret:
+    Type: AWS::SecretsManager::Secret
+    Metadata:
+      checkov:
+        skip:
+          - id: CKV_AWS_149
+            comment: >-
+              Uses the default aws/secretsmanager key rather than a CMK.
+              Disposable, event-scoped secret. See the CMK note in index.en.md
+              for the production path.
+      Purpose: >-
+        Secrets Manager secret holding the Aurora master credentials. The DbInit
+        Lambda, the evaluator Lambda and the notebooks all read the DB password
+        from here via the RDS Data API rather than embedding it.
+    Properties:
+      Name: !Sub '${EnvironmentName}/rds/query-training-db'
+      Description: Aurora PostgreSQL credentials for query extraction pipeline
+      GenerateSecretString:
+        SecretStringTemplate: !Sub '{"username": "${DBMasterUsername}", "dbname": "${DBName}"}'
+        GenerateStringKey: password
+        PasswordLength: 32
+        ExcludeCharacters: '"@/\\'
+      Tags:
+        - Key: Environment
+          Value: !Ref EnvironmentName
+        - Key: Project
+          Value: query-training-pipeline
+
+  # ---------------------------------------------------------------------------
+  # VPC and Networking
+  # ---------------------------------------------------------------------------
+  VPC:
+    Type: AWS::EC2::VPC
+    Metadata:
+      Purpose: >-
+        Isolated network for the Aurora cluster. Two private subnets across two
+        AZs; no internet gateway or NAT -- the cluster is reached only through
+        the RDS Data API, never a direct network route.
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: !Sub '${EnvironmentName}-query-training-vpc'
+        - Key: Environment
+          Value: !Ref EnvironmentName
+
+  SubnetA:
+    Type: AWS::EC2::Subnet
+    Metadata:
+      Purpose: >-
+        First of two private subnets for the Aurora DB subnet group. Two AZs are
+        required by RDS even though this workshop runs a single instance.
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.1.0/24
+      AvailabilityZone: !Select [0, !GetAZs '']
+      Tags:
+        - Key: Name
+          Value: !Sub '${EnvironmentName}-query-training-subnet-a'
+        - Key: Environment
+          Value: !Ref EnvironmentName
+
+  SubnetB:
+    Type: AWS::EC2::Subnet
+    Metadata:
+      Purpose: >-
+        Second private subnet, in a different AZ from SubnetA, to satisfy the
+        RDS multi-AZ subnet-group requirement.
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.2.0/24
+      AvailabilityZone: !Select [1, !GetAZs '']
+      Tags:
+        - Key: Name
+          Value: !Sub '${EnvironmentName}-query-training-subnet-b'
+        - Key: Environment
+          Value: !Ref EnvironmentName
+
+  RDSSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Metadata:
+      Purpose: >-
+        Security group for the Aurora cluster. Intentionally declares NO ingress
+        rules -- access is exclusively via the RDS Data API (an AWS-managed
+        HTTPS endpoint), so nothing connects to port 5432 directly. See the
+        inline comment for the egress rationale.
+    # No ingress or egress rules are declared, and both omissions are deliberate.
+    #
+    # Ingress: the cluster is reached exclusively through the RDS Data API, an
+    # AWS-managed HTTPS endpoint that does not traverse this security group. No
+    # client ever opens a direct PostgreSQL connection to the cluster, so there
+    # is nothing to allow in on port 5432.
+    #
+    # Egress: omitting SecurityGroupEgress means CloudFormation applies the
+    # default allow-all-outbound rule. That is left as-is on purpose rather than
+    # locked down, for two reasons. First, the cluster lives in private subnets
+    # with no NAT gateway (see VPC below), so "allow all to 0.0.0.0/0" has no
+    # actual route off the VPC -- it is unrestricted in name only. Second,
+    # Aurora Serverless v2's internal communication with the managed storage and
+    # monitoring layer is not something a Data-API-only workload initiates
+    # through this group, and clamping egress on the managed instance is a change
+    # that cannot be validated without a full deploy. For a disposable,
+    # event-scoped cluster with no internet path, the default is acceptable.
+    Properties:
+      GroupDescription: Security group for query training Aurora PostgreSQL cluster (Data API only, no ingress needed)
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub '${EnvironmentName}-aurora-query-training-sg'
+        - Key: Environment
+          Value: !Ref EnvironmentName
+
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Metadata:
+      Purpose: >-
+        Groups SubnetA and SubnetB so Aurora can place the cluster across two
+        AZs.
+    Properties:
+      DBSubnetGroupDescription: Subnet group for query training Aurora cluster
+      SubnetIds:
+        - !Ref SubnetA
+        - !Ref SubnetB
+      Tags:
+        - Key: Environment
+          Value: !Ref EnvironmentName
+
+  # ---------------------------------------------------------------------------
+  # Aurora Serverless v2 Cluster
+  # ---------------------------------------------------------------------------
+  AuroraCluster:
+    Type: AWS::RDS::DBCluster
+    Metadata:
+      Purpose: >-
+        Aurora PostgreSQL Serverless v2 cluster, seeded with cosmetics-sales
+        data and pg_stat_statements query history at deploy time. This is the
+        training-data source for Lab 1 and the live database the evaluator runs
+        candidate SQL against in Labs 2-4.
+    # CloudFormation's default DeletionPolicy for RDS resources is Snapshot, not
+    # Delete -- so without these two lines a stack deletion leaves a manual
+    # snapshot behind that CloudFormation will never clean up. The data here is
+    # entirely disposable: the cluster is seeded from a CSV in S3 and repopulated
+    # by DbInitFunction on every deploy, so there is nothing worth retaining.
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      DBClusterIdentifier: !Sub '${EnvironmentName}-query-training-cluster'
+      Engine: aurora-postgresql
+      EngineVersion: !Ref AuroraEngineVersion
+      DatabaseName: !Ref DBName
+      MasterUsername: !Sub '{{resolve:secretsmanager:${RDSSecret}:SecretString:username}}'
+      MasterUserPassword: !Sub '{{resolve:secretsmanager:${RDSSecret}:SecretString:password}}'
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      VpcSecurityGroupIds:
+        - !GetAtt RDSSecurityGroup.GroupId
+      EnableHttpEndpoint: true
+      EnableIAMDatabaseAuthentication: true
+      ServerlessV2ScalingConfiguration:
+        MinCapacity: !Ref MinACU
+        MaxCapacity: !Ref MaxACU
+      # Encrypted at rest with the AWS-managed aws/rds key (no KmsKeyId). Fine
+      # for a disposable workshop account. For production, add KmsKeyId
+      # referencing a customer-managed key (CMK) to get key rotation, CloudTrail
+      # decrypt auditing, and key-policy control over who can decrypt. See the
+      # encryption note in content/index.en.md for the full rationale.
+      StorageEncrypted: true
+      BackupRetentionPeriod: !Ref BackupRetentionPeriod
+      DeletionProtection: false
+      CopyTagsToSnapshot: true
+      Tags:
+        - Key: Name
+          Value: !Sub '${EnvironmentName}-query-training-cluster'
+        - Key: Environment
+          Value: !Ref EnvironmentName
+        - Key: Project
+          Value: query-training-pipeline
+
+  AuroraInstance:
+    Type: AWS::RDS::DBInstance
+    Metadata:
+      checkov:
+        skip:
+          - id: CKV_AWS_118
+            comment: >-
+              Enhanced monitoring not enabled: extra telemetry/cost not
+              warranted for a single-use cluster reclaimed after the event.
+      Purpose: >-
+        The single Serverless v2 instance in the cluster. One instance is
+        sufficient for the workshop's read-mostly workload; DeletionPolicy is
+        Delete because the data is regenerated on every deploy.
+    # Same reasoning as AuroraCluster above: RDS defaults to Snapshot.
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      DBInstanceIdentifier: !Sub '${EnvironmentName}-query-training-instance-1'
+      DBClusterIdentifier: !Ref AuroraCluster
+      Engine: aurora-postgresql
+      DBInstanceClass: db.serverless
+      PubliclyAccessible: false
+      AutoMinorVersionUpgrade: true
+      Tags:
+        - Key: Name
+          Value: !Sub '${EnvironmentName}-query-training-instance-1'
+        - Key: Environment
+          Value: !Ref EnvironmentName
+        - Key: Project
+          Value: query-training-pipeline
+
+  SecretTargetAttachment:
+    Type: AWS::SecretsManager::SecretTargetAttachment
+    Metadata:
+      Purpose: >-
+        Links RDSSecret to the Aurora cluster so Secrets Manager records the
+        connection details and the RDS Data API can resolve credentials by
+        secret ARN.
+    Properties:
+      SecretId: !Ref RDSSecret
+      TargetId: !Ref AuroraCluster
+      TargetType: AWS::RDS::DBCluster
+
+  # ---------------------------------------------------------------------------
+  # Custom Resource: Create product_sales table and load CSV data
+  # ---------------------------------------------------------------------------
+  DbInitLambdaRole:
+    Type: AWS::IAM::Role
+    Metadata:
+      Purpose: >-
+        Execution role for DbInitFunction. Grants only the rds-data and
+        Secrets Manager access needed to create and seed the product_sales
+        table, plus S3 read for the CSV/queries assets and CloudWatch Logs.
+    Properties:
+      RoleName: !Sub '${EnvironmentName}-db-init-lambda-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+      Policies:
+        - PolicyName: RdsDataApiAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - rds-data:ExecuteStatement
+                  - rds-data:BatchExecuteStatement
+                Resource: !Sub 'arn:${AWS::Partition}:rds:${AWS::Region}:${AWS::AccountId}:cluster:${AuroraCluster}'
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetSecretValue
+                Resource: !Ref RDSSecret
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:s3:::${SlmWeightsBucket}/cosmetics_sales_synthetic_data.csv'
+                  - !Sub 'arn:${AWS::Partition}:s3:::${SlmWeightsBucket}/queries.txt'
+              - Effect: Allow
+                Action:
+                  - s3:ListBucket
+                Resource: !Sub 'arn:${AWS::Partition}:s3:::${SlmWeightsBucket}'
+
+  DbInitFunction:
+    Type: AWS::Lambda::Function
+    Metadata:
+      checkov:
+        skip:
+          - id: CKV_AWS_115
+            comment: >-
+              No reserved concurrency: a one-shot deploy-time custom resource,
+              not a request-serving function.
+          - id: CKV_AWS_116
+            comment: >-
+              No DLQ: runs once synchronously at stack create; failures surface
+              via CloudFormation, there are no async retries to capture.
+          - id: CKV_AWS_117
+            comment: >-
+              Not VPC-attached: reaches S3 and Aurora only through AWS API
+              endpoints (RDS Data API), so a VPC would add NAT/endpoints for no
+              benefit.
+          - id: CKV_AWS_173
+            comment: >-
+              Env vars hold only ARNs/names, never secrets (the DB password
+              comes from Secrets Manager at runtime); the default AWS-owned key
+              suffices. See index.en.md.
+      Purpose: >-
+        Custom-resource Lambda that runs once at stack create: creates the
+        product_sales table, seeds it from the CSV in S3, and replays ~250
+        queries so pg_stat_statements holds the history Lab 1 extracts.
+    # SlmWeightsBucket is listed for clarity, but note it does NOT fix a race:
+    # this is the inline-ZipFile Lambda RESOURCE, whose creation reads no S3.
+    # The S3 get_object calls happen at INVOKE time, driven by
+    # DbInitCustomResource, and the real ordering guarantee lives there --
+    # DbInitCustomResource DependsOn CopyAssetsCustomResource, which is what
+    # actually copies the CSV and queries.txt INTO the bucket. An empty bucket
+    # would fail get_object just as a missing one would, so "bucket exists" is
+    # not the correct precondition; "objects are present" is, and that is
+    # already guaranteed downstream.
+    DependsOn:
+      - AuroraInstance
+      - SlmWeightsBucket
+    Properties:
+      FunctionName: !Sub '${EnvironmentName}-db-init-product-sales'
+      Runtime: !Ref LambdaRuntime
+      Handler: index.handler
+      Timeout: !Ref DbInitFunctionTimeout
+      MemorySize: !Ref DbInitFunctionMemorySize
+      Role: !GetAtt DbInitLambdaRole.Arn
+      Environment:
+        Variables:
+          CLUSTER_ARN: !Sub 'arn:${AWS::Partition}:rds:${AWS::Region}:${AWS::AccountId}:cluster:${AuroraCluster}'
+          SECRET_ARN: !Ref RDSSecret
+          DATABASE: !Ref DBName
+          BUCKET: !Ref SlmWeightsBucket
+          CSV_KEY: cosmetics_sales_synthetic_data.csv
+          QUERIES_KEY: queries.txt
+          # Data API resume/retry tuning -- see the DbInit* parameters. Numbers
+          # arrive as strings in the environment, so the handler casts them.
+          RETRY_ATTEMPTS: !Ref DbInitRetryAttempts
+          RETRY_DELAY: !Ref DbInitRetryDelay
+          QUERY_DELAY: !Ref DbInitQueryDelay
+      Code:
+        ZipFile: |
+          import csv
+          import io
+          import os
+          import time
+          import boto3
+          # cfnresponse is injected automatically into inline-ZipFile Python
+          # functions. It handles the pre-signed PUT with retries and manages
+          # PhysicalResourceId correctly -- both of which the hand-rolled
+          # urllib version this replaced got wrong. CopyAssetsFunction below
+          # already uses it.
+          import cfnresponse
+
+          s3 = boto3.client('s3')
+          rds_data = boto3.client('rds-data')
+
+          CLUSTER_ARN = os.environ['CLUSTER_ARN']
+          SECRET_ARN = os.environ['SECRET_ARN']
+          DATABASE = os.environ['DATABASE']
+          BUCKET = os.environ['BUCKET']
+          CSV_KEY = os.environ['CSV_KEY']
+          QUERIES_KEY = os.environ['QUERIES_KEY']
+
+          # Retry/sleep tuning from the DbInit* stack parameters. Env vars are
+          # strings, so cast: attempts/delay are ints, the per-query pause a float.
+          RETRY_ATTEMPTS = int(os.environ.get('RETRY_ATTEMPTS', '10'))
+          RETRY_DELAY = int(os.environ.get('RETRY_DELAY', '15'))
+          QUERY_DELAY = float(os.environ.get('QUERY_DELAY', '0.1'))
+
+          CREATE_TABLE_SQL = """
+          CREATE TABLE IF NOT EXISTS product_sales (
+              sale_id INTEGER PRIMARY KEY,
+              product_name VARCHAR(255) NOT NULL,
+              product_category VARCHAR(100) NOT NULL,
+              brand VARCHAR(100) NOT NULL,
+              brand_tier VARCHAR(50) NOT NULL,
+              price NUMERIC(10,2) NOT NULL,
+              volume_ml INTEGER,
+              quantity INTEGER NOT NULL,
+              country_code VARCHAR(5) NOT NULL,
+              sale_date DATE NOT NULL,
+              launch_date DATE,
+              customer_segment VARCHAR(50) NOT NULL,
+              target_age_group VARCHAR(20),
+              certification_tags TEXT,
+              ingredients_type VARCHAR(50),
+              season_tag VARCHAR(50),
+              rating NUMERIC(2,1),
+              stock_status VARCHAR(20) NOT NULL,
+              sales_rank INTEGER
+          );
+          """
+
+          INSERT_SQL = """
+          INSERT INTO product_sales (
+              sale_id, product_name, product_category, brand, brand_tier,
+              price, volume_ml, quantity, country_code, sale_date,
+              launch_date, customer_segment, target_age_group, certification_tags,
+              ingredients_type, season_tag, rating, stock_status, sales_rank
+          ) VALUES (
+              :sale_id::integer, :product_name, :product_category, :brand, :brand_tier,
+              :price::numeric, :volume_ml::integer, :quantity::integer, :country_code, :sale_date::date,
+              :launch_date::date, :customer_segment, :target_age_group, :certification_tags,
+              :ingredients_type, :season_tag, :rating::numeric, :stock_status, :sales_rank::integer
+          )
+          ON CONFLICT (sale_id) DO NOTHING
+          """
+
+          BATCH_SIZE = 50
+
+          # Fail the stack if fewer than this many of the queries in queries.txt
+          # land in pg_stat_statements. Lab 1 extracts its training data from
+          # that view, so an empty or nearly-empty query history produces a
+          # green stack that breaks the workshop half an hour later, in a lab
+          # that has nothing to do with the actual cause. Partial failure is
+          # survivable -- Lab 1 needs roughly 200 samples -- so this is a floor,
+          # not an exact count.
+          MIN_QUERIES_EXECUTED = 200
+
+
+          def wait_for_data_api(attempts=RETRY_ATTEMPTS, delay=RETRY_DELAY):
+              """Block until Aurora answers a trivial Data API call.
+
+              DependsOn: AuroraInstance only guarantees the cluster is
+              'available' to CloudFormation. Serverless v2 scaled to MinACU can
+              still reject the first Data API call with DatabaseResumingException
+              while it wakes up. Without this, one transient error on the very
+              first statement fails the whole stack.
+              """
+              for attempt in range(1, attempts + 1):
+                  try:
+                      rds_data.execute_statement(
+                          resourceArn=CLUSTER_ARN,
+                          secretArn=SECRET_ARN,
+                          database=DATABASE,
+                          sql='SELECT 1',
+                      )
+                      print(f'Data API ready after {attempt} attempt(s)')
+                      return
+                  except rds_data.exceptions.DatabaseResumingException:
+                      print(f'Aurora still resuming (attempt {attempt}/{attempts}), waiting {delay}s')
+                      time.sleep(delay)
+                  except Exception as e:
+                      # BadRequestException wrapping a resume message shows up on
+                      # some paths instead of the typed exception, so match on
+                      # text too rather than failing fast on a retryable error.
+                      if 'resuming' in str(e).lower() or 'not currently available' in str(e).lower():
+                          print(f'Aurora not ready (attempt {attempt}/{attempts}): {e}')
+                          time.sleep(delay)
+                      else:
+                          raise
+              raise RuntimeError(
+                  f'Aurora Data API did not become available after {attempts} attempts'
+              )
+
+
+          def execute_sql(sql, params=None):
+              kwargs = {
+                  'resourceArn': CLUSTER_ARN,
+                  'secretArn': SECRET_ARN,
+                  'database': DATABASE,
+                  'sql': sql,
+              }
+              if params:
+                  kwargs['parameters'] = params
+              return rds_data.execute_statement(**kwargs)
+
+
+          def build_param(name, value, type_hint=None):
+              if value is None or value == '':
+                  return {'name': name, 'value': {'isNull': True}}
+              field = {'name': name, 'value': {'stringValue': str(value)}}
+              if type_hint:
+                  field['typeHint'] = type_hint
+              return field
+
+
+          def row_to_params(row):
+              return [
+                  build_param('sale_id', row.get('sale_id')),
+                  build_param('product_name', row.get('product_name')),
+                  build_param('product_category', row.get('product_category')),
+                  build_param('brand', row.get('brand')),
+                  build_param('brand_tier', row.get('brand_tier')),
+                  build_param('price', row.get('price')),
+                  build_param('volume_ml', row.get('volume_ml')),
+                  build_param('quantity', row.get('quantity')),
+                  build_param('country_code', row.get('country_code')),
+                  build_param('sale_date', row.get('sale_date'), 'DATE'),
+                  build_param('launch_date', row.get('launch_date'), 'DATE'),
+                  build_param('customer_segment', row.get('customer_segment')),
+                  build_param('target_age_group', row.get('target_age_group')),
+                  build_param('certification_tags', row.get('certification_tags')),
+                  build_param('ingredients_type', row.get('ingredients_type')),
+                  build_param('season_tag', row.get('season_tag')),
+                  build_param('rating', row.get('rating')),
+                  build_param('stock_status', row.get('stock_status')),
+                  build_param('sales_rank', row.get('sales_rank')),
+              ]
+
+
+          def load_csv_data():
+              obj = s3.get_object(Bucket=BUCKET, Key=CSV_KEY)
+              content = obj['Body'].read().decode('utf-8')
+              reader = csv.DictReader(io.StringIO(content))
+
+              batch = []
+              total_inserted = 0
+              for row in reader:
+                  batch.append({'parameterSets': row_to_params(row)})
+                  if len(batch) >= BATCH_SIZE:
+                      param_sets = [item['parameterSets'] for item in batch]
+                      rds_data.batch_execute_statement(
+                          resourceArn=CLUSTER_ARN,
+                          secretArn=SECRET_ARN,
+                          database=DATABASE,
+                          sql=INSERT_SQL,
+                          parameterSets=param_sets,
+                      )
+                      total_inserted += len(batch)
+                      batch = []
+
+              if batch:
+                  param_sets = [item['parameterSets'] for item in batch]
+                  rds_data.batch_execute_statement(
+                      resourceArn=CLUSTER_ARN,
+                      secretArn=SECRET_ARN,
+                      database=DATABASE,
+                      sql=INSERT_SQL,
+                      parameterSets=param_sets,
+                  )
+                  total_inserted += len(batch)
+
+              print(f'Successfully inserted {total_inserted} rows into product_sales')
+              return total_inserted
+
+
+          def run_queries():
+              obj = s3.get_object(Bucket=BUCKET, Key=QUERIES_KEY)
+              content = obj['Body'].read().decode('utf-8')
+              queries = [q.strip() for q in content.splitlines() if q.strip()]
+
+              executed = 0
+              failed = 0
+              for query in queries:
+                  try:
+                      execute_sql(query)
+                      executed += 1
+                  except Exception as e:
+                      print(f'Query failed: {query[:80]}... Error: {e}')
+                      failed += 1
+                  if QUERY_DELAY:
+                      time.sleep(QUERY_DELAY)
+
+              print(f'Executed {executed} queries successfully, {failed} failed')
+
+              # Individual failures stay tolerated -- pg_stat_statements only
+              # needs enough history for Lab 1 -- but total failure must not
+              # report SUCCESS. Before this check, all 250 queries could fail
+              # and the stack would still go green.
+              if executed < MIN_QUERIES_EXECUTED:
+                  raise RuntimeError(
+                      f'Only {executed} of {len(queries)} queries executed '
+                      f'(minimum {MIN_QUERIES_EXECUTED}). pg_stat_statements will '
+                      'not hold enough query history for Lab 1 to extract '
+                      'training data. See the per-query errors above.'
+                  )
+
+              return executed, failed
+
+
+          def handler(event, context):
+              request_type = event.get('RequestType')
+              try:
+                  if request_type == 'Delete':
+                      # Nothing to undo: the table lives inside the Aurora
+                      # cluster, which CloudFormation deletes itself.
+                      cfnresponse.send(event, context, cfnresponse.SUCCESS, {})
+                      return
+
+                  # Wait for Serverless v2 to be awake before the first real
+                  # statement, so a resume in progress is a delay and not a
+                  # stack failure.
+                  wait_for_data_api()
+
+                  # Create table
+                  execute_sql(CREATE_TABLE_SQL)
+
+                  # Load CSV data into the table
+                  rows = load_csv_data()
+
+                  # Run all queries to populate query history. Raises if too
+                  # few succeed -- see MIN_QUERIES_EXECUTED.
+                  executed, failed = run_queries()
+
+                  cfnresponse.send(event, context, cfnresponse.SUCCESS, {
+                      'RowsInserted': rows,
+                      'QueriesExecuted': executed,
+                      'QueriesFailed': failed,
+                  })
+
+              except Exception as e:
+                  print(f'Error on {request_type}: {e}')
+                  # Truncate: CloudFormation rejects a Reason longer than
+                  # 4096 bytes, and losing the signal entirely would hang the
+                  # stack for the full custom-resource timeout.
+                  cfnresponse.send(
+                      event, context, cfnresponse.FAILED, {}, reason=str(e)[:1000]
+                  )
+
+  DbInitCustomResource:
+    Type: Custom::DbInit
+    DependsOn:
+      - AuroraInstance
+      - SecretTargetAttachment
+      # DbInitFunction reads cosmetics_sales_synthetic_data.csv and queries.txt
+      # from SlmWeightsBucket, and CopyAssetsCustomResource is what puts them
+      # there. Without this edge CloudFormation may run both concurrently and
+      # the get_object calls fail with NoSuchKey. Today that is masked only by
+      # Aurora taking 5-10 minutes to provision while the copy takes seconds --
+      # a timing coincidence, not a guarantee.
+      - CopyAssetsCustomResource
+    Metadata:
+      Purpose: >-
+        Invokes DbInitFunction at deploy time to create the product_sales
+        table, seed it from the CSV in S3, and replay ~250 queries so
+        pg_stat_statements holds the query history Lab 1 extracts. Fires only
+        on Create; the Delete path is a no-op because Aurora owns the data.
+    Properties:
+      ServiceToken: !GetAtt DbInitFunction.Arn
+
+  # ---------------------------------------------------------------------------
+  # IAM Role for Lambda Evaluator (used by custom_evaluator function)
+  # ---------------------------------------------------------------------------
+  LambdaEvaluatorRole:
+    Type: AWS::IAM::Role
+    Metadata:
+      Purpose: >-
+        Execution role for the workshop_evaluator Lambda that participants
+        build in Lab 2. That function executes candidate SQL against Aurora
+        to score it, so this role needs rds-data and Secrets Manager access.
+        The same function serves as the SFT eval metric, the RLVR reward
+        function, and the Lab 4 frontier-model scorer.
+    Properties:
+      RoleName: lambda-evaluator-execution-role
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+                - sagemaker.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+      Policies:
+        - PolicyName: RdsDataApiAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - rds-data:ExecuteStatement
+                Resource: !Sub 'arn:${AWS::Partition}:rds:${AWS::Region}:${AWS::AccountId}:cluster:${AuroraCluster}'
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetSecretValue
+                Resource: !Ref RDSSecret
+              - Effect: Allow
+                Action:
+                  - kms:Decrypt
+                  - kms:DescribeKey
+                Resource: !Sub 'arn:${AWS::Partition}:kms:${AWS::Region}:${AWS::AccountId}:key/*'
+        - PolicyName: AllowSageMakerInvoke
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource: !Sub 'arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:*'
+      Tags:
+        - Key: Environment
+          Value: !Ref EnvironmentName
+        - Key: Project
+          Value: query-training-pipeline
+
+  # ---------------------------------------------------------------------------
+  # S3 Bucket for SLM Weights / Workshop Assets
+  # ---------------------------------------------------------------------------
+  SlmWeightsLoggingBucket:
+    Type: AWS::S3::Bucket
+    Metadata:
+      checkov:
+        skip:
+          - id: CKV_AWS_21
+            comment: >-
+              Versioning intentionally off: this bucket is emptied on stack
+              delete (CopyAssetsFunction), and versioning would retain old
+              versions/delete markers that fight teardown. Disposable workshop
+              data.
+      Purpose: >-
+        S3 access-log bucket for SlmWeightsBucket. Kept separate so log delivery
+        does not recurse; emptied by CopyAssetsFunction on stack delete.
+    Properties:
+      BucketName: !Sub 'slm-weights-${AWS::AccountId}-logs'
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          # SSE-S3 (AWS-managed keys). Fine for a disposable workshop account.
+          # For production, use SSEAlgorithm: aws:kms with a KMSMasterKeyID
+          # referencing a customer-managed key (CMK) for key rotation, CloudTrail
+          # decrypt auditing, and key-policy control. See the encryption note in
+          # content/index.en.md for the full rationale.
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      LoggingConfiguration: {}
+      LifecycleConfiguration:
+        Rules:
+          - Id: ExpireLogs
+            Status: Enabled
+            ExpirationInDays: 90
+
+  SlmWeightsLoggingBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Metadata:
+      Purpose: >-
+        Bucket policy granting the S3 log-delivery service principal permission
+        to write access logs into SlmWeightsLoggingBucket.
+    Properties:
+      Bucket: !Ref SlmWeightsLoggingBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: S3ServerAccessLogsPolicy
+            Effect: Allow
+            Principal:
+              Service: logging.s3.amazonaws.com
+            Action:
+              - s3:PutObject
+            Resource: !Sub 'arn:${AWS::Partition}:s3:::slm-weights-${AWS::AccountId}-logs/*'
+            Condition:
+              ArnLike:
+                aws:SourceArn: !GetAtt SlmWeightsBucket.Arn
+              StringEquals:
+                aws:SourceAccount: !Sub '${AWS::AccountId}'
+
+  SlmWeightsBucket:
+    Type: AWS::S3::Bucket
+    Metadata:
+      checkov:
+        skip:
+          - id: CKV_AWS_21
+            comment: >-
+              Versioning intentionally off: emptied on stack delete, and
+              versioning would retain versions that fight teardown. Disposable
+              workshop data.
+      Purpose: >-
+        Primary workshop bucket: holds the copied notebooks and data assets,
+        plus model weights and job artifacts written by SageMaker. Emptied by
+        CopyAssetsFunction on stack delete so the stack can be torn down.
+    Properties:
+      BucketName: !Sub 'slm-weights-${AWS::AccountId}'
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          # SSE-S3 (AWS-managed keys). Fine for a disposable workshop account.
+          # For production, use SSEAlgorithm: aws:kms with a KMSMasterKeyID
+          # referencing a customer-managed key (CMK) for key rotation, CloudTrail
+          # decrypt auditing, and key-policy control. See the encryption note in
+          # content/index.en.md for the full rationale.
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      LoggingConfiguration:
+        DestinationBucketName: !Ref SlmWeightsLoggingBucket
+        LogFilePrefix: access-logs/
+
+  # ---------------------------------------------------------------------------
+  # Copy Assets from source bucket to SlmWeightsBucket
+  # ---------------------------------------------------------------------------
+  CopyAssetsLambdaRole:
+    Type: AWS::IAM::Role
+    Metadata:
+      Purpose: >-
+        Execution role for CopyAssetsFunction, which copies workshop assets
+        from the Workshop Studio source bucket into SlmWeightsBucket on
+        Create, and empties both buckets on Delete so the stack can be torn
+        down. Needs S3 read on the source and read/write/delete on both
+        destination buckets.
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+      Policies:
+        - PolicyName: S3CopyPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:ListBucket
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:s3:::${AssetsBucketName}'
+                  - !Sub 'arn:${AWS::Partition}:s3:::${AssetsBucketName}/*'
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                  - s3:DeleteObject
+                  - s3:ListBucket
+                Resource:
+                  - !GetAtt SlmWeightsBucket.Arn
+                  - !Sub '${SlmWeightsBucket.Arn}/*'
+              # On stack Delete this function empties both buckets so
+              # CloudFormation can remove them -- S3 cannot delete a bucket that
+              # still has objects in it. The logging bucket needs its own grant:
+              # nothing writes to it during the workshop, but S3 access logging
+              # does, so it is non-empty by teardown time.
+              - Effect: Allow
+                Action:
+                  - s3:DeleteObject
+                  - s3:ListBucket
+                Resource:
+                  - !GetAtt SlmWeightsLoggingBucket.Arn
+                  - !Sub '${SlmWeightsLoggingBucket.Arn}/*'
+
+  CopyAssetsFunction:
+    Type: AWS::Lambda::Function
+    Metadata:
+      checkov:
+        skip:
+          - id: CKV_AWS_115
+            comment: >-
+              No reserved concurrency: a one-shot deploy/delete-time custom
+              resource, not a request-serving function.
+          - id: CKV_AWS_116
+            comment: >-
+              No DLQ: runs once synchronously via CloudFormation; failures
+              surface there, no async retries to capture.
+          - id: CKV_AWS_117
+            comment: >-
+              Not VPC-attached: only calls the S3 API, which needs no VPC.
+          - id: CKV_AWS_173
+            comment: >-
+              Env vars hold only bucket names, no secrets; default AWS-owned key
+              suffices. See index.en.md.
+      Purpose: >-
+        Custom-resource Lambda that copies workshop assets from the Workshop
+        Studio source bucket into SlmWeightsBucket on create, and empties both
+        workshop buckets on delete so CloudFormation can remove them.
+    Properties:
+      Runtime: !Ref LambdaRuntime
+      Handler: index.handler
+      Role: !GetAtt CopyAssetsLambdaRole.Arn
+      Timeout: !Ref CopyAssetsFunctionTimeout
+      Environment:
+        Variables:
+          SOURCE_BUCKET: !Ref AssetsBucketName
+          SOURCE_PREFIX: !Ref AssetsBucketPrefix
+          DEST_BUCKET: !Ref SlmWeightsBucket
+          LOGGING_BUCKET: !Ref SlmWeightsLoggingBucket
+      Code:
+        ZipFile: |
+          import boto3
+          import cfnresponse
+          import os
+
+          def copy_assets(s3):
+              """Copy workshop assets from the Workshop Studio assets bucket."""
+              source_bucket = os.environ['SOURCE_BUCKET']
+              source_prefix = os.environ['SOURCE_PREFIX'].rstrip('/')
+              dest_bucket = os.environ['DEST_BUCKET']
+              copied = 0
+              paginator = s3.get_paginator('list_objects_v2')
+              for page in paginator.paginate(Bucket=source_bucket, Prefix=source_prefix):
+                  for obj in page.get('Contents', []):
+                      key = obj['Key']
+                      dest_key = key[len(source_prefix):].lstrip('/')
+                      if dest_key:
+                          s3.copy_object(
+                              CopySource={'Bucket': source_bucket, 'Key': key},
+                              Bucket=dest_bucket,
+                              Key=dest_key
+                          )
+                          copied += 1
+              print(f'Copied {copied} object(s) from {source_bucket}/{source_prefix}')
+              return copied
+
+          def empty_bucket(s3, bucket):
+              """Delete every object and version in a bucket.
+
+              S3 refuses to delete a non-empty bucket, so without this the whole
+              stack deletion fails. Paginates because both buckets can hold more
+              than the 1000-key single-page limit -- model weights in one, access
+              logs in the other.
+              """
+              deleted = 0
+              # list_object_versions covers both versioned and unversioned
+              # buckets, and returns delete markers that plain list_objects_v2
+              # would leave behind.
+              paginator = s3.get_paginator('list_object_versions')
+              for page in paginator.paginate(Bucket=bucket):
+                  keys = [
+                      {'Key': o['Key'], 'VersionId': o['VersionId']}
+                      for o in page.get('Versions', []) + page.get('DeleteMarkers', [])
+                  ]
+                  for i in range(0, len(keys), 1000):
+                      batch = keys[i:i + 1000]
+                      s3.delete_objects(Bucket=bucket, Delete={'Objects': batch, 'Quiet': True})
+                      deleted += len(batch)
+              print(f'Deleted {deleted} object(s) from {bucket}')
+              return deleted
+
+          def handler(event, context):
+              request_type = event['RequestType']
+              try:
+                  s3 = boto3.client('s3')
+
+                  if request_type in ('Create', 'Update'):
+                      copied = copy_assets(s3)
+                      if copied == 0:
+                          # A green stack with an empty bucket is worse than a
+                          # failed one: DbInit and the JupyterLab sync both read
+                          # from here, and they fail much later and far less
+                          # legibly. Usually a wrong AssetsBucketPrefix.
+                          raise RuntimeError(
+                              f"No objects found under "
+                              f"s3://{os.environ['SOURCE_BUCKET']}/{os.environ['SOURCE_PREFIX']} "
+                              "-- check the AssetsBucketPrefix parameter."
+                          )
+
+                  elif request_type == 'Delete':
+                      # Never fail the stack from here. A Delete that reports
+                      # FAILED leaves the stack in DELETE_FAILED and needs manual
+                      # cleanup; leftover objects are a far smaller problem, and
+                      # the bucket deletion itself will surface any real issue.
+                      for bucket in (os.environ['DEST_BUCKET'], os.environ['LOGGING_BUCKET']):
+                          try:
+                              empty_bucket(s3, bucket)
+                          except Exception as e:
+                              print(f'WARNING: could not empty {bucket}: {e}')
+
+                  cfnresponse.send(event, context, cfnresponse.SUCCESS, {})
+              except Exception as e:
+                  print(f'Error on {request_type}: {e}')
+                  if request_type == 'Delete':
+                      # Same reasoning: signal SUCCESS so teardown proceeds.
+                      cfnresponse.send(event, context, cfnresponse.SUCCESS, {'Error': str(e)})
+                  else:
+                      cfnresponse.send(event, context, cfnresponse.FAILED, {'Error': str(e)})
+
+  CopyAssetsCustomResource:
+    Type: Custom::CopyAssets
+    # Both buckets are listed because the Delete branch empties both. DependsOn
+    # is what guarantees this resource is deleted *before* the buckets are, which
+    # is the only ordering under which emptying them is useful.
+    DependsOn:
+      - SlmWeightsBucket
+      - SlmWeightsLoggingBucket
+    Metadata:
+      Purpose: >-
+        Invokes CopyAssetsFunction. On Create/Update it copies the workshop
+        notebooks and data assets from the Workshop Studio source bucket into
+        SlmWeightsBucket; on Delete it empties both buckets so CloudFormation
+        can remove them. Must be deleted before the buckets, hence the
+        DependsOn edges above.
+    Properties:
+      ServiceToken: !GetAtt CopyAssetsFunction.Arn
+
+  # ---------------------------------------------------------------------------
+  # SageMaker Domain, User Profile, and JupyterLab Space
+  # ---------------------------------------------------------------------------
+  SageMakerExecutionRole:
+    Type: AWS::IAM::Role
+    Metadata:
+      checkov:
+        skip:
+          - id: CKV_AWS_111
+            comment: >-
+              "IAM policies should not allow write access without constraints."
+              Writes ARE constrained wherever the resource name is known:
+              model-package-group writes are pinned to sft-model and
+              text-to-sql-3b-rlvr-only, MLflow writes to workshop-mlflow,
+              CreatePresignedDomainUrl to the workshop-user profile, and job/model
+              writes to this account+region's resource-type ARNs. The residual
+              write wildcards are unavoidable: SageMaker training/processing/
+              evaluation JOB names are generated by the SDK at submit time (the
+              notebooks read the name back off the returned job object), so they
+              cannot be pinned in advance; AI Registry hub content is created
+              against an account-level hub whose ARN is not known until runtime;
+              and tags apply to those same generated-name resources. See
+              SageMakerAccess below.
+          - id: CKV_AWS_107
+            comment: >-
+              Credentials-exposure check. No statement grants
+              iam:*/sts:*/secrets read-and-write beyond the single scoped
+              secretsmanager:GetSecretValue on RDSSecret (RdsDataApiAccess),
+              which is required for the Data API. Suppressed as a false positive
+              alongside the constrained-write review.
+      Purpose: >-
+        Execution role assumed inside the JupyterLab space and by every
+        SageMaker training and evaluation job the notebooks launch. Retains
+        AmazonSageMakerFullAccess deliberately: MlflowApp.create, SFTTrainer,
+        RLVRTrainer and Evaluator.create all depend on it, and the account is
+        disposable and event-scoped. See the inline policy statements for the
+        narrower Bedrock, Lambda and MLflow grants layered on top.
+      LeastPrivilegeNote: >-
+        AmazonSageMakerFullAccess was REPLACED with the scoped SageMakerAccess
+        inline policy below (plus WorkshopBucketWrite for S3 and a scoped
+        iam:PassRole). This is a best-effort enumeration of the SageMaker action
+        families the Lab 0-4 notebooks actually use -- training and processing
+        jobs, model packages/groups, AI Registry hub content (DataSet,
+        Evaluator), and the MLflow tracking server -- rather than the full
+        managed policy. It has NOT yet been validated by a complete deploy and
+        Lab 0-4 run, so a missing action may surface as AccessDenied mid-lab; the
+        fix is to add that action to SageMakerAccess. Two grants that
+        AmazonSageMakerFullAccess provided implicitly are restored explicitly
+        because the workshop breaks without them: iam:PassRole to
+        sagemaker.amazonaws.com (training jobs are launched with role=ROLE), and
+        S3 write to the SageMaker default bucket and SlmWeightsBucket (dataset
+        uploads and job outputs). Resource is '*' on the SageMaker statements
+        because the SDK's internal Describe*/List*/Search and hub-content calls
+        do not reliably support resource-level permissions.
+        AmazonS3ReadOnlyAccess is likewise kept account-wide (not scoped like the
+        writes) because the base model and training containers are pulled from
+        AWS-owned JumpStart/DLC buckets whose names are not enumerable at deploy
+        time -- see the comment on ManagedPolicyArns.
+    Properties:
+      # Fixed name so the scoped iam:PassRole below can build this role's ARN
+      # with !Sub. Without a fixed name CloudFormation auto-generates one, which
+      # cannot be referenced from the role's own inline policy (a !GetAtt
+      # self-reference is a circular dependency), forcing PassRole onto '*'.
+      # ${EnvironmentName}-prefixed to match the other named roles in this stack.
+      RoleName: !Sub '${EnvironmentName}-sagemaker-execution-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: sagemaker.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        # Kept broad on purpose (writes ARE scoped -- see WorkshopBucketWrite).
+        # The training/eval jobs read the Llama 3.2 3B base model and the
+        # training-container artifacts from AWS-owned JumpStart / Deep Learning
+        # Container S3 buckets (jumpstart-cache-prod-<region>, sagemaker-sample-
+        # files, regional DLC buckets, ...). Those bucket names are not the
+        # workshop's, vary by region, and are not enumerable at deploy time, so
+        # a read policy scoped to only slm-weights-* + the SageMaker default
+        # bucket would deny the base-model download and fail Lab 2's first
+        # trainer.train(). Account-wide *read* is the pragmatic cover -- same
+        # reasoning as the SageMakerReads wildcard. See index.en.md for the
+        # production scoping path.
+        #
+        # Concrete starting point for a production adopter who wants to replace
+        # this managed policy with a scoped inline read policy (s3:GetObject +
+        # s3:ListBucket on both the bucket and /* ARNs):
+        #   - arn:aws:s3:::${SlmWeightsBucket}            (+ /*)
+        #   - arn:aws:s3:::sagemaker-${AWS::Region}-${AWS::AccountId}  (+ /*)
+        #   - arn:aws:s3:::jumpstart-cache-prod-${AWS::Region}         (+ /*)
+        #   - arn:aws:s3:::sagemaker-sample-files                      (+ /*)
+        #   - the regional Deep Learning Container bucket for the training image
+        # The JumpStart/DLC bucket names are documented per region in the AWS
+        # docs (search "JumpStart buckets by Region" and the "Available Deep
+        # Learning Containers images" GitHub list); confirm the exact names for
+        # your deployment region before locking this down, and validate with a
+        # full Lab 2 run, since a missing artifact bucket fails the base-model
+        # download at runtime rather than at deploy time.
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/AmazonS3ReadOnlyAccess'
+      Policies:
+        - PolicyName: SageMakerAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              # Scoped replacement for AmazonSageMakerFullAccess. Split into
+              # WRITE statements (scoped to a resource ARN wherever the name is
+              # known) and READ statements (Describe/List/Search, which stay on
+              # '*' because the v3 SDK interleaves broad lookups that reject
+              # resource-level scoping). See the checkov note on the role above
+              # for why some write wildcards are unavoidable.
+
+              # --- WRITES, scoped where the resource name is knowable ---------
+              - Sid: JobWrites
+                Effect: Allow
+                # SFTTrainer/RLVRTrainer (training jobs) and CustomScorerEvaluator
+                # (processing jobs). Job NAMES are generated by the SDK at submit
+                # time -- the notebooks read them back off the returned job object
+                # -- so they cannot be pinned; the constraint is the resource
+                # TYPE in this account+region, which still excludes jobs in other
+                # accounts/regions.
+                Action:
+                  - sagemaker:CreateTrainingJob
+                  - sagemaker:StopTrainingJob
+                  - sagemaker:CreateProcessingJob
+                  - sagemaker:StopProcessingJob
+                  - sagemaker:CreateTransformJob
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:sagemaker:${AWS::Region}:${AWS::AccountId}:training-job/*'
+                  - !Sub 'arn:${AWS::Partition}:sagemaker:${AWS::Region}:${AWS::AccountId}:processing-job/*'
+                  - !Sub 'arn:${AWS::Partition}:sagemaker:${AWS::Region}:${AWS::AccountId}:transform-job/*'
+              - Sid: ModelRegistryWrites
+                Effect: Allow
+                # Pinned to the two model-package groups the workshop creates:
+                # sft-model (Lab 2) and text-to-sql-3b-rlvr-only (Lab 3 ablation).
+                # The model-package children live under those group ARNs. Model
+                # objects (CreateModel) keep a type-scoped ARN since evaluation
+                # creates them with SDK-generated names.
+                Action:
+                  - sagemaker:CreateModelPackageGroup
+                  - sagemaker:DeleteModelPackageGroup
+                  - sagemaker:CreateModelPackage
+                  - sagemaker:UpdateModelPackage
+                  - sagemaker:DeleteModelPackage
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:sagemaker:${AWS::Region}:${AWS::AccountId}:model-package-group/sft-model'
+                  - !Sub 'arn:${AWS::Partition}:sagemaker:${AWS::Region}:${AWS::AccountId}:model-package-group/text-to-sql-3b-rlvr-only'
+                  - !Sub 'arn:${AWS::Partition}:sagemaker:${AWS::Region}:${AWS::AccountId}:model-package/sft-model/*'
+                  - !Sub 'arn:${AWS::Partition}:sagemaker:${AWS::Region}:${AWS::AccountId}:model-package/text-to-sql-3b-rlvr-only/*'
+              - Sid: ModelWrites
+                Effect: Allow
+                # Evaluation creates transient model objects with SDK-generated
+                # names, so this is type-scoped rather than name-pinned.
+                Action:
+                  - sagemaker:CreateModel
+                  - sagemaker:DeleteModel
+                Resource: !Sub 'arn:${AWS::Partition}:sagemaker:${AWS::Region}:${AWS::AccountId}:model/*'
+              - Sid: MlflowAppWrites
+                Effect: Allow
+                # The v3 SDK's MlflowApp.create (Lab 0) uses the serverless
+                # "MlflowApp" action family -- NOT the older MlflowTrackingServer
+                # actions. SageMaker assigns the app a random ID
+                # (mlflow-app/app-XXXXX), so the resource cannot be pinned to a
+                # name and must use the mlflow-app/* wildcard. Write + data-plane
+                # calls: Create/Update/Delete the app, plus the presigned-URL and
+                # CallMlflowAppApi actions the notebooks use in Labs 2-4 to log
+                # and read runs. (Verified against the SageMaker MLflow App API.)
+                Action:
+                  - sagemaker:CreateMlflowApp
+                  - sagemaker:UpdateMlflowApp
+                  - sagemaker:DeleteMlflowApp
+                  - sagemaker:CreatePresignedMlflowAppUrl
+                  - sagemaker:CallMlflowAppApi
+                Resource: !Sub 'arn:${AWS::Partition}:sagemaker:${AWS::Region}:${AWS::AccountId}:mlflow-app/*'
+              - Sid: StudioAppLifecycle
+                Effect: Allow
+                # Clicking "Run" on the JupyterLab space calls CreateApp to
+                # launch the app; "Stop" calls DeleteApp. UpdateSpace is included
+                # because Studio updates the space's app settings on launch. The
+                # space itself is created by CloudFormation (JupyterLabSpace), so
+                # CreateSpace is not needed. Scoped to app/space resources in this
+                # account+region; the domain ID is a wildcard segment because it
+                # is not known until runtime.
+                Action:
+                  - sagemaker:CreateApp
+                  - sagemaker:DeleteApp
+                  - sagemaker:UpdateSpace
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:sagemaker:${AWS::Region}:${AWS::AccountId}:app/*'
+                  - !Sub 'arn:${AWS::Partition}:sagemaker:${AWS::Region}:${AWS::AccountId}:space/*'
+              - Sid: StudioAppLaunch
+                Effect: Allow
+                # The Studio UI itself calls CreatePresignedDomainUrl on the
+                # execution role to open applications (JupyterLab, MLflow, etc.)
+                # from the Home screen. Without it, Studio shows a "you may not be
+                # able to open any applications" banner. Distinct from the
+                # participant policy's grant, which is what opens Studio in the
+                # first place. Pinned to the workshop-user profile; the domain ID
+                # is not known until runtime so it stays a wildcard segment.
+                Action:
+                  - sagemaker:CreatePresignedDomainUrl
+                Resource: !Sub 'arn:${AWS::Partition}:sagemaker:${AWS::Region}:${AWS::AccountId}:user-profile/*/workshop-user'
+              - Sid: HubContentWrites
+                Effect: Allow
+                # DataSet.create and Evaluator.create register assets as hub
+                # content in the AI Registry. The FIRST registration bootstraps
+                # the backing hub itself (CreateHub), which is why that action is
+                # here alongside the content writes.
+                #
+                # The hub NAME is a service-generated random ID (observed:
+                # hub/VLR344KSPGOI663I452RRNE3AMU...), so like the job and model
+                # writes above it cannot be pinned -- the constraint is the
+                # resource TYPE (hub, hub-content) in this account+region, which
+                # still excludes hubs in other accounts/regions and every
+                # non-hub resource. These actions DO support resource-level authz
+                # (unlike the account-level List*/Search in SageMakerReads), so
+                # the ARN pattern is honoured rather than rejected. A tag
+                # condition is deliberately NOT used: the SDK controls the hub's
+                # tags at create time, so requiring one we do not set would deny
+                # CreateHub.
+                Action:
+                  - sagemaker:CreateHub
+                  - sagemaker:DeleteHub
+                  # Hub content is created via ImportHubContent -- there is no
+                  # sagemaker:CreateHubContent action in the SDF (IAM rejects it
+                  # as invalid). Import + Delete cover the DataSet/Evaluator
+                  # registration lifecycle.
+                  - sagemaker:ImportHubContent
+                  - sagemaker:DeleteHubContent
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:sagemaker:${AWS::Region}:${AWS::AccountId}:hub/*'
+                  - !Sub 'arn:${AWS::Partition}:sagemaker:${AWS::Region}:${AWS::AccountId}:hub-content/*'
+              - Sid: PipelineExecution
+                Effect: Allow
+                # The v3 SDK runs SFTTrainer/RLVRTrainer/CustomScorerEvaluator as
+                # SageMaker Pipelines under the hood ("starting pipeline
+                # execution"). It lists existing pipelines, upserts one, and
+                # starts/polls executions. AmazonSageMakerFullAccess covered this.
+                # Pipeline names are SDK-generated, so scoped to the pipeline
+                # resource type in this account+region.
+                Action:
+                  - sagemaker:CreatePipeline
+                  - sagemaker:UpdatePipeline
+                  - sagemaker:DeletePipeline
+                  - sagemaker:StartPipelineExecution
+                  - sagemaker:StopPipelineExecution
+                  - sagemaker:SendPipelineExecutionStepSuccess
+                  - sagemaker:SendPipelineExecutionStepFailure
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:sagemaker:${AWS::Region}:${AWS::AccountId}:pipeline/*'
+              - Sid: LineageTracking
+                Effect: Allow
+                # SageMaker auto-records lineage as datasets, models and jobs are
+                # created -- artifacts, contexts, actions and the associations
+                # between them. AmazonSageMakerFullAccess covered this silently.
+                #
+                # Resource is '*', NOT scoped to artifact/context/action ARNs.
+                # This was originally scoped to those three types, but lineage is
+                # cross-cutting: the evaluation pipeline calls CreateAction (and
+                # AddAssociation) to record a lineage edge AGAINST THE RESOURCE
+                # BEING TRACKED -- e.g. the model-package it just evaluated
+                # (observed: CreateAction on model-package/sft-model/1). So these
+                # actions touch whatever resource the lineage entry is *for*
+                # (model packages, models, jobs, ...), an open-ended set that
+                # cannot be enumerated as a fixed type list the way CreateTrainingJob
+                # (which only ever makes a training-job) can. Scoping it produced
+                # AccessDenied mid-pipeline. These are lineage-bookkeeping writes
+                # the SDK drives internally, so '*' is the pragmatic grant -- same
+                # reasoning as the SageMakerReads wildcard.
+                Action:
+                  - sagemaker:CreateArtifact
+                  - sagemaker:UpdateArtifact
+                  - sagemaker:DeleteArtifact
+                  - sagemaker:CreateContext
+                  - sagemaker:UpdateContext
+                  - sagemaker:DeleteContext
+                  - sagemaker:CreateAction
+                  - sagemaker:UpdateAction
+                  - sagemaker:DeleteAction
+                  - sagemaker:AddAssociation
+                  - sagemaker:DeleteAssociation
+                Resource: '*'
+              - Sid: TagWrites
+                Effect: Allow
+                # The SDK tags the resources it creates as it creates them. Scoped
+                # to the union of resource TYPES the other write statements above
+                # produce, in this account+region -- so tagging is allowed exactly
+                # where the role also writes, and nowhere else. Names stay
+                # wildcarded because they are runtime-generated.
+                #
+                # The experiment/pipeline types are included in addition to the
+                # create-statement types: SageMaker auto-creates and tags trial
+                # components and pipeline resources as a side effect of launching
+                # training/processing jobs, so tagging must be permitted on them
+                # even though the notebooks never create them directly.
+                #
+                # app/* and space/* are here because CreateApp (clicking "Run" on
+                # the JupyterLab space) lists sagemaker:AddTags as a RequiredAction
+                # and tags the app resource it creates -- omitting these fails the
+                # app launch with AccessDenied on
+                # app/<domain>/<space>/JupyterLab/default.
+                Action:
+                  - sagemaker:AddTags
+                  - sagemaker:DeleteTags
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:sagemaker:${AWS::Region}:${AWS::AccountId}:app/*'
+                  - !Sub 'arn:${AWS::Partition}:sagemaker:${AWS::Region}:${AWS::AccountId}:space/*'
+                  - !Sub 'arn:${AWS::Partition}:sagemaker:${AWS::Region}:${AWS::AccountId}:training-job/*'
+                  - !Sub 'arn:${AWS::Partition}:sagemaker:${AWS::Region}:${AWS::AccountId}:processing-job/*'
+                  - !Sub 'arn:${AWS::Partition}:sagemaker:${AWS::Region}:${AWS::AccountId}:transform-job/*'
+                  - !Sub 'arn:${AWS::Partition}:sagemaker:${AWS::Region}:${AWS::AccountId}:model/*'
+                  - !Sub 'arn:${AWS::Partition}:sagemaker:${AWS::Region}:${AWS::AccountId}:model-package/*'
+                  - !Sub 'arn:${AWS::Partition}:sagemaker:${AWS::Region}:${AWS::AccountId}:model-package-group/*'
+                  - !Sub 'arn:${AWS::Partition}:sagemaker:${AWS::Region}:${AWS::AccountId}:mlflow-app/*'
+                  - !Sub 'arn:${AWS::Partition}:sagemaker:${AWS::Region}:${AWS::AccountId}:hub/*'
+                  - !Sub 'arn:${AWS::Partition}:sagemaker:${AWS::Region}:${AWS::AccountId}:hub-content/*'
+                  - !Sub 'arn:${AWS::Partition}:sagemaker:${AWS::Region}:${AWS::AccountId}:artifact/*'
+                  - !Sub 'arn:${AWS::Partition}:sagemaker:${AWS::Region}:${AWS::AccountId}:context/*'
+                  - !Sub 'arn:${AWS::Partition}:sagemaker:${AWS::Region}:${AWS::AccountId}:action/*'
+                  - !Sub 'arn:${AWS::Partition}:sagemaker:${AWS::Region}:${AWS::AccountId}:pipeline/*'
+                  - !Sub 'arn:${AWS::Partition}:sagemaker:${AWS::Region}:${AWS::AccountId}:experiment/*'
+                  - !Sub 'arn:${AWS::Partition}:sagemaker:${AWS::Region}:${AWS::AccountId}:experiment-trial/*'
+                  - !Sub 'arn:${AWS::Partition}:sagemaker:${AWS::Region}:${AWS::AccountId}:experiment-trial-component/*'
+
+              # --- READS: Describe/List/Search across the account -------------
+              - Sid: SageMakerReads
+                Effect: Allow
+                # Describe/List/Search that the SDK interleaves with the writes
+                # above -- polling job status, resolving the newest model-package
+                # version, reading back registered datasets/evaluators, and
+                # resolving the Studio domain/user-profile/space context during
+                # session setup (this is the get_execution_role path that first
+                # needed DescribeUserProfile). All read-only.
+                #
+                # Resource is '*' deliberately, not for convenience. The List*
+                # and Search actions here (ListTrainingJobs, ListModelPackages,
+                # ListPipelines, Search, QueryLineage, ...) are account-level
+                # queries that do not operate on a single named resource and
+                # reject resource-level scoping outright -- an ARN pattern makes
+                # them fail with AccessDenied. The Describe* calls target
+                # resources whose names are SDK-generated at runtime (training/
+                # processing jobs, artifacts, contexts) and so cannot be pinned
+                # in advance either. This was confirmed empirically: scoping
+                # earlier statements produced AccessDenied mid-lab, which is why
+                # the read surface is left account-wide. It is read-only, so the
+                # blast radius is visibility, not mutation. Same rationale as the
+                # HubContentWrites wildcard above.
+                #
+                # A few Describe* targets ARE nameable at deploy time
+                # (DescribeDomain, DescribeUserProfile/workshop-user,
+                # DescribeSpace/workshop-space, DescribeModelPackageGroup), and
+                # could in principle be split into a separate ARN-scoped
+                # statement. We deliberately do NOT: the security gain is a sliver
+                # of read-only visibility on a disposable account, while the risk
+                # is real -- e.g. the app ARN
+                # (app/${DomainId}/${UserProfileName}/${AppType}/${AppName}) is
+                # only partly known, so mis-scoping the Studio context reads
+                # reintroduces the exact AccessDenied that first surfaced on
+                # DescribeUserProfile. Splitting also adds a maintenance trap:
+                # a new workshop resource's Describe would silently break unless
+                # added to the right statement. One documented read statement is
+                # the better trade for a read-only, event-scoped role.
+                Action:
+                  - sagemaker:DescribeTrainingJob
+                  - sagemaker:ListTrainingJobs
+                  - sagemaker:DescribeProcessingJob
+                  - sagemaker:ListProcessingJobs
+                  - sagemaker:DescribeTransformJob
+                  - sagemaker:ListTransformJobs
+                  - sagemaker:DescribeModelPackageGroup
+                  - sagemaker:ListModelPackageGroups
+                  - sagemaker:DescribeModelPackage
+                  - sagemaker:ListModelPackages
+                  - sagemaker:DescribeModel
+                  - sagemaker:ListModels
+                  - sagemaker:DescribeHubContent
+                  - sagemaker:ListHubContents
+                  - sagemaker:DescribeHub
+                  - sagemaker:ListHubs
+                  - sagemaker:DescribeMlflowApp
+                  - sagemaker:ListMlflowApps
+                  - sagemaker:DescribeUserProfile
+                  - sagemaker:ListUserProfiles
+                  - sagemaker:DescribeDomain
+                  - sagemaker:ListDomains
+                  - sagemaker:DescribeSpace
+                  - sagemaker:ListSpaces
+                  - sagemaker:DescribeApp
+                  - sagemaker:ListApps
+                  - sagemaker:ListTags
+                  - sagemaker:Search
+                  - sagemaker:DescribeArtifact
+                  - sagemaker:ListArtifacts
+                  - sagemaker:DescribeContext
+                  - sagemaker:ListContexts
+                  - sagemaker:DescribeAction
+                  - sagemaker:ListActions
+                  - sagemaker:ListAssociations
+                  - sagemaker:GetLineageGroupPolicy
+                  - sagemaker:QueryLineage
+                  - sagemaker:ListPipelines
+                  - sagemaker:DescribePipeline
+                  - sagemaker:DescribePipelineDefinitionForExecution
+                  - sagemaker:DescribePipelineExecution
+                  - sagemaker:ListPipelineExecutions
+                  - sagemaker:ListPipelineExecutionSteps
+                  - sagemaker:ListPipelineParametersForExecution
+                Resource: '*'
+        - PolicyName: WorkshopBucketWrite
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              # AmazonS3ReadOnlyAccess (attached above) covers reads; this adds
+              # the writes AmazonSageMakerFullAccess used to provide. DataSet
+              # uploads, the evaluator zip, and training/evaluation job outputs
+              # all write under the SageMaker default bucket and SlmWeightsBucket.
+              - Sid: WorkshopBucketObjects
+                Effect: Allow
+                Action:
+                  - s3:PutObject
+                  - s3:DeleteObject
+                  - s3:AbortMultipartUpload
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:s3:::sagemaker-${AWS::Region}-${AWS::AccountId}/*'
+                  - !Sub 'arn:${AWS::Partition}:s3:::${SlmWeightsBucket}/*'
+              - Sid: SageMakerDefaultBucketCreate
+                Effect: Allow
+                # The SDK session auto-creates the default bucket
+                # (sagemaker-<region>-<account>) on first use if it does not
+                # exist -- MlflowApp.create in Lab 0 is the first thing to hit it.
+                # These are bucket-level actions, so the ARN has no /* suffix.
+                # ListBucket/GetBucketLocation are the existence check the SDK
+                # runs before deciding to create.
+                Action:
+                  - s3:CreateBucket
+                  - s3:ListBucket
+                  - s3:GetBucketLocation
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:s3:::sagemaker-${AWS::Region}-${AWS::AccountId}'
+                  - !Sub 'arn:${AWS::Partition}:s3:::${SlmWeightsBucket}'
+        - PolicyName: BedrockAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - bedrock:InvokeModel
+                  - bedrock:InvokeModelWithResponseStream
+                # Scoped to Anthropic Claude only -- was Resource: '*', which
+                # allowed invoking every model in the account (Titan, Llama,
+                # Mistral, ...). The notebooks call two cross-region inference
+                # profiles: us.anthropic.claude-haiku-4-5-20251001-v1:0 (Lab 4)
+                # and us.anthropic.claude-sonnet-4-6 (Labs 1 and 4).
+                #
+                # Two ARNs per invocation are required, not one. A "us." profile
+                # is itself a resource (first ARN), but invoking it fans the
+                # request out to the underlying foundation-model in whichever US
+                # region it routes to, and IAM checks THAT model's ARN too
+                # (second ARN). Miss the foundation-model grant and the call
+                # fails with AccessDenied -- and only at Lab 4 runtime.
+                #
+                # claude-* rather than the exact model IDs is deliberate: the
+                # region is templated (us-east-1 or us-west-2), the profile fans
+                # out across all US regions, and the sonnet alias has no pinned
+                # version suffix. A wildcard on the Claude family survives all
+                # three without a AccessDenied surprise, while still excluding
+                # every non-Claude model. Residual over-grant (other Claude
+                # models) is negligible for a disposable event account.
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:bedrock:${AWS::Region}:${AWS::AccountId}:inference-profile/us.anthropic.claude-*'
+                  - !Sub 'arn:${AWS::Partition}:bedrock:*::foundation-model/anthropic.claude-*'
+              # Marketplace subscription for Bedrock foundation models. Bedrock
+              # subscribes the account to a model the first time it is invoked.
+              # aws-marketplace:Unsubscribe was removed -- the workshop never
+              # cancels a subscription, and Unsubscribe on '*' could cancel
+              # account-wide subscriptions. The mutating Subscribe and the
+              # read-only ViewSubscriptions are split into separate statements so
+              # each grants exactly one kind of access.
+              #
+              # Both actions require Resource '*' -- neither supports
+              # resource-level permissions -- so the scoping is the condition
+              # key, not the resource. aws:CalledViaLast pins them to calls
+              # Bedrock makes on the role's behalf: a participant cannot invoke
+              # marketplace directly with this grant.
+              - Sid: MarketplaceSubscribeViaBedrock
+                Effect: Allow
+                # Subscribe is mutating, so it is isolated here. Resource stays
+                # '*' as a known limitation: aws-marketplace:Subscribe does not
+                # support resource-level permissions or an aws-marketplace:
+                # ProductId condition key, so no ARN or product-scoped narrowing
+                # is possible (and the Claude product IDs are not known until
+                # deploy time regardless). CalledViaLast is the tightest
+                # verifiable restriction available for this action -- it limits
+                # Subscribe to calls Bedrock makes on the role's behalf.
+                #
+                # Why keep it -- verified needed, do NOT delete: even though
+                # Bedrock model-access approval is now automatic (no manual
+                # "subscribe" click), the execution role still triggers an
+                # agreement-marketplace CreateAgreementRequest + AcceptAgreement-
+                # Request on first model use, and aws-marketplace:Subscribe is the
+                # IAM action that authorizes those calls. This was observed live
+                # in CloudTrail (2026-08-07): dev-sagemaker-execution-role made
+                # both calls mid-lab for a $0.00 agreement and they succeeded.
+                # Removing this grant AccessDenies that background call the first
+                # time a lab invokes Claude (Lab 1 cleaning or Lab 4 benchmark),
+                # so it is load-bearing regardless of account-level pre-approval.
+                # A prior version of this comment claimed it "may never fire" and
+                # could be deleted -- the CloudTrail evidence disproves that.
+                Action: aws-marketplace:Subscribe
+                Resource: '*'
+                Condition:
+                  StringEquals:
+                    aws:CalledViaLast: bedrock.amazonaws.com
+              - Sid: MarketplaceViewSubscriptionsViaBedrock
+                Effect: Allow
+                # Read-only: lists existing subscriptions. Separated from
+                # Subscribe so a mutating and a non-mutating action no longer
+                # share one statement.
+                #
+                # Resource is '*' because aws-marketplace:ViewSubscriptions does
+                # not support resource-level permissions per the AWS Marketplace
+                # IAM documentation -- an ARN pattern is rejected. The
+                # CalledViaLast condition below is the actual restriction: it
+                # limits the action to Bedrock-initiated calls, so a participant
+                # cannot list account subscriptions directly with this grant.
+                Action: aws-marketplace:ViewSubscriptions
+                Resource: '*'
+                Condition:
+                  StringEquals:
+                    aws:CalledViaLast: bedrock.amazonaws.com
+        - PolicyName: LambdaAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - lambda:CreateFunction
+                  - lambda:UpdateFunctionCode
+                  - lambda:UpdateFunctionConfiguration
+                  - lambda:DeleteFunction
+                  - lambda:InvokeFunction
+                  - lambda:GetFunction
+                  - lambda:ListFunctions
+                  - lambda:AddPermission
+                  - lambda:RemovePermission
+                  - lambda:GetPolicy
+                Resource: !Sub 'arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:*'
+              - Effect: Allow
+                Action:
+                  - iam:PassRole
+                Resource: !GetAtt LambdaEvaluatorRole.Arn
+                Condition:
+                  StringEquals:
+                    iam:PassedToService: lambda.amazonaws.com
+              - Sid: PassRoleToSageMakerJobs
+                Effect: Allow
+                # SFTTrainer, RLVRTrainer and CustomScorerEvaluator launch jobs
+                # with role=ROLE, where ROLE is get_execution_role() -- i.e. THIS
+                # role passing itself. AmazonSageMakerFullAccess covered this
+                # implicitly; it is explicit and scoped here.
+                #
+                # Scoped to this role's own ARN, built with !Sub from the fixed
+                # RoleName set above. This is NOT a circular dependency: !Sub
+                # interpolates a literal string (${AWS::AccountId} + the known
+                # name), so there is no CloudFormation reference edge back to the
+                # role -- unlike !GetAtt, which would be circular. The
+                # PassedToService condition is kept as defence in depth. This
+                # role is the only role the workshop ever passes to SageMaker
+                # (get_execution_role() resolves to the space's execution role,
+                # which is this one), so scoping to it denies nothing.
+                Action:
+                  - iam:PassRole
+                Resource: !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${EnvironmentName}-sagemaker-execution-role'
+                Condition:
+                  StringEquals:
+                    iam:PassedToService: sagemaker.amazonaws.com
+        - PolicyName: MlflowAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                # The MLflow data plane the notebooks and the SageMaker trainers/
+                # evaluators use: experiments, runs, metric/param/model logging,
+                # and the model registry read back in Lab 4. This is the full
+                # sagemaker-mlflow action set AWS itself grants for MLflow access
+                # (see the AWS-managed SageMaker MLflow policy), enumerated
+                # explicitly rather than as sagemaker-mlflow:* so no future
+                # action in the namespace is granted implicitly. Still scoped to
+                # this account+region's mlflow-app resources.
+                Action:
+                  - sagemaker-mlflow:AccessUI
+                  - sagemaker-mlflow:CreateExperiment
+                  - sagemaker-mlflow:SearchExperiments
+                  - sagemaker-mlflow:GetExperiment
+                  - sagemaker-mlflow:GetExperimentByName
+                  - sagemaker-mlflow:DeleteExperiment
+                  - sagemaker-mlflow:RestoreExperiment
+                  - sagemaker-mlflow:UpdateExperiment
+                  - sagemaker-mlflow:CreateRun
+                  - sagemaker-mlflow:DeleteRun
+                  - sagemaker-mlflow:RestoreRun
+                  - sagemaker-mlflow:GetRun
+                  - sagemaker-mlflow:LogMetric
+                  - sagemaker-mlflow:LogBatch
+                  - sagemaker-mlflow:LogModel
+                  - sagemaker-mlflow:LogInputs
+                  - sagemaker-mlflow:SetExperimentTag
+                  - sagemaker-mlflow:SetTag
+                  - sagemaker-mlflow:DeleteTag
+                  - sagemaker-mlflow:LogParam
+                  - sagemaker-mlflow:GetMetricHistory
+                  - sagemaker-mlflow:SearchRuns
+                  - sagemaker-mlflow:ListArtifacts
+                  - sagemaker-mlflow:UpdateRun
+                  - sagemaker-mlflow:CreateRegisteredModel
+                  - sagemaker-mlflow:GetRegisteredModel
+                  - sagemaker-mlflow:RenameRegisteredModel
+                  - sagemaker-mlflow:UpdateRegisteredModel
+                  - sagemaker-mlflow:DeleteRegisteredModel
+                  - sagemaker-mlflow:GetLatestModelVersions
+                  - sagemaker-mlflow:CreateModelVersion
+                  - sagemaker-mlflow:GetModelVersion
+                  - sagemaker-mlflow:UpdateModelVersion
+                  - sagemaker-mlflow:DeleteModelVersion
+                  - sagemaker-mlflow:SearchModelVersions
+                  - sagemaker-mlflow:GetDownloadURIForModelVersionArtifacts
+                  - sagemaker-mlflow:TransitionModelVersionStage
+                  - sagemaker-mlflow:SearchRegisteredModels
+                  - sagemaker-mlflow:SetRegisteredModelTag
+                  - sagemaker-mlflow:DeleteRegisteredModelTag
+                  - sagemaker-mlflow:DeleteModelVersionTag
+                  - sagemaker-mlflow:DeleteRegisteredModelAlias
+                  - sagemaker-mlflow:SetRegisteredModelAlias
+                  - sagemaker-mlflow:GetModelVersionByAlias
+                Resource: !Sub 'arn:${AWS::Partition}:sagemaker:${AWS::Region}:${AWS::AccountId}:mlflow-app/*'
+        - PolicyName: RdsDataApiAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - rds-data:ExecuteStatement
+                  - rds-data:BatchExecuteStatement
+                  - rds-data:BeginTransaction
+                  - rds-data:CommitTransaction
+                  - rds-data:RollbackTransaction
+                Resource: !Sub 'arn:${AWS::Partition}:rds:${AWS::Region}:${AWS::AccountId}:cluster:${AuroraCluster}'
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetSecretValue
+                Resource: !Ref RDSSecret
+
+  # ---------------------------------------------------------------------------
+  # Lifecycle Configuration: Copy workshop notebooks from S3 on space start
+  # ---------------------------------------------------------------------------
+  CopyNotebooksLifecycleConfig:
+    Type: AWS::SageMaker::StudioLifecycleConfig
+    Metadata:
+      Purpose: >-
+        JupyterLab lifecycle script that syncs the workshop notebooks from S3
+        into the space on every app start. Deliberately non-fatal on sync
+        failure (see inline comment); note it re-syncs each start, overwriting
+        local edits.
+    Properties:
+      StudioLifecycleConfigName: !Sub '${EnvironmentName}-copy-workshop-notebooks'
+      StudioLifecycleConfigAppType: JupyterLab
+      StudioLifecycleConfigContent:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          # Deliberately NOT 'set -e'. A lifecycle config that exits non-zero
+          # stops the JupyterLab app from starting at all, and the participant
+          # sees only an opaque failure with no way to diagnose it. A space that
+          # starts without notebooks is recoverable in seconds (re-run the sync
+          # from a terminal); a space that will not start is not. So every
+          # command here is allowed to fail, loudly, without blocking boot.
+          set -ux
+          LOG_FILE=/var/log/apps/app_container.log
+          echo "[LCC] Syncing workshop notebooks from S3..." >> $LOG_FILE
+          # Note: this runs on every app start, and s3 sync overwrites by
+          # timestamp -- so a participant who edits a notebook, stops the space
+          # and restarts it gets the pristine copies back.
+          if aws s3 sync "s3://slm-weights-${AWS::AccountId}/" "/home/sagemaker-user/" \
+              --exclude "*.checkpoint*" \
+              --exclude ".ipynb_checkpoints/*" \
+              --exclude "cosmetics_sales_synthetic_data.csv" \
+              --exclude "queries.txt" \
+              --exclude "README.md" \
+              --exclude "aurora_query_extraction_pipeline.py" \
+              >> $LOG_FILE 2>&1; then
+              echo "[LCC] Notebook sync complete" >> $LOG_FILE
+          else
+              echo "[LCC] WARNING: notebook sync failed. JupyterLab will still start." >> $LOG_FILE
+              echo "[LCC] Re-run manually: aws s3 sync s3://slm-weights-${AWS::AccountId}/ /home/sagemaker-user/" >> $LOG_FILE
+          fi
+          # Exit 0 explicitly so a non-zero status from the block above can
+          # never propagate and block the app.
+          exit 0
+
+  SageMakerDomain:
+    Type: AWS::SageMaker::Domain
+    Metadata:
+      checkov:
+        skip:
+          - id: CKV_AWS_187
+            comment: >-
+              Uses default encryption rather than a CMK. Disposable,
+              event-scoped account. See the CMK note in index.en.md.
+      Purpose: >-
+        The single SageMaker AI domain for the workshop. AuthMode is IAM (not
+        Identity Center), which is why the participant policy needs
+        sagemaker:CreatePresignedDomainUrl to open Studio. It hosts one user
+        profile (workshop-user) and one JupyterLab space, both wired to
+        SageMakerExecutionRole and the notebook-sync lifecycle config.
+    Properties:
+      DomainName: !Sub '${EnvironmentName}-workshop-domain'
+      AuthMode: IAM
+      AppNetworkAccessType: PublicInternetOnly
+      DefaultUserSettings:
+        ExecutionRole: !GetAtt SageMakerExecutionRole.Arn
+        JupyterLabAppSettings:
+          LifecycleConfigArns:
+            - !GetAtt CopyNotebooksLifecycleConfig.StudioLifecycleConfigArn
+          DefaultResourceSpec:
+            LifecycleConfigArn: !GetAtt CopyNotebooksLifecycleConfig.StudioLifecycleConfigArn
+      DefaultSpaceSettings:
+        ExecutionRole: !GetAtt SageMakerExecutionRole.Arn
+      VpcId: !Ref VPC
+      SubnetIds:
+        - !Ref SubnetA
+
+  UserProfile:
+    Type: AWS::SageMaker::UserProfile
+    Metadata:
+      Purpose: >-
+        The single Studio user profile (workshop-user) participants act as. Its
+        name is referenced by the participant policy's CreatePresignedDomainUrl
+        grant, so it must stay 'workshop-user'.
+    Properties:
+      DomainId: !Ref SageMakerDomain
+      UserProfileName: workshop-user
+
+  JupyterLabSpace:
+    Type: AWS::SageMaker::Space
+    Metadata:
+      Purpose: >-
+        The pre-created JupyterLab space (ml.t3.xlarge) the participant runs the
+        five notebooks in. Compute-light because all heavy work is offloaded to
+        SageMaker training/evaluation jobs.
+    DependsOn: UserProfile
+    Properties:
+      DomainId: !Ref SageMakerDomain
+      SpaceName: workshop-space
+      OwnershipSettings:
+        OwnerUserProfileName: workshop-user
+      SpaceSharingSettings:
+        SharingType: Private
+      SpaceSettings:
+        AppType: JupyterLab
+        JupyterLabAppSettings:
+          DefaultResourceSpec:
+            InstanceType: !Ref JupyterLabInstanceType
+            LifecycleConfigArn: !GetAtt CopyNotebooksLifecycleConfig.StudioLifecycleConfigArn
+
+Outputs:
+  ClusterEndpoint:
+    Description: Aurora cluster writer endpoint
+    Value: !GetAtt AuroraCluster.Endpoint.Address
+    Export:
+      Name: !Sub '${EnvironmentName}-AuroraClusterEndpoint'
+
+  ClusterReaderEndpoint:
+    Description: Aurora cluster reader endpoint
+    Value: !GetAtt AuroraCluster.ReadEndpoint.Address
+    Export:
+      Name: !Sub '${EnvironmentName}-AuroraReaderEndpoint'
+
+  ClusterPort:
+    Description: Aurora cluster port
+    Value: !GetAtt AuroraCluster.Endpoint.Port
+    Export:
+      Name: !Sub '${EnvironmentName}-AuroraClusterPort'
+
+  ClusterARN:
+    Description: Aurora cluster ARN (use with rds-data API)
+    Value: !Sub 'arn:${AWS::Partition}:rds:${AWS::Region}:${AWS::AccountId}:cluster:${AuroraCluster}'
+    Export:
+      Name: !Sub '${EnvironmentName}-AuroraClusterARN'
+
+  SecretARN:
+    Description: ARN of the Secrets Manager secret containing DB credentials
+    Value: !Ref RDSSecret
+    Export:
+      Name: !Sub '${EnvironmentName}-RDSSecretARN'
+
+  SecurityGroupId:
+    Description: Security group ID for the Aurora cluster
+    Value: !GetAtt RDSSecurityGroup.GroupId
+    Export:
+      Name: !Sub '${EnvironmentName}-AuroraSecurityGroupId'
+
+  DatabaseName:
+    Description: Database name
+    Value: !Ref DBName
+
+  LambdaEvaluatorRoleArn:
+    Description: IAM role ARN for the custom evaluator Lambda function
+    Value: !GetAtt LambdaEvaluatorRole.Arn
+    Export:
+      Name: !Sub '${EnvironmentName}-LambdaEvaluatorRoleArn'
+
+  SlmWeightsBucketName:
+    Description: S3 bucket containing workshop notebooks and training data
+    Value: !Ref SlmWeightsBucket
+    Export:
+      Name: !Sub '${EnvironmentName}-SlmWeightsBucket'
+
+  RdsDataApiExample:
+    Description: Example boto3 usage for rds-data service
+    Value: !Sub >
+      import boto3;
+      client = boto3.client('rds-data');
+      client.execute_statement(
+        resourceArn='arn:aws:rds:${AWS::Region}:${AWS::AccountId}:cluster:${AuroraCluster}',
+        secretArn='${RDSSecret}',
+        database='${DBName}',
+        sql='SELECT * FROM product_sales LIMIT 10'
+      )

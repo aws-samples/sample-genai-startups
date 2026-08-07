@@ -1,8 +1,3 @@
----
-title: "Lab 0: Environment Setup"
-weight: 20
----
-
 # Lab 0: Environment Setup
 
 ## What you will do

@@ -1,8 +1,3 @@
----
-title: "Access your AWS Account"
-weight: 11
----
-
 # Access your AWS Account
 
 ## At an AWS Event

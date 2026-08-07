@@ -1,8 +1,3 @@
----
-title: "Lab 3: Reinforcement Learning (RLVR)"
-weight: 50
----
-
 # Lab 3: Reinforcement Learning from Verifiable Rewards (RLVR)
 
 ## What you will learn

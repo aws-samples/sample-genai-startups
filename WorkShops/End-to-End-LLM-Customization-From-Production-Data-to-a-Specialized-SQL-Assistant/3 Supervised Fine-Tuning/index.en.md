@@ -1,8 +1,3 @@
----
-title: "Lab 2: Supervised Fine-Tuning (SFT)"
-weight: 40
----
-
 # Lab 2: Supervised Fine-Tuning (SFT)
 
 ## What you will learn

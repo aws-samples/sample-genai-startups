@@ -1,8 +1,3 @@
----
-title: "Lab 1: Data Preparation"
-weight: 30
----
-
 # Lab 1: Data Preparation
 
 ## What you will learn

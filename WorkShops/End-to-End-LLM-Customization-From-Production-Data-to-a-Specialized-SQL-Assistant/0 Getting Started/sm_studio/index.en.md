@@ -1,8 +1,3 @@
----
-title: "Open SageMaker Studio"
-weight: 12
----
-
 # Open SageMaker Studio
 
 1. From the AWS Console, enter **SageMaker AI** in the Services search bar. Select **Amazon SageMaker AI** from the list.

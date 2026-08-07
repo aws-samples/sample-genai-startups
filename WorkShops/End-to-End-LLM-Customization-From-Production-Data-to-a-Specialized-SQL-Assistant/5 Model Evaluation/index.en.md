@@ -1,8 +1,3 @@
----
-title: "Lab 4: Model Evaluation"
-weight: 60
----
-
 # Lab 4: Model Evaluation and SOTA Benchmarking
 
 ## What you will learn

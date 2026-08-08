@@ -1,8 +1,3 @@
----
-title: "End-to-End LLM Customization: From Production Data to a Specialized SQL Assistant"
-weight: 1
----
-
 # End-to-End LLM Customization: From Production Data to a Specialized SQL Assistant
 
 ## Workshop Overview

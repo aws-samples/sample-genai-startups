@@ -1,0 +1,636 @@
+sale_id,product_name,product_category,brand,brand_tier,price,volume_ml,quantity,country_code,sale_date,launch_date,customer_segment,target_age_group,certification_tags,ingredients_type,season_tag,rating,stock_status,sales_rank
+1,Body Mist 50ml,fragrance,Chanel,luxury,176.01,50,25,BG,2025-07-26,2024-03-18,retail,36-50,,mixed,winter,2.6,out_of_stock,165
+2,Eau de Parfum 50ml,fragrance,Estée Lauder,premium,86.08,50,47,NO,2025-07-17,2023-10-14,online,36-50,"cruelty_free,vegan,natural",mixed,summer,3.5,in_stock,384
+3,Eye Cream 250ml,skin_moisturizer,The Ordinary,indie,69.19,250,14,PT,2025-06-28,2024-10-16,online,36-50,"natural,vegan,organic",mixed,winter,4.5,out_of_stock,46
+4,Anti-Aging Moisturizer 50ml,skin_moisturizer,Clinique,premium,103.66,50,44,NO,2025-03-26,2023-07-16,retail,26-35,organic,natural,summer,4.9,in_stock,157
+5,Eau de Toilette 75ml,fragrance,Tom Ford,luxury,188.76,75,42,LT,2025-09-07,2024-12-17,retail,18-25,"vegan,organic,natural",natural,all_season,3.6,low_stock,54
+6,Top Coat 30ml,nail_care,The Ordinary,indie,54.82,30,28,LU,2024-06-23,2023-08-18,online,50+,natural,synthetic,fall,4.4,low_stock,73
+7,Base Coat 20ml,nail_care,Maybelline,mass_market,18.2,20,16,SE,2025-02-02,2023-08-24,wholesale,36-50,,natural,summer,3.6,in_stock,316
+8,Perfume Oil 50ml,fragrance,Clinique,premium,78.84,50,14,LU,2025-09-19,2024-06-24,wholesale,50+,,mixed,winter,4.0,out_of_stock,210
+9,Eau de Toilette 75ml,fragrance,Garnier,mass_market,11.58,75,2,IE,2024-07-12,2024-06-03,wholesale,50+,natural,natural,all_season,4.1,out_of_stock,75
+10,Eau de Toilette 75ml,fragrance,Chanel,luxury,119.98,75,21,BE,2025-05-11,2024-11-30,wholesale,36-50,"natural,vegan",synthetic,fall,4.5,in_stock,334
+11,Matte Lipstick Red,lip_color,La Mer,luxury,288.91,10,40,PL,2025-11-11,2025-01-31,retail,26-35,"organic,cruelty_free,natural",synthetic,fall,4.5,in_stock,404
+12,Daily Hydrating Cream 250ml,skin_moisturizer,Dior,luxury,85.65,250,44,IE,2025-01-31,2024-10-08,wholesale,26-35,,mixed,summer,3.2,low_stock,416
+13,Deep Repair Mask 250ml,hair_care,Guerlain,luxury,174.24,250,33,SK,2025-10-17,2024-08-09,wholesale,18-25,"natural,organic,vegan",synthetic,winter,4.4,in_stock,93
+14,Nail Strengthener 30ml,nail_care,Maybelline,mass_market,29.77,30,21,MT,2025-02-20,2023-12-26,retail,18-25,"natural,organic",synthetic,all_season,4.2,in_stock,216
+15,Mineral Foundation 20ml,face_powder,Tom Ford,luxury,126.67,20,22,SE,2025-03-02,2023-05-30,online,36-50,,mixed,summer,3.2,low_stock,480
+16,Plumping Lip Balm Berry,lip_color,Fenty Beauty,indie,66.54,30,15,IE,2025-09-07,2025-05-20,online,26-35,"cruelty_free,vegan",mixed,all_season,3.8,out_of_stock,60
+17,Top Coat 20ml,nail_care,Nivea,mass_market,12.54,20,13,DK,2025-05-21,2025-04-22,retail,26-35,vegan,mixed,winter,3.7,in_stock,369
+18,Lip Stain Nude,lip_color,L'Oréal,mass_market,10.38,15,35,PL,2025-08-23,2025-08-09,wholesale,18-25,,mixed,fall,4.4,in_stock,164
+19,Deep Repair Mask 200ml,hair_care,Glossier,indie,46.12,200,4,SE,2025-08-19,2024-09-09,wholesale,18-25,,synthetic,winter,3.1,in_stock,211
+20,Color Gloss Treatment 50ml,hair_color,Dior,luxury,298.66,50,49,PT,2025-07-02,2025-04-24,online,26-35,"natural,vegan,cruelty_free",mixed,winter,3.7,in_stock,252
+21,Lip Stain Pink,lip_color,Dior,luxury,132.77,10,11,FR,2025-09-06,2024-02-05,wholesale,50+,"cruelty_free,organic,natural",synthetic,fall,4.4,in_stock,444
+22,Plumping Lip Balm Coral,lip_color,Estée Lauder,premium,50.23,10,18,LU,2025-04-03,2025-03-24,retail,18-25,,natural,fall,4.2,low_stock,321
+23,Heat Protection Spray 500ml,hair_styling,Garnier,mass_market,14.12,500,18,RO,2024-07-27,2024-07-07,online,50+,"organic,cruelty_free,natural",synthetic,fall,4.2,in_stock,290
+24,Deep Repair Mask 250ml,hair_care,Shiseido,premium,33.62,250,31,RO,2025-05-26,2023-07-11,online,50+,"vegan,cruelty_free",synthetic,winter,4.8,in_stock,390
+25,Setting Powder 10ml,face_powder,Herbivore,indie,36.44,10,19,SI,2024-07-02,2023-09-13,wholesale,18-25,"organic,vegan,cruelty_free",synthetic,spring,4.8,in_stock,8
+26,Nail Strengthener 10ml,nail_care,Guerlain,luxury,121.27,10,49,CZ,2025-01-07,2024-08-18,online,50+,,natural,fall,4.2,out_of_stock,463
+27,Volume Mousse 500ml,hair_styling,Drunk Elephant,indie,54.58,500,20,HU,2025-09-01,2024-12-21,retail,50+,,natural,spring,4.0,in_stock,250
+28,Anti-Aging Moisturizer 200ml,skin_moisturizer,Lancôme,premium,105.13,200,16,GR,2023-03-30,2022-11-24,online,26-35,"vegan,cruelty_free,organic",natural,fall,4.5,low_stock,229
+29,Daily Hydrating Cream 150ml,skin_moisturizer,Maybelline,mass_market,26.78,150,38,SI,2024-03-30,2023-04-19,wholesale,26-35,"natural,vegan,cruelty_free",mixed,all_season,3.9,out_of_stock,246
+30,Eau de Toilette 75ml,fragrance,MAC,premium,33.93,75,46,CY,2024-07-25,2023-07-23,wholesale,50+,natural,natural,summer,4.1,in_stock,212
+31,Heat Protection Spray 50ml,hair_styling,Tom Ford,luxury,238.94,50,42,PL,2024-09-02,2024-06-30,retail,50+,"cruelty_free,natural",mixed,winter,4.3,low_stock,130
+32,Nail Polish 10ml,nail_care,Herbivore,indie,30.26,10,15,LV,2025-01-31,2023-09-23,retail,50+,,mixed,spring,4.0,in_stock,163
+33,Setting Powder 15ml,face_powder,Chanel,luxury,158.86,15,16,RO,2025-06-25,2024-06-08,wholesale,26-35,vegan,natural,all_season,4.6,in_stock,224
+34,Root Touch-Up 200ml,hair_color,Lancôme,premium,87.41,200,43,FR,2025-03-05,2024-05-10,wholesale,36-50,organic,synthetic,fall,4.9,in_stock,42
+35,Top Coat 15ml,nail_care,Herbivore,indie,79.96,15,7,AT,2024-07-15,2023-04-03,wholesale,36-50,"cruelty_free,organic",mixed,winter,3.7,in_stock,279
+36,Top Coat 15ml,nail_care,Guerlain,luxury,213.55,15,41,BE,2025-08-01,2024-08-28,online,36-50,organic,mixed,spring,3.7,in_stock,22
+37,Texturizing Spray 150ml,hair_styling,Dove,mass_market,27.42,150,9,CY,2025-08-11,2025-02-25,online,36-50,"vegan,natural",synthetic,fall,4.4,in_stock,435
+38,Smoothing Serum 1000ml,hair_styling,Tom Ford,luxury,292.63,1000,47,SI,2023-12-30,2023-03-27,wholesale,36-50,,synthetic,spring,3.6,in_stock,69
+39,Body Mist 15ml,fragrance,Nivea,mass_market,25.25,15,40,HU,2025-10-27,2024-04-28,wholesale,26-35,,mixed,winter,4.7,in_stock,228
+40,Permanent Hair Dye 50ml,hair_color,Glossier,indie,34.78,50,7,AT,2025-07-26,2024-04-06,online,26-35,"natural,vegan,cruelty_free",mixed,summer,4.6,in_stock,152
+41,Body Mist 15ml,fragrance,Fenty Beauty,indie,59.87,15,29,AT,2025-04-08,2025-01-13,wholesale,18-25,"cruelty_free,organic",synthetic,fall,3.5,in_stock,370
+42,Matte Lipstick Nude,lip_color,Glossier,indie,30.83,10,37,BE,2025-05-04,2025-04-17,retail,26-35,vegan,synthetic,summer,4.5,in_stock,218
+43,Color Gloss Treatment 1000ml,hair_color,Dove,mass_market,10.23,1000,9,FR,2025-10-26,2023-10-17,wholesale,26-35,"organic,natural",synthetic,spring,3.3,in_stock,155
+44,Nail Strengthener 20ml,nail_care,Chanel,luxury,192.91,20,33,AT,2025-07-29,2025-05-04,online,18-25,"natural,cruelty_free",natural,spring,5.0,low_stock,178
+45,Nail Strengthener 10ml,nail_care,Glossier,indie,73.45,10,10,ES,2025-01-14,2024-09-28,retail,36-50,"natural,cruelty_free",mixed,fall,4.0,in_stock,398
+46,Plumping Lip Balm Pink,lip_color,Chanel,luxury,171.04,30,26,PT,2024-08-14,2023-04-29,online,18-25,"natural,vegan",mixed,fall,3.9,in_stock,140
+47,Volume Mousse 50ml,hair_styling,Glossier,indie,43.07,50,24,CY,2023-10-27,2023-07-23,retail,18-25,"organic,vegan",synthetic,winter,4.6,low_stock,142
+48,Anti-Aging Moisturizer 50ml,skin_moisturizer,Maybelline,mass_market,22.34,50,43,CZ,2025-09-03,2025-01-18,retail,18-25,"cruelty_free,organic",synthetic,all_season,3.6,in_stock,327
+49,Daily Hydrating Cream 100ml,skin_moisturizer,Guerlain,luxury,140.12,100,22,FI,2025-01-09,2023-07-05,retail,26-35,natural,natural,summer,4.4,out_of_stock,176
+50,Plumping Lip Balm Berry,lip_color,Guerlain,luxury,155.0,30,47,DK,2025-06-15,2024-08-10,online,18-25,,natural,summer,4.4,in_stock,171
+51,Nail Strengthener 30ml,nail_care,La Mer,luxury,213.56,30,14,EE,2025-02-15,2024-06-25,online,18-25,"natural,organic",synthetic,all_season,4.1,in_stock,89
+52,Eau de Parfum 15ml,fragrance,Dior,luxury,124.97,15,50,PL,2024-09-15,2022-12-29,wholesale,36-50,"organic,natural",synthetic,winter,3.4,in_stock,97
+53,Setting Powder 20ml,face_powder,Shiseido,premium,107.56,20,2,GR,2025-08-02,2025-07-11,retail,36-50,"natural,cruelty_free,vegan",synthetic,spring,3.9,out_of_stock,440
+54,Top Coat 10ml,nail_care,Shiseido,premium,69.3,10,28,BG,2025-09-20,2025-05-07,wholesale,18-25,"cruelty_free,natural,vegan",natural,fall,4.5,in_stock,304
+55,Lip Stain Pink,lip_color,Guerlain,luxury,131.98,20,13,NL,2025-09-17,2025-03-27,online,26-35,,natural,winter,4.0,in_stock,51
+56,Bronzer 10ml,face_powder,Fenty Beauty,indie,43.58,10,41,NO,2024-08-26,2024-04-30,wholesale,18-25,"organic,vegan",synthetic,winter,2.9,in_stock,200
+57,Heat Protection Spray 200ml,hair_styling,L'Oréal,mass_market,22.41,200,29,CY,2025-08-29,2022-12-20,online,26-35,"natural,cruelty_free",natural,spring,4.0,low_stock,298
+58,Permanent Hair Dye 100ml,hair_color,L'Oréal,mass_market,26.23,100,34,HR,2024-06-03,2024-05-31,retail,36-50,"cruelty_free,vegan",synthetic,fall,4.3,in_stock,132
+59,Setting Powder 30ml,face_powder,L'Oréal,mass_market,25.35,30,47,MT,2025-07-15,2024-11-06,online,26-35,"organic,cruelty_free",mixed,summer,4.7,in_stock,121
+60,Texturizing Spray 250ml,hair_styling,The Ordinary,indie,39.48,250,9,SI,2024-12-20,2023-06-05,online,18-25,"cruelty_free,organic,vegan",synthetic,summer,4.8,in_stock,359
+61,Satin Lip Gloss Red,lip_color,The Ordinary,indie,34.23,15,33,EE,2025-08-10,2023-06-08,online,18-25,"vegan,cruelty_free",synthetic,summer,3.4,low_stock,181
+62,Detox Cleansing Shampoo 150ml,hair_care,Lancôme,premium,90.87,150,40,NO,2025-04-08,2024-12-23,online,50+,vegan,synthetic,winter,4.7,in_stock,371
+63,Eye Cream 250ml,skin_moisturizer,Drunk Elephant,indie,49.28,250,13,CY,2024-12-25,2022-12-08,online,26-35,"organic,cruelty_free",synthetic,fall,4.2,in_stock,38
+64,Smoothing Serum 150ml,hair_styling,La Mer,luxury,178.85,150,28,ES,2025-06-24,2024-03-16,retail,50+,"organic,vegan",natural,winter,4.1,in_stock,161
+65,Matte Lipstick Red,lip_color,La Mer,luxury,264.62,20,10,PL,2024-12-13,2023-10-28,retail,36-50,"vegan,cruelty_free,natural",synthetic,all_season,2.7,in_stock,5
+66,Highlights Kit 50ml,hair_color,Dove,mass_market,28.29,50,8,DE,2025-06-20,2024-12-23,retail,50+,"organic,natural,vegan",mixed,all_season,2.8,in_stock,94
+67,Eye Cream 50ml,skin_moisturizer,MAC,premium,85.33,50,27,NL,2025-02-02,2024-12-20,online,18-25,"organic,cruelty_free",mixed,all_season,4.5,in_stock,305
+68,Nail Polish 30ml,nail_care,Tom Ford,luxury,295.83,30,23,CY,2025-11-13,2024-12-07,retail,36-50,organic,mixed,fall,3.3,in_stock,189
+69,Nail Strengthener 15ml,nail_care,Dove,mass_market,29.34,15,3,NO,2025-07-27,2025-06-20,retail,18-25,organic,synthetic,fall,4.1,out_of_stock,375
+70,Nourishing Conditioner 150ml,hair_care,Herbivore,indie,38.2,150,42,DK,2025-10-04,2023-06-16,wholesale,18-25,"natural,vegan",mixed,winter,4.6,in_stock,454
+71,Top Coat 20ml,nail_care,Lancôme,premium,102.1,20,6,PT,2024-09-13,2023-08-10,online,26-35,"cruelty_free,organic",natural,fall,4.3,in_stock,95
+72,Top Coat 30ml,nail_care,The Ordinary,indie,17.75,30,23,HR,2023-05-03,2023-03-17,wholesale,36-50,,natural,winter,3.8,low_stock,469
+73,Highlights Kit 50ml,hair_color,Clinique,premium,41.36,50,24,FI,2024-12-26,2024-12-25,wholesale,18-25,natural,synthetic,fall,4.0,in_stock,293
+74,Highlighting Powder 15ml,face_powder,Shiseido,premium,88.46,15,2,LV,2025-09-24,2024-12-11,retail,50+,"organic,vegan,cruelty_free",mixed,winter,3.5,in_stock,341
+75,Smoothing Serum 1000ml,hair_styling,The Ordinary,indie,19.81,1000,6,CY,2025-04-08,2025-02-28,online,36-50,"organic,cruelty_free",mixed,fall,4.6,low_stock,408
+76,Matte Lipstick Pink,lip_color,Estée Lauder,premium,51.31,15,24,HU,2025-10-26,2024-04-05,online,36-50,"vegan,cruelty_free,organic",natural,fall,3.9,low_stock,409
+77,Perfume Oil 100ml,fragrance,Fenty Beauty,indie,19.79,100,42,ES,2024-02-11,2022-12-02,wholesale,50+,"vegan,cruelty_free",mixed,all_season,3.5,out_of_stock,188
+78,Hydrating Shampoo 250ml,hair_care,Fenty Beauty,indie,24.95,250,21,LT,2025-08-31,2025-03-08,retail,36-50,"organic,vegan",natural,all_season,3.7,in_stock,335
+79,Root Touch-Up 100ml,hair_color,Guerlain,luxury,224.92,100,22,LU,2024-03-12,2023-08-17,online,18-25,,natural,spring,4.7,low_stock,214
+80,Eau de Parfum 75ml,fragrance,Dove,mass_market,31.67,75,42,NO,2025-01-29,2024-02-12,wholesale,26-35,"cruelty_free,vegan,organic",mixed,spring,3.4,in_stock,128
+81,Mineral Foundation 15ml,face_powder,The Ordinary,indie,71.0,15,23,IE,2024-11-11,2024-10-01,retail,36-50,,synthetic,summer,4.0,in_stock,12
+82,Volume Mousse 150ml,hair_styling,MAC,premium,115.08,150,27,AT,2024-03-01,2023-03-23,retail,36-50,"vegan,organic",synthetic,all_season,4.0,low_stock,7
+83,Heat Protection Spray 250ml,hair_styling,Glossier,indie,44.72,250,38,FI,2025-08-03,2024-12-20,retail,18-25,"natural,cruelty_free",mixed,winter,3.7,in_stock,443
+84,Color Gloss Treatment 500ml,hair_color,Tom Ford,luxury,160.47,500,3,IE,2025-05-18,2024-07-07,retail,26-35,"cruelty_free,organic",synthetic,all_season,4.0,in_stock,247
+85,Heat Protection Spray 150ml,hair_styling,Dior,luxury,254.88,150,24,EE,2025-02-09,2024-09-10,retail,26-35,"organic,natural,cruelty_free",natural,fall,4.5,in_stock,397
+86,Color Gloss Treatment 250ml,hair_color,Shiseido,premium,58.67,250,48,LU,2025-01-10,2024-07-17,wholesale,36-50,"cruelty_free,vegan,organic",synthetic,fall,4.3,out_of_stock,426
+87,Top Coat 15ml,nail_care,L'Oréal,mass_market,26.64,15,11,RO,2024-07-18,2024-01-04,online,50+,vegan,natural,all_season,4.7,in_stock,346
+88,Highlighting Powder 10ml,face_powder,Tom Ford,luxury,170.85,10,33,EE,2025-04-25,2025-01-27,online,50+,,mixed,summer,4.1,in_stock,90
+89,Body Mist 30ml,fragrance,Fenty Beauty,indie,44.88,30,35,FI,2024-12-06,2024-02-25,online,36-50,"vegan,organic,natural",mixed,fall,3.6,out_of_stock,427
+90,Plumping Lip Balm Berry,lip_color,Nivea,mass_market,15.46,20,19,IT,2024-05-10,2023-01-10,online,50+,"cruelty_free,organic,vegan",natural,fall,4.8,in_stock,27
+91,Base Coat 15ml,nail_care,Herbivore,indie,68.82,15,45,SE,2025-02-07,2024-11-19,retail,18-25,vegan,natural,all_season,3.6,in_stock,78
+92,Highlighting Powder 8ml,face_powder,Tom Ford,luxury,229.86,8,36,NL,2025-11-20,2025-04-05,wholesale,50+,"vegan,natural,cruelty_free",synthetic,spring,4.7,in_stock,185
+93,Nourishing Conditioner 200ml,hair_care,Shiseido,premium,109.4,200,26,CY,2025-11-03,2025-02-24,wholesale,26-35,"organic,natural",synthetic,all_season,4.2,out_of_stock,263
+94,Nail Strengthener 15ml,nail_care,Nivea,mass_market,30.53,15,13,CY,2025-02-15,2024-05-01,retail,36-50,natural,mixed,fall,4.4,in_stock,208
+95,Satin Lip Gloss Berry,lip_color,Nivea,mass_market,20.46,30,43,IT,2025-08-11,2025-05-27,retail,26-35,"cruelty_free,organic,natural",synthetic,winter,3.6,low_stock,183
+96,Deep Repair Mask 500ml,hair_care,Nivea,mass_market,15.79,500,43,IT,2025-10-21,2024-12-25,wholesale,36-50,natural,mixed,all_season,4.7,low_stock,96
+97,Anti-Aging Moisturizer 250ml,skin_moisturizer,L'Oréal,mass_market,11.63,250,31,PL,2025-02-21,2022-12-17,wholesale,36-50,"natural,cruelty_free,organic",natural,all_season,4.6,in_stock,101
+98,Setting Powder 30ml,face_powder,Fenty Beauty,indie,22.29,30,33,BE,2024-05-10,2023-04-28,online,26-35,cruelty_free,mixed,winter,3.3,in_stock,420
+99,Nail Polish 30ml,nail_care,Glossier,indie,23.58,30,37,DE,2024-08-11,2024-06-24,online,50+,"organic,vegan",synthetic,spring,4.4,in_stock,395
+100,Setting Powder 30ml,face_powder,Tom Ford,luxury,298.71,30,31,DE,2025-07-03,2023-01-09,wholesale,50+,vegan,mixed,winter,3.9,low_stock,156
+101,Eau de Parfum 100ml,fragrance,Drunk Elephant,indie,23.64,100,8,NL,2024-11-30,2023-03-27,online,50+,vegan,natural,spring,4.8,in_stock,231
+102,Eau de Toilette 30ml,fragrance,Fenty Beauty,indie,44.94,30,13,LV,2025-09-12,2025-03-18,retail,18-25,"organic,natural,cruelty_free",natural,spring,4.2,in_stock,363
+103,Detox Cleansing Shampoo 200ml,hair_care,Dior,luxury,131.55,200,9,RO,2025-10-24,2025-01-13,wholesale,26-35,"cruelty_free,organic",synthetic,summer,4.9,in_stock,238
+104,Daily Hydrating Cream 250ml,skin_moisturizer,Herbivore,indie,76.65,250,12,SK,2023-10-31,2023-03-07,online,50+,"organic,vegan,cruelty_free",mixed,fall,4.4,in_stock,354
+105,Highlights Kit 100ml,hair_color,Garnier,mass_market,30.48,100,10,CY,2024-11-24,2024-10-20,wholesale,18-25,"natural,cruelty_free,organic",synthetic,summer,3.6,in_stock,86
+106,Setting Powder 30ml,face_powder,Tom Ford,luxury,239.41,30,18,IE,2025-10-26,2025-02-09,online,18-25,,natural,all_season,4.4,in_stock,324
+107,Bronzer 8ml,face_powder,The Ordinary,indie,28.77,8,48,EE,2025-09-22,2025-02-10,wholesale,26-35,natural,natural,all_season,3.8,in_stock,172
+108,Bronzer 15ml,face_powder,Fenty Beauty,indie,38.38,15,30,IT,2024-06-30,2023-03-04,online,50+,"vegan,natural",synthetic,winter,3.0,low_stock,394
+109,Eye Cream 150ml,skin_moisturizer,Clinique,premium,43.72,150,25,BG,2025-07-27,2024-09-20,retail,50+,"cruelty_free,vegan",mixed,winter,4.0,low_stock,154
+110,Highlights Kit 100ml,hair_color,Dove,mass_market,32.51,100,34,DE,2025-09-22,2024-02-15,retail,18-25,,synthetic,summer,4.6,in_stock,314
+111,Plumping Lip Balm Red,lip_color,Clinique,premium,85.61,20,31,SI,2024-02-29,2023-10-11,wholesale,18-25,,mixed,all_season,3.9,in_stock,39
+112,Daily Hydrating Cream 250ml,skin_moisturizer,Maybelline,mass_market,29.39,250,12,IT,2024-09-07,2023-10-03,retail,26-35,vegan,mixed,all_season,3.6,in_stock,393
+113,Highlighting Powder 20ml,face_powder,Glossier,indie,51.73,20,20,SI,2025-04-04,2023-09-10,retail,18-25,,synthetic,winter,3.9,in_stock,70
+114,Heat Protection Spray 1000ml,hair_styling,Dior,luxury,175.46,1000,37,MT,2024-12-17,2023-06-12,retail,18-25,vegan,mixed,all_season,4.0,in_stock,107
+115,Nourishing Conditioner 1000ml,hair_care,La Mer,luxury,149.19,1000,38,PL,2024-09-23,2022-12-13,online,50+,,synthetic,summer,4.2,in_stock,349
+116,Highlighting Powder 10ml,face_powder,Fenty Beauty,indie,66.38,10,6,RO,2023-11-11,2023-09-18,online,36-50,,natural,winter,3.6,in_stock,490
+117,Deep Repair Mask 1000ml,hair_care,Herbivore,indie,79.52,1000,23,HU,2025-04-02,2024-04-08,wholesale,50+,natural,natural,all_season,3.7,in_stock,429
+118,Night Repair Serum 200ml,skin_moisturizer,Chanel,luxury,236.57,200,48,IE,2025-06-17,2023-11-13,wholesale,36-50,,natural,spring,4.7,in_stock,159
+119,Permanent Hair Dye 100ml,hair_color,L'Oréal,mass_market,17.93,100,33,PT,2024-05-02,2024-01-31,retail,18-25,,synthetic,all_season,3.2,in_stock,32
+120,Deep Repair Mask 200ml,hair_care,Garnier,mass_market,16.63,200,16,BG,2025-07-01,2025-05-29,online,26-35,"vegan,organic,natural",synthetic,fall,4.1,in_stock,245
+121,Body Mist 75ml,fragrance,Herbivore,indie,65.87,75,16,LV,2025-07-16,2024-08-19,online,50+,natural,natural,summer,3.7,out_of_stock,9
+122,Body Mist 75ml,fragrance,Maybelline,mass_market,15.04,75,42,HR,2023-08-01,2023-05-11,retail,36-50,"vegan,natural",synthetic,summer,4.8,out_of_stock,268
+123,Lip Stain Nude,lip_color,Garnier,mass_market,29.49,30,8,BG,2025-05-19,2024-07-17,retail,26-35,,mixed,winter,4.7,in_stock,486
+124,Perfume Oil 30ml,fragrance,L'Oréal,mass_market,24.0,30,43,PL,2025-07-15,2024-12-19,online,50+,"organic,vegan,cruelty_free",mixed,winter,4.1,out_of_stock,234
+125,Deep Repair Mask 500ml,hair_care,Fenty Beauty,indie,73.21,500,41,ES,2024-03-23,2024-02-21,retail,26-35,"vegan,cruelty_free",mixed,spring,4.2,in_stock,262
+126,Eau de Parfum 15ml,fragrance,Herbivore,indie,21.41,15,48,RO,2025-03-05,2025-01-08,online,26-35,"cruelty_free,vegan,natural",mixed,all_season,4.4,in_stock,402
+127,Texturizing Spray 200ml,hair_styling,Tom Ford,luxury,282.52,200,47,PL,2025-10-23,2025-05-28,wholesale,36-50,"natural,organic",mixed,winter,3.8,in_stock,292
+128,Texturizing Spray 50ml,hair_styling,Herbivore,indie,67.66,50,22,SK,2025-11-16,2025-04-28,retail,26-35,vegan,mixed,summer,3.8,in_stock,199
+129,Eau de Toilette 30ml,fragrance,The Ordinary,indie,56.63,30,2,LV,2024-10-12,2024-06-07,online,26-35,"natural,vegan,organic",mixed,summer,3.5,low_stock,133
+130,Smoothing Serum 150ml,hair_styling,Guerlain,luxury,151.72,150,17,SI,2025-07-28,2024-05-12,wholesale,36-50,"natural,cruelty_free,organic",synthetic,fall,4.6,in_stock,325
+131,Smoothing Serum 150ml,hair_styling,Maybelline,mass_market,8.54,150,12,FI,2025-09-23,2024-10-15,online,26-35,"natural,cruelty_free,organic",mixed,winter,4.0,in_stock,323
+132,Highlights Kit 150ml,hair_color,Shiseido,premium,42.63,150,40,DE,2025-04-05,2024-10-05,wholesale,18-25,"vegan,organic,natural",mixed,all_season,4.3,in_stock,3
+133,Nail Strengthener 15ml,nail_care,Drunk Elephant,indie,20.37,15,49,AT,2025-08-12,2025-07-23,wholesale,18-25,"vegan,cruelty_free",synthetic,summer,4.5,in_stock,19
+134,Volume Mousse 150ml,hair_styling,Fenty Beauty,indie,65.38,150,35,LU,2024-11-11,2023-05-03,retail,50+,natural,natural,summer,3.7,out_of_stock,489
+135,Setting Powder 20ml,face_powder,Herbivore,indie,71.24,20,16,BE,2025-05-07,2025-04-25,online,36-50,"vegan,cruelty_free,organic",natural,summer,4.5,in_stock,264
+136,Color Gloss Treatment 500ml,hair_color,Maybelline,mass_market,13.78,500,33,SI,2025-02-21,2024-01-15,retail,26-35,"organic,vegan,natural",mixed,summer,3.6,low_stock,77
+137,Base Coat 20ml,nail_care,Lancôme,premium,86.5,20,5,SK,2025-04-04,2024-08-04,retail,50+,"cruelty_free,vegan",synthetic,fall,4.2,low_stock,254
+138,Setting Powder 30ml,face_powder,Tom Ford,luxury,167.5,30,14,CZ,2023-06-26,2022-12-06,wholesale,36-50,"cruelty_free,natural",mixed,summer,4.2,in_stock,315
+139,Hydrating Shampoo 500ml,hair_care,L'Oréal,mass_market,28.52,500,8,MT,2025-11-05,2024-05-10,retail,50+,"organic,vegan,natural",mixed,summer,4.6,in_stock,352
+140,Bronzer 8ml,face_powder,L'Oréal,mass_market,16.16,8,11,DE,2024-01-27,2023-02-10,wholesale,36-50,natural,mixed,spring,4.4,in_stock,472
+141,Root Touch-Up 250ml,hair_color,Glossier,indie,59.2,250,45,DK,2025-11-20,2025-08-14,retail,50+,natural,natural,summer,3.9,low_stock,144
+142,Bronzer 15ml,face_powder,Chanel,luxury,110.17,15,49,MT,2023-08-12,2023-06-23,retail,26-35,,mixed,all_season,2.7,in_stock,450
+143,Satin Lip Gloss Coral,lip_color,Herbivore,indie,59.63,30,6,IT,2025-04-13,2023-03-27,retail,18-25,"cruelty_free,vegan,natural",natural,summer,3.7,in_stock,67
+144,Night Repair Serum 250ml,skin_moisturizer,L'Oréal,mass_market,23.21,250,19,SK,2025-05-05,2025-02-11,retail,26-35,"natural,organic,cruelty_free",synthetic,all_season,3.1,low_stock,180
+145,Mineral Foundation 20ml,face_powder,La Mer,luxury,269.38,20,24,HU,2024-09-17,2024-01-19,online,26-35,"organic,natural,cruelty_free",natural,fall,3.5,out_of_stock,134
+146,Eye Cream 200ml,skin_moisturizer,Fenty Beauty,indie,60.62,200,35,HU,2025-06-11,2025-05-31,online,26-35,"organic,vegan",natural,all_season,4.7,out_of_stock,145
+147,Highlighting Powder 30ml,face_powder,Shiseido,premium,87.09,30,44,SK,2024-01-26,2023-04-22,retail,36-50,"vegan,organic,cruelty_free",natural,winter,3.3,in_stock,407
+148,Permanent Hair Dye 50ml,hair_color,La Mer,luxury,235.74,50,11,CZ,2025-11-10,2023-09-05,wholesale,36-50,cruelty_free,natural,fall,4.4,in_stock,281
+149,Body Mist 100ml,fragrance,La Mer,luxury,94.05,100,41,ES,2024-04-10,2023-08-25,wholesale,50+,"organic,vegan",mixed,summer,3.9,in_stock,270
+150,Smoothing Serum 500ml,hair_styling,Guerlain,luxury,191.94,500,16,DE,2025-11-18,2025-07-09,wholesale,36-50,"vegan,organic,cruelty_free",mixed,winter,3.6,in_stock,467
+151,Texturizing Spray 50ml,hair_styling,Nivea,mass_market,20.06,50,12,AT,2025-09-29,2023-02-12,online,18-25,"organic,vegan,cruelty_free",synthetic,fall,3.2,in_stock,209
+152,Anti-Aging Moisturizer 500ml,skin_moisturizer,Dove,mass_market,23.68,500,38,CZ,2024-11-09,2024-05-05,retail,26-35,organic,synthetic,spring,3.6,in_stock,146
+153,Detox Cleansing Shampoo 1000ml,hair_care,La Mer,luxury,242.38,1000,14,RO,2025-09-29,2024-10-13,retail,50+,"organic,natural,vegan",natural,spring,4.7,low_stock,433
+154,Nail Polish 10ml,nail_care,Herbivore,indie,47.85,10,5,BG,2024-10-14,2023-11-10,online,18-25,"vegan,organic,natural",synthetic,fall,4.7,in_stock,278
+155,Top Coat 15ml,nail_care,Nivea,mass_market,7.24,15,50,EE,2025-09-13,2025-01-28,online,18-25,organic,natural,winter,4.0,in_stock,342
+156,Top Coat 30ml,nail_care,Dove,mass_market,12.95,30,11,CY,2025-10-29,2025-04-23,online,36-50,,natural,fall,3.4,low_stock,466
+157,Deep Repair Mask 150ml,hair_care,Garnier,mass_market,29.6,150,26,MT,2025-11-06,2025-02-26,wholesale,26-35,,synthetic,spring,4.5,in_stock,318
+158,Satin Lip Gloss Berry,lip_color,Chanel,luxury,161.89,15,6,BG,2024-01-31,2023-11-17,online,36-50,,natural,spring,3.5,in_stock,18
+159,Setting Powder 8ml,face_powder,Clinique,premium,114.81,8,37,PT,2025-10-09,2025-07-03,online,50+,"organic,vegan,cruelty_free",natural,fall,3.5,in_stock,449
+160,Permanent Hair Dye 250ml,hair_color,Garnier,mass_market,23.58,250,19,CZ,2024-12-25,2024-12-15,wholesale,50+,,natural,fall,3.9,in_stock,21
+161,Detox Cleansing Shampoo 1000ml,hair_care,Shiseido,premium,94.2,1000,32,FI,2024-05-13,2024-04-19,online,36-50,"cruelty_free,organic,natural",synthetic,all_season,3.5,low_stock,131
+162,Top Coat 15ml,nail_care,L'Oréal,mass_market,34.22,15,43,AT,2025-09-19,2025-05-13,wholesale,18-25,natural,synthetic,summer,3.4,in_stock,239
+163,Deep Repair Mask 250ml,hair_care,Maybelline,mass_market,21.91,250,32,HU,2025-05-13,2024-01-25,wholesale,26-35,"organic,natural,cruelty_free",natural,all_season,3.5,in_stock,297
+164,Satin Lip Gloss Pink,lip_color,La Mer,luxury,282.13,20,21,DE,2023-06-16,2023-04-12,retail,26-35,organic,mixed,fall,4.8,in_stock,287
+165,Texturizing Spray 150ml,hair_styling,Fenty Beauty,indie,35.97,150,47,PT,2025-01-03,2022-11-28,online,50+,"vegan,cruelty_free",mixed,all_season,4.5,in_stock,337
+166,Anti-Aging Moisturizer 100ml,skin_moisturizer,Lancôme,premium,45.99,100,37,IE,2025-08-24,2025-08-22,online,18-25,cruelty_free,mixed,summer,4.3,in_stock,301
+167,Setting Powder 10ml,face_powder,The Ordinary,indie,37.54,10,41,ES,2025-08-28,2024-09-30,online,36-50,"organic,vegan,natural",natural,spring,3.8,low_stock,150
+168,Perfume Oil 75ml,fragrance,Chanel,luxury,293.2,75,32,IE,2024-09-24,2023-03-02,wholesale,50+,,synthetic,all_season,4.3,in_stock,204
+169,Volume Mousse 150ml,hair_styling,Lancôme,premium,31.81,150,5,DK,2025-09-29,2024-11-29,retail,50+,organic,mixed,spring,3.8,out_of_stock,388
+170,Eau de Toilette 100ml,fragrance,Glossier,indie,72.83,100,7,DK,2025-11-08,2025-03-16,retail,26-35,"cruelty_free,natural,vegan",synthetic,summer,3.2,in_stock,399
+171,Deep Repair Mask 50ml,hair_care,The Ordinary,indie,42.79,50,41,HR,2024-12-18,2024-10-26,wholesale,26-35,,natural,summer,3.4,in_stock,191
+172,Texturizing Spray 1000ml,hair_styling,Tom Ford,luxury,167.44,1000,6,SK,2025-02-23,2024-04-10,online,50+,cruelty_free,synthetic,fall,3.5,in_stock,202
+173,Night Repair Serum 1000ml,skin_moisturizer,Drunk Elephant,indie,32.46,1000,49,LT,2025-10-14,2025-06-21,online,18-25,,mixed,fall,4.5,in_stock,419
+174,Detox Cleansing Shampoo 1000ml,hair_care,Shiseido,premium,77.03,1000,37,AT,2023-03-25,2022-12-09,wholesale,36-50,,synthetic,spring,4.1,out_of_stock,15
+175,Base Coat 15ml,nail_care,Clinique,premium,117.49,15,9,DE,2025-05-08,2023-05-19,wholesale,18-25,"vegan,cruelty_free,organic",mixed,fall,3.8,low_stock,56
+176,Perfume Oil 100ml,fragrance,Chanel,luxury,151.75,100,30,MT,2025-02-28,2024-11-14,retail,50+,,synthetic,summer,3.4,in_stock,76
+177,Texturizing Spray 1000ml,hair_styling,Chanel,luxury,197.84,1000,17,IE,2025-04-25,2024-09-05,online,50+,"organic,natural,vegan",synthetic,summer,4.3,in_stock,285
+178,Body Mist 30ml,fragrance,Glossier,indie,18.2,30,24,FR,2025-02-19,2024-04-24,wholesale,36-50,"cruelty_free,vegan",mixed,spring,4.8,in_stock,40
+179,Bronzer 20ml,face_powder,Garnier,mass_market,23.15,20,29,BE,2025-10-04,2025-05-24,wholesale,50+,"organic,cruelty_free",natural,spring,3.7,in_stock,392
+180,Nourishing Conditioner 100ml,hair_care,Shiseido,premium,108.77,100,16,DE,2025-10-23,2025-01-30,wholesale,18-25,"vegan,natural",synthetic,winter,4.1,in_stock,461
+181,Lip Stain Coral,lip_color,Chanel,luxury,178.14,30,38,HU,2023-03-26,2022-12-14,wholesale,36-50,cruelty_free,mixed,spring,3.7,in_stock,258
+182,Satin Lip Gloss Pink,lip_color,Shiseido,premium,54.22,15,2,MT,2025-03-04,2024-06-30,online,18-25,"vegan,cruelty_free,organic",mixed,spring,3.6,in_stock,179
+183,Perfume Oil 50ml,fragrance,Nivea,mass_market,18.77,50,20,SI,2025-03-28,2025-01-12,online,50+,,natural,all_season,5.0,out_of_stock,213
+184,Anti-Aging Moisturizer 500ml,skin_moisturizer,Maybelline,mass_market,8.24,500,18,SK,2025-08-27,2025-06-19,wholesale,36-50,"cruelty_free,organic",natural,all_season,4.5,low_stock,473
+185,Permanent Hair Dye 500ml,hair_color,Herbivore,indie,47.33,500,27,IE,2025-07-12,2024-10-25,wholesale,18-25,cruelty_free,mixed,summer,4.4,in_stock,421
+186,Night Repair Serum 1000ml,skin_moisturizer,Herbivore,indie,57.74,1000,19,IT,2025-05-20,2024-01-30,wholesale,26-35,"vegan,cruelty_free",synthetic,spring,3.6,in_stock,68
+187,Bronzer 15ml,face_powder,Garnier,mass_market,22.57,15,31,DE,2025-07-24,2024-05-06,online,18-25,"vegan,cruelty_free,organic",mixed,winter,4.1,in_stock,100
+188,Lip Stain Coral,lip_color,MAC,premium,110.36,30,21,MT,2025-06-28,2024-05-12,online,26-35,,synthetic,fall,4.3,in_stock,477
+189,Top Coat 15ml,nail_care,Chanel,luxury,247.46,15,32,CY,2025-09-01,2025-03-04,retail,26-35,"natural,vegan,cruelty_free",synthetic,winter,2.7,in_stock,98
+190,Mineral Foundation 8ml,face_powder,L'Oréal,mass_market,25.3,8,15,LT,2025-03-12,2023-11-21,wholesale,36-50,organic,synthetic,all_season,4.2,in_stock,197
+191,Eye Cream 500ml,skin_moisturizer,La Mer,luxury,194.46,500,28,SI,2024-12-11,2024-03-05,retail,36-50,"cruelty_free,organic,natural",synthetic,spring,3.6,low_stock,340
+192,Nourishing Conditioner 50ml,hair_care,MAC,premium,62.99,50,25,SK,2025-10-14,2023-10-27,wholesale,18-25,,mixed,spring,4.3,in_stock,289
+193,Nail Strengthener 10ml,nail_care,Tom Ford,luxury,200.4,10,14,LT,2025-06-18,2024-04-25,online,18-25,"natural,cruelty_free",natural,all_season,3.7,in_stock,319
+194,Volume Mousse 150ml,hair_styling,Lancôme,premium,40.26,150,13,HR,2025-07-17,2025-05-07,retail,36-50,cruelty_free,mixed,winter,3.7,in_stock,458
+195,Top Coat 15ml,nail_care,The Ordinary,indie,15.18,15,8,LU,2025-08-22,2023-10-06,online,50+,organic,mixed,spring,4.4,in_stock,125
+196,Top Coat 20ml,nail_care,Dove,mass_market,18.93,20,3,MT,2025-10-08,2025-05-13,wholesale,36-50,"natural,cruelty_free",natural,spring,4.6,low_stock,243
+197,Color Gloss Treatment 150ml,hair_color,Dior,luxury,276.8,150,47,ES,2024-05-21,2022-12-19,wholesale,36-50,organic,synthetic,winter,4.8,in_stock,43
+198,Eau de Toilette 15ml,fragrance,Drunk Elephant,indie,23.61,15,11,IT,2025-09-22,2023-08-11,wholesale,50+,"vegan,cruelty_free,natural",synthetic,all_season,2.9,in_stock,61
+199,Nail Polish 30ml,nail_care,Lancôme,premium,69.66,30,42,DK,2025-09-16,2025-06-20,retail,26-35,"organic,vegan",mixed,summer,4.1,in_stock,193
+200,Hydrating Shampoo 500ml,hair_care,The Ordinary,indie,75.73,500,32,MT,2024-07-29,2024-03-24,retail,18-25,"cruelty_free,organic,vegan",synthetic,spring,4.1,in_stock,423
+201,Matte Lipstick Berry,lip_color,Drunk Elephant,indie,67.08,30,32,GR,2025-08-23,2024-05-22,wholesale,18-25,"organic,natural,vegan",synthetic,spring,4.2,in_stock,267
+202,Night Repair Serum 500ml,skin_moisturizer,Guerlain,luxury,227.72,500,24,LU,2023-12-24,2022-12-24,retail,26-35,"cruelty_free,natural,vegan",mixed,fall,4.4,in_stock,255
+203,Bronzer 15ml,face_powder,Clinique,premium,79.29,15,7,DE,2024-11-27,2024-08-06,retail,50+,natural,natural,fall,4.2,in_stock,385
+204,Base Coat 20ml,nail_care,The Ordinary,indie,22.0,20,41,LU,2025-10-05,2024-06-25,online,18-25,"natural,cruelty_free,organic",synthetic,spring,4.1,in_stock,498
+205,Base Coat 15ml,nail_care,Fenty Beauty,indie,62.48,15,25,SI,2025-10-26,2025-04-14,online,36-50,"natural,cruelty_free,organic",synthetic,winter,4.8,out_of_stock,227
+206,Highlights Kit 250ml,hair_color,The Ordinary,indie,60.5,250,20,LU,2024-06-15,2023-07-19,online,36-50,vegan,natural,all_season,4.4,in_stock,496
+207,Setting Powder 15ml,face_powder,MAC,premium,80.61,15,43,LT,2024-04-16,2024-01-05,wholesale,36-50,"organic,cruelty_free,natural",natural,winter,3.4,in_stock,114
+208,Color Gloss Treatment 500ml,hair_color,Estée Lauder,premium,52.55,500,45,CY,2025-09-19,2023-04-17,wholesale,26-35,,synthetic,winter,3.2,low_stock,20
+209,Eau de Toilette 100ml,fragrance,Shiseido,premium,100.59,100,19,LT,2023-12-10,2023-05-29,online,18-25,"natural,vegan,cruelty_free",mixed,spring,2.8,in_stock,219
+210,Mineral Foundation 10ml,face_powder,The Ordinary,indie,34.12,10,12,NL,2025-10-14,2025-02-23,online,18-25,"organic,vegan,cruelty_free",mixed,fall,3.3,in_stock,119
+211,Highlighting Powder 10ml,face_powder,L'Oréal,mass_market,6.2,10,39,DE,2024-01-31,2023-01-16,online,36-50,"cruelty_free,organic,vegan",mixed,summer,4.8,in_stock,365
+212,Eau de Parfum 50ml,fragrance,Lancôme,premium,49.91,50,22,FI,2025-06-05,2025-01-17,wholesale,26-35,"organic,natural,vegan",synthetic,summer,4.7,in_stock,386
+213,Highlighting Powder 8ml,face_powder,Clinique,premium,64.73,8,2,RO,2025-02-05,2024-02-17,wholesale,50+,"organic,vegan,natural",synthetic,all_season,3.1,in_stock,438
+214,Satin Lip Gloss Red,lip_color,Chanel,luxury,125.23,30,48,EE,2023-12-03,2023-04-28,wholesale,18-25,organic,synthetic,fall,2.9,in_stock,294
+215,Smoothing Serum 150ml,hair_styling,Estée Lauder,premium,66.69,150,28,DK,2024-10-03,2024-05-19,retail,50+,,mixed,spring,4.3,in_stock,494
+216,Setting Powder 15ml,face_powder,Chanel,luxury,253.12,15,6,NO,2025-01-15,2024-10-19,wholesale,50+,"organic,vegan,natural",mixed,summer,3.3,in_stock,379
+217,Anti-Aging Moisturizer 50ml,skin_moisturizer,Dove,mass_market,21.61,50,8,DE,2025-06-30,2024-02-02,retail,50+,,synthetic,summer,4.4,out_of_stock,242
+218,Eau de Toilette 30ml,fragrance,Dove,mass_market,10.52,30,13,IT,2025-03-08,2023-12-01,retail,18-25,"organic,vegan,natural",synthetic,spring,3.5,in_stock,447
+219,Root Touch-Up 50ml,hair_color,Nivea,mass_market,13.55,50,21,CZ,2025-10-03,2025-06-13,wholesale,36-50,"vegan,cruelty_free",mixed,fall,4.5,out_of_stock,436
+220,Mineral Foundation 10ml,face_powder,Clinique,premium,94.1,10,18,LU,2024-09-01,2023-11-06,wholesale,26-35,"natural,vegan",synthetic,fall,4.5,in_stock,28
+221,Texturizing Spray 1000ml,hair_styling,Dior,luxury,261.82,1000,13,SE,2024-05-19,2023-02-23,online,18-25,,natural,all_season,4.3,low_stock,221
+222,Matte Lipstick Coral,lip_color,Fenty Beauty,indie,73.11,20,42,EE,2024-07-26,2024-02-18,retail,36-50,"vegan,cruelty_free,natural",natural,winter,4.1,in_stock,470
+223,Nourishing Conditioner 1000ml,hair_care,Maybelline,mass_market,33.92,1000,49,RO,2024-12-17,2022-11-22,retail,50+,vegan,mixed,all_season,4.3,out_of_stock,87
+224,Nourishing Conditioner 1000ml,hair_care,Herbivore,indie,46.7,1000,24,AT,2025-09-15,2025-06-20,retail,26-35,"natural,vegan",synthetic,spring,2.9,in_stock,362
+225,Anti-Aging Moisturizer 250ml,skin_moisturizer,Guerlain,luxury,199.76,250,42,IE,2025-05-13,2025-02-26,wholesale,18-25,"natural,organic",mixed,winter,3.8,low_stock,104
+226,Nourishing Conditioner 200ml,hair_care,Drunk Elephant,indie,25.76,200,42,SE,2025-07-13,2025-06-06,retail,26-35,vegan,synthetic,all_season,4.4,in_stock,482
+227,Setting Powder 20ml,face_powder,Lancôme,premium,90.77,20,38,NL,2025-04-20,2024-04-20,online,50+,,natural,spring,3.3,in_stock,26
+228,Nourishing Conditioner 50ml,hair_care,Shiseido,premium,44.97,50,34,IE,2024-11-18,2023-01-22,online,18-25,"organic,natural",synthetic,all_season,4.9,low_stock,308
+229,Eau de Toilette 100ml,fragrance,MAC,premium,103.84,100,17,NL,2025-03-05,2025-02-18,online,36-50,"organic,natural,vegan",synthetic,summer,3.2,in_stock,168
+230,Smoothing Serum 200ml,hair_styling,The Ordinary,indie,73.6,200,35,RO,2025-10-13,2023-12-18,retail,18-25,"vegan,cruelty_free,organic",mixed,winter,4.1,in_stock,451
+231,Eau de Toilette 75ml,fragrance,Guerlain,luxury,253.7,75,38,CY,2025-05-26,2024-07-29,online,18-25,"vegan,natural,cruelty_free",natural,spring,3.7,low_stock,476
+232,Matte Lipstick Coral,lip_color,Herbivore,indie,48.97,10,25,SK,2025-11-14,2024-03-09,retail,36-50,"cruelty_free,organic,natural",synthetic,all_season,3.6,low_stock,411
+233,Bronzer 20ml,face_powder,Fenty Beauty,indie,64.07,20,12,FI,2024-07-15,2024-06-26,online,50+,"cruelty_free,natural",synthetic,winter,4.4,low_stock,222
+234,Base Coat 10ml,nail_care,Dior,luxury,127.18,10,22,CY,2024-10-15,2024-07-09,online,18-25,natural,mixed,spring,4.5,low_stock,417
+235,Eau de Parfum 15ml,fragrance,Fenty Beauty,indie,32.1,15,39,DE,2025-10-12,2024-08-09,online,50+,"cruelty_free,natural,organic",natural,winter,4.0,in_stock,106
+236,Nourishing Conditioner 250ml,hair_care,Dove,mass_market,10.08,250,16,SK,2025-10-06,2025-07-18,retail,26-35,,synthetic,winter,3.8,in_stock,372
+237,Hydrating Shampoo 50ml,hair_care,Shiseido,premium,79.46,50,38,FI,2024-04-28,2023-08-11,wholesale,36-50,vegan,synthetic,winter,4.2,in_stock,91
+238,Volume Mousse 250ml,hair_styling,Fenty Beauty,indie,34.13,250,33,SE,2025-03-27,2022-12-28,online,36-50,"natural,cruelty_free,vegan",natural,fall,4.8,in_stock,453
+239,Detox Cleansing Shampoo 50ml,hair_care,Fenty Beauty,indie,31.76,50,15,SI,2025-01-01,2024-07-28,online,26-35,"natural,vegan",mixed,all_season,2.7,low_stock,169
+240,Heat Protection Spray 500ml,hair_styling,Estée Lauder,premium,97.39,500,36,NL,2025-10-14,2024-09-07,wholesale,36-50,"vegan,cruelty_free",synthetic,summer,4.7,in_stock,241
+241,Satin Lip Gloss Nude,lip_color,Lancôme,premium,48.61,15,40,FI,2025-07-17,2025-01-28,retail,18-25,,natural,winter,4.3,low_stock,403
+242,Bronzer 20ml,face_powder,Tom Ford,luxury,277.59,20,37,MT,2023-05-18,2023-03-05,wholesale,50+,cruelty_free,synthetic,summer,4.4,in_stock,49
+243,Deep Repair Mask 200ml,hair_care,Drunk Elephant,indie,70.93,200,30,IT,2025-05-27,2023-06-21,online,50+,"organic,natural",mixed,summer,3.9,in_stock,105
+244,Night Repair Serum 250ml,skin_moisturizer,Maybelline,mass_market,12.89,250,40,DK,2025-03-25,2024-11-21,wholesale,26-35,"natural,organic,vegan",mixed,fall,3.9,in_stock,207
+245,Root Touch-Up 1000ml,hair_color,The Ordinary,indie,21.49,1000,36,PT,2025-07-24,2024-11-20,wholesale,26-35,vegan,synthetic,spring,3.4,in_stock,248
+246,Anti-Aging Moisturizer 250ml,skin_moisturizer,Garnier,mass_market,30.76,250,7,LT,2025-08-12,2025-07-06,retail,18-25,cruelty_free,synthetic,spring,4.0,in_stock,201
+247,Anti-Aging Moisturizer 50ml,skin_moisturizer,Nivea,mass_market,17.35,50,44,HR,2024-09-03,2024-08-29,retail,26-35,"cruelty_free,vegan",mixed,all_season,4.1,low_stock,63
+248,Eye Cream 500ml,skin_moisturizer,Tom Ford,luxury,290.45,500,41,CY,2025-06-03,2023-03-18,wholesale,50+,"organic,natural,cruelty_free",synthetic,summer,3.8,in_stock,478
+249,Body Mist 75ml,fragrance,Maybelline,mass_market,28.43,75,48,BG,2023-11-09,2023-01-05,online,50+,"vegan,organic,cruelty_free",natural,summer,4.3,out_of_stock,148
+250,Highlights Kit 50ml,hair_color,Dior,luxury,101.02,50,36,DE,2023-03-28,2023-01-07,retail,50+,,natural,fall,4.3,in_stock,147
+251,Satin Lip Gloss Berry,lip_color,Herbivore,indie,55.72,20,11,FR,2025-07-10,2025-04-11,retail,36-50,"natural,vegan",mixed,fall,4.2,in_stock,226
+252,Nail Strengthener 20ml,nail_care,Shiseido,premium,111.8,20,15,CY,2024-05-18,2024-04-17,retail,50+,"cruelty_free,vegan",synthetic,summer,3.7,in_stock,422
+253,Eye Cream 250ml,skin_moisturizer,Estée Lauder,premium,30.75,250,49,CZ,2023-02-18,2023-01-22,wholesale,18-25,"cruelty_free,natural,organic",natural,all_season,3.9,in_stock,485
+254,Satin Lip Gloss Berry,lip_color,Drunk Elephant,indie,29.34,30,41,AT,2025-08-05,2025-06-03,online,36-50,"cruelty_free,vegan",natural,spring,3.5,in_stock,492
+255,Top Coat 30ml,nail_care,Fenty Beauty,indie,27.21,30,4,HU,2025-11-02,2025-08-04,retail,26-35,,synthetic,fall,3.3,in_stock,452
+256,Smoothing Serum 50ml,hair_styling,Dior,luxury,188.59,50,20,CY,2025-04-20,2024-09-07,wholesale,36-50,"organic,vegan,natural",natural,spring,3.7,in_stock,110
+257,Lip Stain Red,lip_color,The Ordinary,indie,22.93,30,16,IE,2023-11-21,2023-06-29,wholesale,26-35,,natural,winter,4.4,in_stock,295
+258,Body Mist 50ml,fragrance,Lancôme,premium,44.28,50,48,HU,2025-10-09,2023-08-09,online,18-25,"natural,cruelty_free",synthetic,summer,3.8,in_stock,441
+259,Plumping Lip Balm Red,lip_color,Clinique,premium,45.06,20,8,IE,2025-01-26,2024-11-14,retail,18-25,,mixed,winter,4.4,in_stock,122
+260,Highlights Kit 50ml,hair_color,Dior,luxury,230.91,50,41,DE,2024-10-29,2024-09-11,retail,36-50,organic,natural,winter,3.6,out_of_stock,266
+261,Matte Lipstick Nude,lip_color,Garnier,mass_market,26.73,30,32,LT,2025-11-01,2024-12-10,wholesale,36-50,"vegan,cruelty_free,organic",mixed,fall,3.8,in_stock,170
+262,Highlights Kit 150ml,hair_color,Clinique,premium,103.75,150,30,FR,2024-11-11,2024-02-16,online,50+,organic,mixed,fall,4.5,in_stock,382
+263,Eau de Toilette 100ml,fragrance,Guerlain,luxury,230.31,100,10,HR,2024-05-06,2023-07-01,wholesale,36-50,"cruelty_free,organic,natural",mixed,spring,3.0,out_of_stock,35
+264,Matte Lipstick Pink,lip_color,Clinique,premium,38.89,30,25,SI,2024-02-03,2024-01-17,wholesale,36-50,,synthetic,summer,4.2,in_stock,269
+265,Heat Protection Spray 1000ml,hair_styling,Lancôme,premium,87.5,1000,48,PT,2025-02-09,2024-08-19,wholesale,18-25,"organic,cruelty_free",natural,fall,3.1,in_stock,31
+266,Plumping Lip Balm Pink,lip_color,Chanel,luxury,195.76,15,41,NL,2025-02-03,2024-12-12,online,50+,,mixed,all_season,3.8,in_stock,401
+267,Root Touch-Up 250ml,hair_color,Glossier,indie,41.1,250,11,HU,2024-12-20,2024-09-12,online,50+,"cruelty_free,natural",synthetic,fall,3.9,in_stock,462
+268,Satin Lip Gloss Coral,lip_color,Maybelline,mass_market,32.78,30,29,GR,2025-05-21,2024-12-06,wholesale,18-25,,synthetic,all_season,2.8,in_stock,355
+269,Night Repair Serum 100ml,skin_moisturizer,L'Oréal,mass_market,30.67,100,45,LU,2025-08-15,2025-08-01,wholesale,26-35,,natural,winter,3.8,in_stock,383
+270,Satin Lip Gloss Nude,lip_color,Maybelline,mass_market,7.76,20,14,LV,2025-02-03,2024-07-10,retail,36-50,"vegan,natural,organic",mixed,fall,2.9,low_stock,11
+271,Deep Repair Mask 150ml,hair_care,Glossier,indie,72.19,150,8,MT,2024-09-21,2024-06-05,retail,18-25,"organic,vegan,natural",synthetic,all_season,4.2,in_stock,174
+272,Detox Cleansing Shampoo 200ml,hair_care,MAC,premium,97.76,200,6,AT,2024-06-23,2024-01-12,wholesale,36-50,"vegan,organic,natural",natural,winter,4.2,in_stock,343
+273,Heat Protection Spray 250ml,hair_styling,Herbivore,indie,43.24,250,49,PL,2025-07-11,2023-09-09,wholesale,26-35,"natural,cruelty_free,organic",mixed,all_season,4.9,in_stock,116
+274,Eye Cream 150ml,skin_moisturizer,Clinique,premium,91.63,150,8,SI,2025-08-22,2024-01-12,wholesale,50+,"cruelty_free,organic",synthetic,fall,4.2,in_stock,364
+275,Highlighting Powder 30ml,face_powder,Dove,mass_market,9.37,30,13,SI,2025-09-23,2025-07-09,wholesale,26-35,,natural,spring,3.6,in_stock,62
+276,Deep Repair Mask 500ml,hair_care,Estée Lauder,premium,102.39,500,31,FR,2025-04-05,2024-10-15,wholesale,26-35,vegan,mixed,all_season,4.4,in_stock,232
+277,Eau de Parfum 50ml,fragrance,Clinique,premium,45.33,50,45,HR,2025-08-11,2024-11-06,wholesale,18-25,"organic,natural,vegan",mixed,fall,4.3,out_of_stock,265
+278,Deep Repair Mask 1000ml,hair_care,L'Oréal,mass_market,31.5,1000,25,RO,2025-07-26,2024-07-24,online,18-25,"natural,cruelty_free",mixed,spring,3.5,in_stock,225
+279,Hydrating Shampoo 100ml,hair_care,Fenty Beauty,indie,74.95,100,32,IE,2025-06-04,2024-10-15,online,26-35,,synthetic,fall,3.8,in_stock,313
+280,Eye Cream 1000ml,skin_moisturizer,L'Oréal,mass_market,34.71,1000,15,PL,2024-04-27,2022-12-31,wholesale,50+,organic,mixed,winter,4.1,in_stock,357
+281,Satin Lip Gloss Nude,lip_color,Lancôme,premium,111.88,30,35,PL,2025-04-06,2024-09-20,retail,26-35,vegan,synthetic,all_season,4.7,in_stock,160
+282,Color Gloss Treatment 50ml,hair_color,Shiseido,premium,80.16,50,12,DK,2025-03-24,2022-12-26,retail,18-25,"natural,vegan",synthetic,winter,4.4,low_stock,103
+283,Matte Lipstick Pink,lip_color,Dove,mass_market,5.79,15,18,HR,2024-02-29,2023-12-06,online,26-35,vegan,mixed,spring,3.8,in_stock,311
+284,Top Coat 15ml,nail_care,The Ordinary,indie,70.39,15,9,NL,2024-07-24,2024-04-07,retail,26-35,,synthetic,spring,4.7,out_of_stock,373
+285,Matte Lipstick Berry,lip_color,MAC,premium,108.04,15,30,AT,2024-12-24,2024-04-09,wholesale,50+,,mixed,winter,4.4,in_stock,345
+286,Heat Protection Spray 200ml,hair_styling,Guerlain,luxury,261.94,200,34,HU,2025-09-20,2025-07-11,wholesale,18-25,"organic,natural,vegan",synthetic,winter,4.6,low_stock,338
+287,Highlights Kit 150ml,hair_color,Garnier,mass_market,23.39,150,10,GR,2025-07-12,2025-06-29,online,50+,,mixed,all_season,3.3,low_stock,366
+288,Body Mist 75ml,fragrance,Lancôme,premium,32.24,75,30,ES,2025-04-29,2024-05-16,wholesale,36-50,organic,natural,spring,4.4,in_stock,85
+289,Eau de Toilette 75ml,fragrance,Guerlain,luxury,201.08,75,22,BG,2025-10-09,2025-07-10,online,26-35,vegan,natural,spring,3.9,in_stock,282
+290,Permanent Hair Dye 100ml,hair_color,Herbivore,indie,77.43,100,49,SE,2025-09-03,2025-08-20,retail,50+,"natural,cruelty_free,organic",mixed,winter,3.6,in_stock,244
+291,Perfume Oil 15ml,fragrance,Drunk Elephant,indie,54.08,15,36,SE,2025-10-21,2025-08-17,online,26-35,,natural,summer,3.0,in_stock,66
+292,Anti-Aging Moisturizer 50ml,skin_moisturizer,Clinique,premium,34.41,50,11,SI,2025-05-23,2024-06-23,wholesale,26-35,"cruelty_free,organic,natural",synthetic,fall,3.9,in_stock,65
+293,Texturizing Spray 200ml,hair_styling,Tom Ford,luxury,109.6,200,22,RO,2025-02-13,2023-09-12,wholesale,26-35,organic,natural,all_season,4.4,in_stock,273
+294,Eye Cream 250ml,skin_moisturizer,Tom Ford,luxury,266.52,250,37,HR,2025-02-25,2024-12-01,wholesale,26-35,"natural,vegan,organic",mixed,summer,4.4,out_of_stock,424
+295,Detox Cleansing Shampoo 500ml,hair_care,Chanel,luxury,255.28,500,40,PT,2025-04-23,2023-07-30,wholesale,18-25,"cruelty_free,natural",mixed,summer,2.7,in_stock,249
+296,Texturizing Spray 150ml,hair_styling,Nivea,mass_market,20.2,150,1,IT,2024-10-25,2024-09-26,online,36-50,"natural,cruelty_free",mixed,all_season,4.8,low_stock,44
+297,Highlighting Powder 20ml,face_powder,Estée Lauder,premium,101.75,20,31,PL,2025-07-05,2023-11-01,online,50+,"natural,vegan",mixed,spring,4.5,in_stock,418
+298,Nourishing Conditioner 250ml,hair_care,Maybelline,mass_market,25.56,250,23,ES,2023-08-30,2023-05-28,retail,36-50,,synthetic,winter,4.3,low_stock,376
+299,Texturizing Spray 500ml,hair_styling,The Ordinary,indie,70.76,500,18,PT,2025-10-20,2023-08-28,retail,50+,cruelty_free,synthetic,fall,3.5,in_stock,124
+300,Nourishing Conditioner 50ml,hair_care,La Mer,luxury,177.63,50,31,RO,2025-08-11,2025-07-29,retail,26-35,"natural,cruelty_free",mixed,fall,4.5,in_stock,30
+301,Root Touch-Up 500ml,hair_color,Guerlain,luxury,88.04,500,34,IT,2024-11-21,2024-07-23,retail,36-50,,mixed,all_season,4.6,in_stock,123
+302,Daily Hydrating Cream 250ml,skin_moisturizer,Chanel,luxury,246.87,250,21,BE,2025-04-21,2023-11-08,retail,36-50,"cruelty_free,vegan",mixed,spring,3.7,in_stock,158
+303,Smoothing Serum 250ml,hair_styling,Chanel,luxury,157.07,250,10,LT,2025-07-06,2024-10-01,wholesale,26-35,organic,synthetic,all_season,4.6,in_stock,356
+304,Detox Cleansing Shampoo 500ml,hair_care,Dior,luxury,91.1,500,6,PT,2025-10-25,2024-07-27,wholesale,26-35,"cruelty_free,vegan,natural",natural,all_season,3.1,out_of_stock,331
+305,Permanent Hair Dye 1000ml,hair_color,Fenty Beauty,indie,67.15,1000,7,GR,2024-07-30,2023-09-08,wholesale,50+,"vegan,organic,cruelty_free",mixed,fall,4.7,in_stock,10
+306,Nail Strengthener 10ml,nail_care,Nivea,mass_market,6.96,10,31,GR,2025-08-24,2025-04-30,retail,36-50,"vegan,cruelty_free",natural,winter,4.5,low_stock,251
+307,Texturizing Spray 250ml,hair_styling,Maybelline,mass_market,18.83,250,16,HR,2024-09-24,2023-12-28,retail,26-35,"natural,organic,vegan",natural,all_season,4.0,out_of_stock,166
+308,Satin Lip Gloss Coral,lip_color,Maybelline,mass_market,30.1,10,39,GR,2025-06-23,2025-04-28,wholesale,18-25,"vegan,natural,cruelty_free",natural,all_season,3.2,low_stock,307
+309,Nail Polish 10ml,nail_care,Herbivore,indie,29.14,10,38,EE,2025-04-08,2025-04-03,online,18-25,vegan,synthetic,all_season,3.7,in_stock,1
+310,Lip Stain Coral,lip_color,The Ordinary,indie,66.63,20,28,LT,2025-01-14,2023-09-28,wholesale,18-25,,mixed,all_season,3.9,in_stock,272
+311,Setting Powder 8ml,face_powder,L'Oréal,mass_market,26.1,8,8,MT,2024-11-19,2023-05-06,wholesale,18-25,natural,mixed,all_season,3.9,in_stock,277
+312,Perfume Oil 100ml,fragrance,Drunk Elephant,indie,28.73,100,9,BE,2025-03-23,2025-02-27,online,50+,"natural,organic",synthetic,summer,3.3,in_stock,83
+313,Nail Strengthener 15ml,nail_care,Dior,luxury,98.63,15,30,CY,2024-09-22,2023-11-05,online,50+,natural,mixed,winter,4.2,in_stock,192
+314,Highlights Kit 250ml,hair_color,Dove,mass_market,5.22,250,46,RO,2025-03-24,2024-03-31,wholesale,50+,"organic,natural",mixed,winter,4.4,in_stock,348
+315,Color Gloss Treatment 200ml,hair_color,Glossier,indie,48.6,200,6,AT,2024-03-07,2024-03-06,wholesale,18-25,"organic,vegan",mixed,spring,4.0,in_stock,474
+316,Highlighting Powder 15ml,face_powder,Fenty Beauty,indie,77.44,15,19,NL,2025-01-24,2023-05-29,retail,36-50,"organic,cruelty_free",synthetic,all_season,3.4,in_stock,400
+317,Deep Repair Mask 200ml,hair_care,Maybelline,mass_market,7.48,200,18,SE,2025-09-04,2024-03-24,retail,36-50,"cruelty_free,organic",mixed,spring,4.2,out_of_stock,320
+318,Mineral Foundation 15ml,face_powder,Lancôme,premium,100.43,15,12,CY,2025-03-18,2024-12-25,online,18-25,"organic,natural",mixed,summer,4.5,low_stock,153
+319,Plumping Lip Balm Pink,lip_color,Drunk Elephant,indie,52.55,15,4,SK,2024-12-03,2023-04-14,wholesale,18-25,,natural,winter,3.9,in_stock,55
+320,Perfume Oil 50ml,fragrance,Lancôme,premium,43.06,50,1,NO,2024-09-02,2023-03-16,wholesale,50+,"organic,natural",mixed,fall,4.8,in_stock,260
+321,Anti-Aging Moisturizer 1000ml,skin_moisturizer,Nivea,mass_market,7.95,1000,26,GR,2024-04-02,2023-10-23,online,26-35,cruelty_free,mixed,summer,3.8,in_stock,92
+322,Detox Cleansing Shampoo 50ml,hair_care,Chanel,luxury,195.56,50,23,AT,2024-08-22,2023-09-22,online,36-50,"vegan,organic",natural,all_season,3.2,out_of_stock,257
+323,Volume Mousse 50ml,hair_styling,Shiseido,premium,107.08,50,43,EE,2025-08-17,2025-04-12,online,26-35,,mixed,summer,3.6,in_stock,431
+324,Eye Cream 500ml,skin_moisturizer,Tom Ford,luxury,278.75,500,21,SE,2023-09-25,2023-06-27,retail,18-25,"organic,vegan",synthetic,fall,4.9,in_stock,2
+325,Nail Polish 30ml,nail_care,Dove,mass_market,34.38,30,12,SK,2025-05-04,2025-01-30,wholesale,18-25,natural,natural,all_season,4.3,out_of_stock,460
+326,Hydrating Shampoo 50ml,hair_care,L'Oréal,mass_market,22.14,50,2,CZ,2025-04-07,2024-12-10,retail,18-25,,mixed,winter,3.7,low_stock,81
+327,Detox Cleansing Shampoo 200ml,hair_care,Fenty Beauty,indie,43.34,200,50,CY,2023-11-07,2023-04-12,retail,26-35,,synthetic,winter,3.3,in_stock,223
+328,Eye Cream 50ml,skin_moisturizer,Nivea,mass_market,23.97,50,24,HU,2025-05-20,2022-12-16,wholesale,18-25,"cruelty_free,natural,organic",natural,all_season,2.9,in_stock,432
+329,Eau de Parfum 50ml,fragrance,Estée Lauder,premium,73.79,50,29,LV,2024-02-13,2023-03-01,retail,26-35,,natural,spring,4.4,in_stock,499
+330,Texturizing Spray 200ml,hair_styling,Drunk Elephant,indie,49.71,200,29,FR,2023-08-13,2023-04-22,retail,36-50,,synthetic,spring,3.9,in_stock,456
+331,Root Touch-Up 50ml,hair_color,Fenty Beauty,indie,17.4,50,42,FR,2025-07-19,2025-04-01,wholesale,18-25,vegan,natural,summer,4.3,out_of_stock,329
+332,Permanent Hair Dye 1000ml,hair_color,Tom Ford,luxury,259.84,1000,39,CY,2025-07-17,2025-04-29,online,26-35,,natural,winter,3.8,low_stock,405
+333,Smoothing Serum 150ml,hair_styling,Herbivore,indie,69.37,150,49,DE,2025-04-17,2023-06-03,online,26-35,"organic,natural",synthetic,summer,4.4,in_stock,437
+334,Highlights Kit 100ml,hair_color,Maybelline,mass_market,32.77,100,7,CY,2025-10-18,2025-07-13,online,50+,organic,synthetic,spring,2.7,in_stock,59
+335,Eye Cream 500ml,skin_moisturizer,Guerlain,luxury,257.63,500,45,PL,2024-07-22,2023-06-24,retail,26-35,"natural,vegan",natural,summer,4.2,in_stock,6
+336,Texturizing Spray 150ml,hair_styling,Lancôme,premium,67.69,150,13,IT,2025-03-25,2024-01-30,online,18-25,"vegan,natural",mixed,summer,3.7,in_stock,284
+337,Base Coat 15ml,nail_care,Lancôme,premium,90.31,15,42,FI,2025-11-08,2025-07-10,wholesale,26-35,"cruelty_free,vegan,natural",natural,spring,4.4,out_of_stock,129
+338,Detox Cleansing Shampoo 250ml,hair_care,MAC,premium,40.45,250,47,GR,2025-03-26,2023-02-19,online,36-50,"vegan,cruelty_free,natural",natural,spring,3.8,in_stock,271
+339,Eau de Toilette 15ml,fragrance,The Ordinary,indie,45.61,15,28,PL,2025-09-27,2024-04-14,retail,50+,natural,synthetic,summer,4.0,in_stock,240
+340,Lip Stain Red,lip_color,Nivea,mass_market,25.77,15,9,IT,2025-09-11,2025-06-23,wholesale,50+,"vegan,natural,organic",synthetic,all_season,3.4,low_stock,406
+341,Matte Lipstick Coral,lip_color,Shiseido,premium,74.03,30,31,LU,2025-01-23,2025-01-14,wholesale,36-50,,mixed,winter,4.4,in_stock,196
+342,Satin Lip Gloss Berry,lip_color,Garnier,mass_market,34.41,10,47,EE,2025-07-24,2025-07-13,online,18-25,"natural,vegan,organic",synthetic,winter,3.6,in_stock,198
+343,Satin Lip Gloss Nude,lip_color,Tom Ford,luxury,132.59,20,31,SI,2025-11-17,2025-05-23,wholesale,26-35,"organic,vegan,cruelty_free",natural,winter,3.5,low_stock,33
+344,Heat Protection Spray 500ml,hair_styling,Glossier,indie,36.64,500,28,EE,2025-10-15,2025-07-21,wholesale,26-35,,mixed,fall,4.4,in_stock,306
+345,Heat Protection Spray 150ml,hair_styling,L'Oréal,mass_market,18.96,150,24,NL,2025-08-20,2025-07-13,online,18-25,vegan,synthetic,summer,4.1,in_stock,488
+346,Bronzer 15ml,face_powder,MAC,premium,75.32,15,4,ES,2025-02-11,2024-06-16,wholesale,36-50,"natural,cruelty_free,organic",synthetic,all_season,4.3,in_stock,459
+347,Setting Powder 10ml,face_powder,Garnier,mass_market,31.76,10,6,IE,2025-08-24,2024-05-12,retail,36-50,,natural,summer,3.7,in_stock,430
+348,Matte Lipstick Berry,lip_color,The Ordinary,indie,78.02,20,31,FI,2025-07-09,2024-02-16,wholesale,50+,,synthetic,summer,3.1,low_stock,79
+349,Highlighting Powder 30ml,face_powder,Shiseido,premium,60.85,30,32,BG,2024-12-22,2023-11-01,online,50+,"cruelty_free,natural,organic",synthetic,summer,4.5,in_stock,57
+350,Nourishing Conditioner 150ml,hair_care,Nivea,mass_market,13.53,150,40,NL,2024-12-16,2022-12-18,online,36-50,vegan,mixed,summer,3.4,in_stock,25
+351,Highlights Kit 150ml,hair_color,Maybelline,mass_market,16.09,150,46,DE,2025-02-07,2025-01-25,online,36-50,"vegan,natural",synthetic,all_season,4.8,in_stock,47
+352,Perfume Oil 30ml,fragrance,Chanel,luxury,288.51,30,10,FR,2024-02-05,2023-01-16,online,36-50,"natural,vegan",mixed,summer,4.5,low_stock,253
+353,Heat Protection Spray 50ml,hair_styling,Herbivore,indie,24.06,50,20,FR,2025-07-25,2024-02-06,wholesale,26-35,"cruelty_free,organic,vegan",natural,all_season,4.3,in_stock,261
+354,Matte Lipstick Coral,lip_color,Estée Lauder,premium,106.45,10,6,RO,2024-01-04,2023-09-30,wholesale,26-35,"cruelty_free,natural,organic",mixed,fall,3.9,low_stock,71
+355,Body Mist 15ml,fragrance,Herbivore,indie,33.5,15,29,MT,2025-06-17,2024-08-29,online,18-25,natural,mixed,winter,4.5,in_stock,387
+356,Permanent Hair Dye 100ml,hair_color,Drunk Elephant,indie,28.51,100,22,ES,2024-06-02,2024-04-24,online,50+,,natural,winter,4.3,in_stock,428
+357,Base Coat 15ml,nail_care,Shiseido,premium,46.74,15,36,CZ,2025-06-26,2024-07-29,retail,36-50,"natural,cruelty_free",mixed,winter,3.6,low_stock,205
+358,Eye Cream 50ml,skin_moisturizer,Estée Lauder,premium,88.84,50,27,NL,2025-01-31,2023-02-21,wholesale,26-35,,natural,fall,4.1,out_of_stock,299
+359,Nail Strengthener 20ml,nail_care,Maybelline,mass_market,23.84,20,24,RO,2025-07-22,2024-04-23,online,18-25,"vegan,cruelty_free",natural,summer,3.8,low_stock,220
+360,Permanent Hair Dye 150ml,hair_color,Estée Lauder,premium,62.5,150,4,NO,2024-11-22,2023-11-11,wholesale,18-25,vegan,natural,all_season,4.4,in_stock,300
+361,Anti-Aging Moisturizer 50ml,skin_moisturizer,Nivea,mass_market,21.03,50,10,FR,2024-09-26,2024-08-28,retail,36-50,"natural,vegan",synthetic,summer,3.2,in_stock,135
+362,Heat Protection Spray 200ml,hair_styling,MAC,premium,112.44,200,9,FR,2025-04-26,2025-04-26,wholesale,36-50,"cruelty_free,organic",synthetic,all_season,4.1,out_of_stock,276
+363,Hydrating Shampoo 100ml,hair_care,Estée Lauder,premium,41.58,100,45,AT,2025-06-29,2023-09-13,wholesale,26-35,vegan,natural,winter,4.4,low_stock,475
+364,Nail Strengthener 10ml,nail_care,Chanel,luxury,123.2,10,43,RO,2025-08-12,2025-07-21,online,18-25,"organic,vegan,natural",natural,fall,4.3,low_stock,127
+365,Satin Lip Gloss Nude,lip_color,Guerlain,luxury,86.44,15,48,SE,2025-04-19,2025-03-27,online,36-50,"vegan,cruelty_free",mixed,all_season,3.6,in_stock,493
+366,Nourishing Conditioner 500ml,hair_care,Guerlain,luxury,122.14,500,49,HU,2025-08-26,2024-11-08,retail,18-25,natural,synthetic,all_season,3.5,in_stock,442
+367,Highlighting Powder 20ml,face_powder,Dior,luxury,127.14,20,8,EE,2025-04-27,2025-01-02,wholesale,18-25,"organic,cruelty_free,natural",synthetic,fall,4.4,in_stock,74
+368,Highlighting Powder 8ml,face_powder,Chanel,luxury,164.65,8,44,LU,2025-01-06,2024-05-13,wholesale,26-35,"cruelty_free,vegan,organic",natural,winter,4.7,in_stock,235
+369,Heat Protection Spray 200ml,hair_styling,Tom Ford,luxury,194.99,200,8,PL,2025-08-26,2023-10-01,wholesale,50+,,mixed,summer,3.1,out_of_stock,330
+370,Eau de Parfum 30ml,fragrance,Dove,mass_market,30.14,30,18,EE,2024-06-28,2023-08-12,online,36-50,"cruelty_free,vegan,natural",synthetic,all_season,3.7,low_stock,203
+371,Eye Cream 200ml,skin_moisturizer,Chanel,luxury,130.78,200,2,IT,2025-02-19,2023-01-01,online,18-25,,synthetic,spring,4.8,in_stock,256
+372,Daily Hydrating Cream 1000ml,skin_moisturizer,Dove,mass_market,7.3,1000,50,CZ,2024-06-07,2023-07-16,wholesale,26-35,"natural,vegan",mixed,fall,4.1,low_stock,336
+373,Eau de Parfum 75ml,fragrance,Chanel,luxury,179.03,75,29,GR,2024-11-01,2023-04-03,retail,18-25,cruelty_free,mixed,summer,4.1,in_stock,377
+374,Heat Protection Spray 500ml,hair_styling,Drunk Elephant,indie,51.0,500,31,CZ,2024-04-15,2024-02-18,online,26-35,,synthetic,fall,4.1,out_of_stock,381
+375,Setting Powder 8ml,face_powder,Nivea,mass_market,22.71,8,24,FI,2025-04-21,2025-04-14,online,18-25,"natural,organic",synthetic,fall,4.9,in_stock,368
+376,Satin Lip Gloss Coral,lip_color,Dior,luxury,98.69,20,20,IT,2025-09-15,2023-09-19,wholesale,26-35,,mixed,fall,2.9,in_stock,291
+377,Body Mist 15ml,fragrance,Fenty Beauty,indie,60.24,15,21,IE,2025-10-30,2023-12-30,online,50+,"organic,vegan",natural,summer,3.8,in_stock,109
+378,Anti-Aging Moisturizer 200ml,skin_moisturizer,Dove,mass_market,11.05,200,35,BE,2025-09-05,2023-11-12,wholesale,36-50,,synthetic,all_season,3.9,in_stock,34
+379,Texturizing Spray 150ml,hair_styling,Guerlain,luxury,94.8,150,31,PT,2024-05-27,2023-05-26,retail,36-50,,mixed,fall,4.1,in_stock,138
+380,Perfume Oil 50ml,fragrance,Dove,mass_market,23.75,50,2,SK,2025-05-21,2024-05-16,online,26-35,"vegan,cruelty_free,natural",synthetic,all_season,4.5,low_stock,206
+381,Nourishing Conditioner 150ml,hair_care,Fenty Beauty,indie,45.06,150,48,SI,2025-09-05,2024-12-20,wholesale,50+,"cruelty_free,organic,natural",synthetic,fall,4.5,in_stock,162
+382,Plumping Lip Balm Red,lip_color,Maybelline,mass_market,9.5,15,20,GR,2025-10-21,2025-07-26,wholesale,50+,"organic,natural,cruelty_free",synthetic,summer,2.9,low_stock,483
+383,Permanent Hair Dye 500ml,hair_color,Maybelline,mass_market,19.58,500,6,DK,2025-11-14,2025-08-03,online,36-50,,synthetic,fall,4.3,low_stock,118
+384,Matte Lipstick Coral,lip_color,The Ordinary,indie,58.17,10,17,CZ,2024-06-02,2024-01-07,retail,26-35,,synthetic,fall,4.5,low_stock,29
+385,Satin Lip Gloss Pink,lip_color,Lancôme,premium,49.27,10,27,SE,2025-04-10,2024-11-15,online,18-25,"cruelty_free,natural,organic",synthetic,all_season,4.0,in_stock,167
+386,Highlighting Powder 15ml,face_powder,Dove,mass_market,29.64,15,39,DE,2025-08-31,2025-08-02,online,18-25,cruelty_free,mixed,winter,3.7,out_of_stock,351
+387,Plumping Lip Balm Red,lip_color,L'Oréal,mass_market,32.29,30,17,NO,2024-08-04,2024-07-17,retail,26-35,"vegan,organic",synthetic,fall,4.6,low_stock,468
+388,Daily Hydrating Cream 1000ml,skin_moisturizer,Glossier,indie,65.66,1000,48,PT,2024-07-27,2024-04-07,wholesale,50+,,natural,fall,4.1,in_stock,286
+389,Hydrating Shampoo 500ml,hair_care,Garnier,mass_market,24.25,500,42,PL,2024-08-24,2023-11-17,retail,50+,cruelty_free,synthetic,all_season,3.1,in_stock,353
+390,Body Mist 75ml,fragrance,Shiseido,premium,73.05,75,17,NL,2025-07-08,2023-08-02,online,36-50,"vegan,organic",synthetic,fall,3.5,low_stock,500
+391,Nourishing Conditioner 50ml,hair_care,Clinique,premium,117.67,50,45,MT,2025-07-10,2025-02-01,retail,18-25,"natural,cruelty_free,vegan",natural,spring,4.8,in_stock,139
+392,Perfume Oil 75ml,fragrance,Chanel,luxury,106.07,75,13,MT,2025-04-27,2023-08-24,wholesale,36-50,"natural,organic,vegan",natural,all_season,3.5,low_stock,464
+393,Highlights Kit 1000ml,hair_color,Lancôme,premium,43.13,1000,16,HR,2025-07-10,2024-10-30,wholesale,26-35,"natural,organic",natural,winter,3.3,in_stock,237
+394,Perfume Oil 100ml,fragrance,The Ordinary,indie,31.65,100,4,DE,2025-07-02,2025-05-18,wholesale,26-35,"cruelty_free,natural,organic",natural,fall,4.1,in_stock,410
+395,Permanent Hair Dye 250ml,hair_color,Herbivore,indie,26.66,250,32,DK,2025-03-09,2025-03-03,wholesale,26-35,,synthetic,all_season,4.0,in_stock,495
+396,Highlights Kit 1000ml,hair_color,L'Oréal,mass_market,34.2,1000,28,NO,2025-05-21,2024-11-09,wholesale,36-50,"natural,organic",synthetic,winter,4.5,in_stock,439
+397,Satin Lip Gloss Pink,lip_color,Glossier,indie,26.9,10,11,LT,2025-02-28,2024-04-29,wholesale,50+,,synthetic,spring,4.0,out_of_stock,274
+398,Nail Polish 15ml,nail_care,Drunk Elephant,indie,23.04,15,19,NL,2025-09-30,2025-05-20,retail,36-50,organic,mixed,all_season,3.5,out_of_stock,88
+399,Texturizing Spray 50ml,hair_styling,Lancôme,premium,55.59,50,26,FI,2025-03-17,2022-11-23,online,18-25,"vegan,organic",natural,winter,4.5,in_stock,412
+400,Deep Repair Mask 50ml,hair_care,Herbivore,indie,57.65,50,21,LV,2023-05-09,2022-12-24,online,26-35,organic,mixed,fall,3.8,in_stock,312
+401,Eau de Parfum 75ml,fragrance,Guerlain,luxury,136.14,75,6,FR,2025-05-01,2024-12-21,retail,26-35,"natural,vegan,organic",natural,fall,4.1,in_stock,37
+402,Color Gloss Treatment 500ml,hair_color,Maybelline,mass_market,7.88,500,13,CZ,2025-03-04,2024-08-12,wholesale,50+,"cruelty_free,natural,vegan",natural,winter,4.5,in_stock,332
+403,Volume Mousse 250ml,hair_styling,Drunk Elephant,indie,37.21,250,42,SI,2025-04-06,2024-05-06,online,26-35,"organic,vegan,cruelty_free",synthetic,spring,4.7,in_stock,350
+404,Night Repair Serum 250ml,skin_moisturizer,MAC,premium,68.5,250,36,ES,2025-10-04,2024-01-19,retail,18-25,"natural,organic,vegan",mixed,all_season,4.5,in_stock,471
+405,Hydrating Shampoo 500ml,hair_care,Guerlain,luxury,225.55,500,26,DE,2025-08-20,2025-02-21,retail,50+,"cruelty_free,natural",mixed,winter,4.4,in_stock,137
+406,Root Touch-Up 100ml,hair_color,Nivea,mass_market,7.35,100,44,IT,2024-06-08,2022-11-22,wholesale,18-25,,synthetic,spring,2.8,in_stock,344
+407,Top Coat 20ml,nail_care,Drunk Elephant,indie,59.89,20,20,ES,2023-09-05,2022-12-11,retail,26-35,,natural,spring,4.5,in_stock,108
+408,Plumping Lip Balm Pink,lip_color,Clinique,premium,69.22,15,13,ES,2024-05-19,2023-11-21,wholesale,50+,natural,synthetic,spring,3.3,out_of_stock,182
+409,Nail Polish 30ml,nail_care,Drunk Elephant,indie,53.04,30,37,LU,2025-06-24,2025-01-29,wholesale,18-25,"organic,natural",mixed,winter,4.8,low_stock,190
+410,Nail Strengthener 30ml,nail_care,L'Oréal,mass_market,20.4,30,44,LU,2024-03-05,2023-08-12,wholesale,26-35,,mixed,spring,4.0,in_stock,84
+411,Perfume Oil 15ml,fragrance,La Mer,luxury,188.85,15,29,LT,2023-12-12,2023-01-05,wholesale,18-25,cruelty_free,mixed,summer,4.0,in_stock,187
+412,Highlighting Powder 10ml,face_powder,Shiseido,premium,109.49,10,25,PT,2023-11-24,2023-08-14,online,36-50,"vegan,cruelty_free,organic",synthetic,spring,4.3,in_stock,326
+413,Nail Polish 30ml,nail_care,MAC,premium,114.87,30,16,BE,2025-01-15,2024-04-05,online,18-25,,synthetic,fall,3.8,in_stock,233
+414,Highlighting Powder 8ml,face_powder,Chanel,luxury,215.86,8,15,CZ,2025-07-01,2025-04-22,wholesale,36-50,"organic,cruelty_free",synthetic,summer,4.6,low_stock,455
+415,Nail Strengthener 10ml,nail_care,Chanel,luxury,294.43,10,40,CY,2024-03-06,2023-06-15,retail,18-25,,natural,spring,4.6,out_of_stock,448
+416,Nail Strengthener 10ml,nail_care,Estée Lauder,premium,43.89,10,9,IT,2025-06-03,2024-08-16,retail,50+,"organic,natural,vegan",synthetic,fall,4.1,in_stock,52
+417,Mineral Foundation 10ml,face_powder,Garnier,mass_market,27.6,10,15,PL,2024-09-16,2024-02-28,wholesale,50+,"natural,cruelty_free,vegan",natural,winter,3.4,in_stock,479
+418,Bronzer 20ml,face_powder,Chanel,luxury,296.03,20,4,IE,2025-04-13,2025-03-08,retail,26-35,,mixed,all_season,4.8,in_stock,445
+419,Setting Powder 15ml,face_powder,Nivea,mass_market,32.01,15,45,IE,2025-06-24,2023-12-07,wholesale,26-35,"cruelty_free,natural,vegan",natural,fall,3.1,in_stock,149
+420,Night Repair Serum 50ml,skin_moisturizer,The Ordinary,indie,48.26,50,22,EE,2025-02-28,2024-10-08,online,26-35,,natural,all_season,4.2,in_stock,396
+421,Volume Mousse 1000ml,hair_styling,Garnier,mass_market,16.19,1000,23,IT,2024-06-20,2023-11-20,retail,18-25,"cruelty_free,natural,organic",synthetic,fall,4.9,low_stock,117
+422,Anti-Aging Moisturizer 500ml,skin_moisturizer,Estée Lauder,premium,100.63,500,44,PL,2024-04-14,2023-08-22,online,50+,organic,synthetic,all_season,4.2,low_stock,339
+423,Smoothing Serum 500ml,hair_styling,Garnier,mass_market,17.77,500,6,DE,2025-08-30,2024-06-28,wholesale,26-35,"vegan,natural,organic",synthetic,all_season,3.9,in_stock,24
+424,Nail Strengthener 30ml,nail_care,Herbivore,indie,59.79,30,47,PT,2023-02-23,2022-12-27,retail,26-35,natural,mixed,winter,3.3,low_stock,36
+425,Nail Strengthener 10ml,nail_care,Dior,luxury,244.23,10,8,HR,2023-10-27,2022-12-31,wholesale,18-25,,synthetic,all_season,3.7,in_stock,361
+426,Anti-Aging Moisturizer 150ml,skin_moisturizer,La Mer,luxury,144.68,150,10,PL,2025-08-12,2025-07-26,online,50+,,synthetic,fall,3.5,low_stock,99
+427,Texturizing Spray 50ml,hair_styling,Glossier,indie,71.58,50,37,NO,2024-07-17,2024-06-22,online,50+,"natural,vegan",mixed,all_season,3.3,in_stock,296
+428,Base Coat 20ml,nail_care,Drunk Elephant,indie,20.81,20,40,PT,2024-01-11,2023-11-23,wholesale,26-35,"cruelty_free,natural,organic",mixed,winter,4.4,in_stock,186
+429,Daily Hydrating Cream 500ml,skin_moisturizer,Clinique,premium,80.34,500,37,EE,2025-02-17,2025-02-07,retail,26-35,"organic,natural,cruelty_free",natural,fall,4.5,in_stock,317
+430,Highlighting Powder 30ml,face_powder,Glossier,indie,17.92,30,2,DK,2023-04-10,2023-03-25,wholesale,26-35,"organic,cruelty_free,vegan",synthetic,fall,3.2,out_of_stock,322
+431,Root Touch-Up 150ml,hair_color,Estée Lauder,premium,99.15,150,27,SI,2025-09-04,2025-03-19,retail,18-25,"vegan,organic",mixed,spring,3.7,in_stock,425
+432,Bronzer 20ml,face_powder,Lancôme,premium,114.74,20,4,BE,2025-07-21,2023-02-14,retail,26-35,"natural,organic,vegan",natural,fall,4.0,in_stock,151
+433,Eau de Toilette 15ml,fragrance,Glossier,indie,32.5,15,16,EE,2025-04-28,2022-12-11,online,26-35,"natural,vegan",natural,all_season,3.5,out_of_stock,283
+434,Root Touch-Up 250ml,hair_color,Maybelline,mass_market,33.58,250,3,FR,2023-05-11,2022-12-13,wholesale,36-50,organic,natural,winter,3.7,in_stock,41
+435,Lip Stain Pink,lip_color,Herbivore,indie,63.05,10,20,ES,2025-09-11,2024-01-25,wholesale,18-25,cruelty_free,synthetic,summer,4.2,out_of_stock,194
+436,Eye Cream 150ml,skin_moisturizer,Nivea,mass_market,12.38,150,14,GR,2025-05-31,2024-09-28,online,36-50,,mixed,summer,4.3,in_stock,64
+437,Nourishing Conditioner 200ml,hair_care,Glossier,indie,51.13,200,32,EE,2023-12-02,2023-09-10,wholesale,18-25,,mixed,spring,4.6,low_stock,275
+438,Highlighting Powder 30ml,face_powder,Glossier,indie,38.27,30,8,GR,2025-11-17,2025-02-23,wholesale,26-35,"organic,natural,cruelty_free",synthetic,fall,3.5,low_stock,236
+439,Plumping Lip Balm Red,lip_color,Dove,mass_market,13.42,20,46,HR,2023-12-02,2023-02-09,retail,18-25,natural,natural,fall,4.2,in_stock,374
+440,Permanent Hair Dye 250ml,hair_color,Shiseido,premium,41.54,250,17,BG,2025-10-20,2025-06-18,retail,36-50,organic,mixed,all_season,4.3,in_stock,23
+441,Eau de Parfum 50ml,fragrance,Glossier,indie,43.12,50,8,SI,2025-07-04,2024-07-03,online,50+,"cruelty_free,natural,organic",mixed,summer,3.0,out_of_stock,414
+442,Detox Cleansing Shampoo 100ml,hair_care,Herbivore,indie,36.76,100,2,LV,2024-04-15,2023-03-06,retail,50+,,natural,summer,3.4,in_stock,136
+443,Nail Strengthener 10ml,nail_care,Chanel,luxury,210.36,10,17,AT,2024-12-14,2023-11-21,retail,50+,cruelty_free,natural,fall,4.1,in_stock,310
+444,Nail Polish 30ml,nail_care,Guerlain,luxury,207.37,30,3,IE,2025-11-06,2025-05-28,wholesale,18-25,organic,synthetic,spring,3.7,in_stock,177
+445,Hydrating Shampoo 150ml,hair_care,Chanel,luxury,266.98,150,40,EE,2025-10-03,2024-07-08,wholesale,26-35,,synthetic,winter,4.0,in_stock,434
+446,Detox Cleansing Shampoo 250ml,hair_care,La Mer,luxury,152.2,250,7,FR,2025-09-27,2025-02-07,online,18-25,vegan,mixed,all_season,3.6,in_stock,184
+447,Satin Lip Gloss Red,lip_color,The Ordinary,indie,23.3,10,33,SK,2024-09-01,2024-01-03,wholesale,36-50,vegan,synthetic,fall,4.2,in_stock,50
+448,Permanent Hair Dye 100ml,hair_color,Guerlain,luxury,191.56,100,4,PT,2024-04-28,2023-04-21,wholesale,26-35,vegan,natural,fall,3.5,in_stock,195
+449,Bronzer 30ml,face_powder,Fenty Beauty,indie,34.48,30,7,GR,2025-08-30,2024-09-21,retail,50+,organic,mixed,summer,4.4,in_stock,481
+450,Top Coat 30ml,nail_care,MAC,premium,48.48,30,24,FR,2025-11-18,2025-02-16,retail,36-50,,mixed,spring,3.3,in_stock,491
+451,Nourishing Conditioner 100ml,hair_care,L'Oréal,mass_market,13.52,100,47,NL,2025-07-10,2025-01-11,wholesale,26-35,vegan,natural,summer,4.6,out_of_stock,173
+452,Eau de Parfum 50ml,fragrance,Dior,luxury,285.95,50,16,FI,2025-04-02,2024-10-15,wholesale,26-35,"organic,natural,cruelty_free",natural,summer,3.5,in_stock,391
+453,Eau de Toilette 15ml,fragrance,Nivea,mass_market,27.89,15,35,NO,2025-05-12,2023-12-31,retail,36-50,organic,mixed,fall,4.6,low_stock,111
+454,Heat Protection Spray 1000ml,hair_styling,The Ordinary,indie,58.13,1000,33,IE,2025-10-10,2025-06-18,online,36-50,"natural,organic,vegan",mixed,fall,4.1,in_stock,80
+455,Eye Cream 500ml,skin_moisturizer,Drunk Elephant,indie,74.88,500,3,BE,2024-01-26,2024-01-04,retail,26-35,"vegan,natural,organic",synthetic,winter,4.6,in_stock,465
+456,Smoothing Serum 1000ml,hair_styling,Nivea,mass_market,7.52,1000,23,AT,2024-06-08,2024-05-25,online,18-25,"cruelty_free,vegan,natural",synthetic,winter,3.9,low_stock,175
+457,Eau de Parfum 30ml,fragrance,Nivea,mass_market,18.25,30,5,FI,2024-12-26,2024-11-25,retail,36-50,,synthetic,summer,3.2,in_stock,484
+458,Lip Stain Nude,lip_color,Guerlain,luxury,135.01,15,50,SI,2023-08-09,2023-07-22,wholesale,26-35,cruelty_free,natural,fall,3.7,in_stock,358
+459,Detox Cleansing Shampoo 500ml,hair_care,Drunk Elephant,indie,48.32,500,26,AT,2025-06-22,2023-07-06,retail,26-35,"vegan,cruelty_free,natural",mixed,winter,3.8,in_stock,82
+460,Eau de Toilette 75ml,fragrance,Lancôme,premium,70.5,75,24,PL,2025-10-22,2024-01-30,online,26-35,"organic,vegan",mixed,fall,3.8,in_stock,413
+461,Anti-Aging Moisturizer 250ml,skin_moisturizer,Fenty Beauty,indie,16.51,250,9,PL,2025-10-20,2023-06-11,wholesale,50+,"vegan,natural,organic",mixed,winter,3.5,in_stock,389
+462,Smoothing Serum 50ml,hair_styling,Herbivore,indie,58.87,50,45,HR,2025-11-05,2025-02-23,wholesale,18-25,vegan,natural,winter,3.7,in_stock,4
+463,Deep Repair Mask 250ml,hair_care,Tom Ford,luxury,82.43,250,26,NL,2025-04-25,2024-09-23,retail,26-35,"natural,cruelty_free,organic",synthetic,summer,3.3,in_stock,446
+464,Color Gloss Treatment 250ml,hair_color,Drunk Elephant,indie,28.19,250,30,SE,2023-12-21,2023-08-21,retail,18-25,natural,natural,winter,4.2,in_stock,415
+465,Nail Strengthener 30ml,nail_care,Maybelline,mass_market,22.28,30,19,SK,2025-08-20,2023-07-31,wholesale,36-50,"natural,cruelty_free",natural,winter,3.6,low_stock,143
+466,Eau de Toilette 100ml,fragrance,Drunk Elephant,indie,21.21,100,16,MT,2025-10-08,2023-09-08,retail,36-50,"organic,cruelty_free",mixed,summer,4.7,in_stock,302
+467,Volume Mousse 250ml,hair_styling,La Mer,luxury,248.64,250,29,NL,2025-04-26,2024-09-24,wholesale,26-35,,synthetic,spring,3.1,in_stock,230
+468,Highlighting Powder 10ml,face_powder,Drunk Elephant,indie,40.78,10,8,LT,2025-10-20,2025-08-13,retail,36-50,"natural,vegan,organic",natural,all_season,4.3,low_stock,113
+469,Top Coat 15ml,nail_care,The Ordinary,indie,26.09,15,7,NL,2025-09-05,2025-08-05,wholesale,18-25,"vegan,organic,cruelty_free",mixed,fall,3.4,in_stock,215
+470,Plumping Lip Balm Coral,lip_color,Clinique,premium,87.69,10,7,IE,2024-01-16,2023-08-21,online,36-50,"organic,cruelty_free,natural",natural,winter,4.5,out_of_stock,487
+471,Matte Lipstick Berry,lip_color,Dove,mass_market,5.84,10,13,SI,2025-10-09,2025-08-09,online,18-25,organic,mixed,summer,4.4,in_stock,360
+472,Mineral Foundation 30ml,face_powder,La Mer,luxury,125.57,30,28,IT,2024-10-13,2024-02-16,retail,26-35,,synthetic,fall,3.4,in_stock,333
+473,Eau de Toilette 75ml,fragrance,L'Oréal,mass_market,11.6,75,42,HR,2025-02-09,2023-10-20,wholesale,18-25,,natural,winter,3.7,in_stock,367
+474,Color Gloss Treatment 50ml,hair_color,Guerlain,luxury,211.97,50,44,EE,2023-09-18,2022-11-23,online,26-35,"vegan,cruelty_free",mixed,fall,4.8,in_stock,102
+475,Detox Cleansing Shampoo 200ml,hair_care,La Mer,luxury,192.43,200,33,BG,2025-03-28,2023-07-26,online,18-25,organic,mixed,spring,3.7,low_stock,288
+476,Volume Mousse 100ml,hair_styling,Shiseido,premium,63.71,100,10,IE,2025-08-10,2024-10-24,retail,18-25,natural,mixed,fall,3.3,in_stock,14
+477,Body Mist 15ml,fragrance,Guerlain,luxury,130.38,15,22,AT,2024-12-17,2023-08-04,retail,18-25,vegan,mixed,winter,4.1,in_stock,309
+478,Nail Polish 15ml,nail_care,Chanel,luxury,91.46,15,9,ES,2025-09-30,2025-04-01,retail,26-35,organic,synthetic,winter,3.7,low_stock,259
+479,Root Touch-Up 150ml,hair_color,Lancôme,premium,55.68,150,18,MT,2025-04-29,2024-05-21,wholesale,18-25,"natural,vegan",natural,winter,4.0,in_stock,120
+480,Nail Polish 30ml,nail_care,The Ordinary,indie,42.78,30,39,HU,2025-09-06,2025-05-30,retail,26-35,"natural,vegan",synthetic,winter,3.7,in_stock,112
+481,Mineral Foundation 20ml,face_powder,Glossier,indie,27.72,20,1,FR,2024-10-29,2023-01-28,online,36-50,"natural,vegan,cruelty_free",mixed,fall,3.9,in_stock,48
+482,Hydrating Shampoo 200ml,hair_care,Tom Ford,luxury,285.07,200,49,PT,2025-08-14,2025-03-10,wholesale,36-50,"cruelty_free,natural,organic",mixed,winter,4.7,low_stock,16
+483,Deep Repair Mask 500ml,hair_care,Lancôme,premium,93.59,500,43,SK,2025-08-24,2025-07-26,retail,36-50,"vegan,natural,organic",mixed,all_season,4.8,low_stock,17
+484,Heat Protection Spray 200ml,hair_styling,Chanel,luxury,235.34,200,34,BE,2025-06-10,2022-11-30,wholesale,26-35,"cruelty_free,natural,vegan",mixed,all_season,4.3,in_stock,217
+485,Volume Mousse 500ml,hair_styling,Garnier,mass_market,22.18,500,10,SE,2024-12-04,2023-05-30,online,26-35,"cruelty_free,organic,natural",synthetic,spring,3.2,low_stock,303
+486,Body Mist 75ml,fragrance,Fenty Beauty,indie,26.09,75,46,PL,2025-08-18,2024-08-05,retail,50+,organic,synthetic,all_season,4.5,in_stock,45
+487,Lip Stain Berry,lip_color,Dior,luxury,217.9,30,41,NL,2025-08-02,2023-11-23,retail,36-50,,synthetic,spring,3.7,in_stock,280
+488,Nail Polish 10ml,nail_care,Lancôme,premium,35.5,10,43,BG,2025-11-14,2023-07-16,retail,18-25,organic,synthetic,all_season,4.1,out_of_stock,457
+489,Top Coat 30ml,nail_care,Garnier,mass_market,15.1,30,21,LU,2024-12-05,2023-09-25,retail,36-50,"natural,cruelty_free,organic",synthetic,fall,4.5,in_stock,497
+490,Hydrating Shampoo 1000ml,hair_care,The Ordinary,indie,49.49,1000,24,GR,2024-06-30,2022-12-24,online,50+,"vegan,organic,natural",natural,fall,4.6,out_of_stock,347
+491,Plumping Lip Balm Coral,lip_color,Garnier,mass_market,28.82,30,31,SI,2025-04-16,2024-09-01,online,18-25,"cruelty_free,natural,organic",mixed,summer,4.6,low_stock,53
+492,Nail Polish 20ml,nail_care,Dior,luxury,263.12,20,11,GR,2024-07-31,2024-02-09,retail,50+,vegan,natural,summer,4.4,in_stock,378
+493,Eau de Parfum 30ml,fragrance,Chanel,luxury,284.38,30,50,SE,2025-05-09,2024-09-23,retail,36-50,"organic,cruelty_free,natural",mixed,winter,3.2,in_stock,72
+494,Texturizing Spray 200ml,hair_styling,Shiseido,premium,111.92,200,47,IE,2023-10-30,2023-07-25,online,50+,vegan,synthetic,spring,3.7,in_stock,115
+495,Matte Lipstick Pink,lip_color,Maybelline,mass_market,30.6,20,37,LV,2023-10-05,2022-12-21,retail,36-50,,mixed,all_season,3.5,in_stock,126
+496,Mineral Foundation 30ml,face_powder,Herbivore,indie,58.14,30,7,IE,2025-04-08,2023-12-28,retail,50+,"vegan,natural",natural,winter,4.3,in_stock,141
+497,Deep Repair Mask 150ml,hair_care,Dove,mass_market,20.07,150,18,MT,2025-07-18,2023-09-18,online,50+,natural,synthetic,winter,3.0,low_stock,380
+498,Matte Lipstick Berry,lip_color,MAC,premium,95.47,15,11,FR,2024-12-19,2024-10-21,online,50+,"natural,cruelty_free",synthetic,fall,4.4,in_stock,13
+499,Plumping Lip Balm Pink,lip_color,Nivea,mass_market,14.7,10,4,MT,2024-04-06,2023-06-05,online,36-50,"vegan,cruelty_free,organic",synthetic,winter,3.7,in_stock,58
+500,Deep Repair Mask 500ml,hair_care,MAC,premium,107.05,500,10,IE,2025-06-01,2025-05-11,wholesale,26-35,,natural,fall,4.8,in_stock,328
+501,Body Mist 30ml,fragrance,Fenty Beauty,indie,16.94,100,15,IE,2023-07-21,2022-11-28,wholesale,18-25,,mixed,spring,3.9,in_stock,215
+502,Satin Lip Gloss Pink,lip_color,Estée Lauder,premium,39.2,15,7,ES,2023-07-08,2022-09-29,retail,26-35,"vegan,cruelty_free,natural",mixed,summer,4.0,in_stock,414
+503,Highlighting Powder 8ml,face_powder,Herbivore,indie,19.52,15,15,PT,2023-07-02,2022-02-06,retail,18-25,"organic,cruelty_free",natural,spring,4.2,in_stock,233
+504,Root Touch-Up 200ml,hair_color,La Mer,luxury,240.41,100,30,IE,2023-07-21,2023-01-06,retail,50+,natural,natural,fall,2.6,in_stock,113
+505,Nail Polish 15ml,nail_care,Maybelline,mass_market,31.29,15,14,IE,2023-07-22,2021-06-28,retail,26-35,"natural,vegan",mixed,summer,3.7,low_stock,72
+506,Mineral Foundation 8ml,face_powder,Drunk Elephant,indie,64.13,30,8,FR,2023-07-08,2021-07-01,online,26-35,,mixed,spring,3.6,in_stock,306
+507,Satin Lip Gloss Pink,lip_color,Herbivore,indie,49.9,30,50,SI,2023-07-03,2021-01-17,wholesale,50+,"cruelty_free,natural",synthetic,winter,3.8,in_stock,498
+508,Setting Powder 20ml,face_powder,The Ordinary,indie,50.06,15,34,NL,2023-07-17,2021-12-25,retail,18-25,"cruelty_free,natural,organic",mixed,fall,3.8,in_stock,10
+509,Heat Protection Spray 50ml,hair_styling,Nivea,mass_market,34.34,150,9,BE,2023-07-04,2022-07-09,retail,18-25,,synthetic,winter,3.3,low_stock,217
+510,Night Repair Serum 1000ml,skin_moisturizer,Fenty Beauty,indie,31.11,150,22,AT,2023-07-31,2022-09-01,online,18-25,,synthetic,summer,3.0,in_stock,302
+511,Body Mist 15ml,fragrance,The Ordinary,indie,28.93,75,47,IE,2023-07-08,2023-04-25,wholesale,50+,"natural,organic,vegan",mixed,winter,4.6,in_stock,98
+512,Body Mist 100ml,fragrance,Lancôme,premium,95.54,100,16,DK,2023-07-04,2022-07-18,wholesale,36-50,,synthetic,fall,3.7,out_of_stock,72
+513,Daily Hydrating Cream 1000ml,skin_moisturizer,Estée Lauder,premium,117.21,500,16,FR,2023-07-14,2022-03-11,wholesale,18-25,,synthetic,winter,4.3,low_stock,85
+514,Perfume Oil 50ml,fragrance,Lancôme,premium,47.09,100,4,PL,2023-07-13,2021-03-27,wholesale,18-25,"cruelty_free,natural,organic",synthetic,fall,4.5,in_stock,30
+515,Deep Repair Mask 50ml,hair_care,Drunk Elephant,indie,30.29,150,37,SE,2023-07-02,2022-11-17,wholesale,36-50,"organic,vegan,natural",natural,winter,4.0,in_stock,290
+516,Perfume Oil 100ml,fragrance,La Mer,luxury,81.72,75,43,SE,2025-12-29,2023-11-27,wholesale,18-25,,synthetic,fall,4.7,in_stock,60
+517,Body Mist 75ml,fragrance,Glossier,indie,31.32,75,6,PL,2025-12-29,2024-06-18,retail,26-35,,synthetic,fall,3.4,in_stock,327
+518,Night Repair Serum 100ml,skin_moisturizer,Lancôme,premium,63.23,250,10,CZ,2025-12-09,2024-05-03,retail,50+,vegan,mixed,fall,3.3,out_of_stock,461
+519,Highlights Kit 150ml,hair_color,Nivea,mass_market,23.62,250,16,IE,2025-12-30,2023-08-08,retail,36-50,"organic,cruelty_free",synthetic,fall,4.9,in_stock,378
+520,Top Coat 20ml,nail_care,Garnier,mass_market,29.5,30,23,PL,2025-12-30,2024-02-27,wholesale,36-50,"organic,vegan",synthetic,spring,3.0,in_stock,338
+521,Plumping Lip Balm Berry,lip_color,Estée Lauder,premium,114.53,20,17,IT,2025-12-07,2025-02-20,retail,18-25,"cruelty_free,organic",synthetic,all_season,4.6,in_stock,177
+522,Permanent Hair Dye 150ml,hair_color,MAC,premium,102.59,250,47,LT,2025-12-24,2025-05-24,wholesale,36-50,"cruelty_free,organic,natural",natural,winter,5.0,in_stock,187
+523,Eau de Parfum 50ml,fragrance,Glossier,indie,36.2,75,36,GR,2025-12-14,2025-08-02,wholesale,36-50,organic,natural,spring,4.4,in_stock,316
+524,Base Coat 15ml,nail_care,The Ordinary,indie,58.92,20,31,PL,2025-12-19,2023-12-23,retail,50+,"cruelty_free,natural,vegan",mixed,fall,4.4,in_stock,44
+525,Detox Cleansing Shampoo 200ml,hair_care,Glossier,indie,18.0,200,40,LT,2025-12-10,2025-02-02,wholesale,36-50,"natural,cruelty_free,vegan",synthetic,summer,4.1,in_stock,368
+526,Satin Lip Gloss Coral,lip_color,Clinique,premium,45.83,10,30,CY,2025-12-23,2024-03-18,retail,18-25,,mixed,fall,3.8,in_stock,234
+527,Highlights Kit 50ml,hair_color,Drunk Elephant,indie,68.99,50,29,GR,2025-12-05,2025-07-27,wholesale,50+,cruelty_free,synthetic,fall,4.7,in_stock,431
+528,Base Coat 10ml,nail_care,L'Oréal,mass_market,21.2,15,10,GR,2025-12-21,2023-12-08,retail,36-50,"organic,vegan",mixed,summer,3.5,in_stock,110
+529,Matte Lipstick Red,lip_color,Lancôme,premium,107.11,15,31,FR,2025-12-03,2024-12-19,retail,26-35,"organic,vegan,natural",natural,spring,4.5,in_stock,410
+530,Volume Mousse 50ml,hair_styling,Glossier,indie,45.38,150,40,FR,2025-12-20,2025-03-01,retail,26-35,"natural,vegan",natural,fall,4.0,in_stock,340
+531,Perfume Oil 15ml,fragrance,Lancôme,premium,55.04,75,17,SE,2026-01-01,2024-07-08,retail,26-35,"natural,vegan,cruelty_free",mixed,all_season,4.3,low_stock,333
+532,Root Touch-Up 500ml,hair_color,The Ordinary,indie,51.66,150,30,DE,2026-01-03,2024-01-05,retail,36-50,"cruelty_free,natural,organic",mixed,winter,3.5,in_stock,311
+533,Mineral Foundation 20ml,face_powder,Tom Ford,luxury,167.26,30,13,IT,2026-01-31,2025-07-28,retail,36-50,organic,synthetic,summer,4.7,low_stock,436
+534,Hydrating Shampoo 50ml,hair_care,Guerlain,luxury,266.91,500,7,FI,2026-01-22,2025-05-17,online,26-35,"cruelty_free,organic,natural",natural,summer,4.4,in_stock,236
+535,Night Repair Serum 1000ml,skin_moisturizer,Guerlain,luxury,240.83,100,21,IT,2026-01-23,2024-11-10,retail,50+,,natural,all_season,4.6,in_stock,385
+536,Hydrating Shampoo 100ml,hair_care,Glossier,indie,72.22,100,36,NO,2026-01-15,2024-02-10,wholesale,36-50,,synthetic,winter,3.2,in_stock,124
+537,Matte Lipstick Red,lip_color,Fenty Beauty,indie,59.97,10,43,LV,2026-01-24,2025-09-09,wholesale,26-35,"cruelty_free,organic",mixed,fall,3.5,in_stock,170
+538,Highlighting Powder 15ml,face_powder,Shiseido,premium,47.24,8,31,IE,2026-01-12,2025-09-12,wholesale,26-35,cruelty_free,synthetic,fall,3.7,in_stock,306
+539,Smoothing Serum 50ml,hair_styling,Nivea,mass_market,21.6,150,41,IE,2026-01-10,2024-05-11,retail,36-50,"natural,organic",mixed,all_season,4.4,low_stock,246
+540,Top Coat 10ml,nail_care,Nivea,mass_market,6.61,30,37,DE,2026-01-15,2024-04-09,online,50+,"organic,cruelty_free",mixed,all_season,3.6,in_stock,286
+541,Satin Lip Gloss Pink,lip_color,Drunk Elephant,indie,34.85,30,40,IE,2026-01-25,2024-03-12,online,26-35,"organic,cruelty_free",synthetic,all_season,4.2,low_stock,339
+542,Anti-Aging Moisturizer 200ml,skin_moisturizer,Chanel,luxury,142.2,250,5,SE,2026-01-03,2025-10-01,online,18-25,"cruelty_free,natural,vegan",mixed,all_season,3.9,in_stock,302
+543,Root Touch-Up 50ml,hair_color,Chanel,luxury,147.67,150,37,CZ,2026-01-22,2025-07-22,wholesale,50+,organic,mixed,fall,4.5,in_stock,483
+544,Lip Stain Pink,lip_color,The Ordinary,indie,58.83,15,49,GR,2026-01-09,2025-03-05,wholesale,18-25,"vegan,cruelty_free,organic",mixed,all_season,3.7,in_stock,391
+545,Anti-Aging Moisturizer 150ml,skin_moisturizer,Herbivore,indie,37.62,500,21,DE,2026-01-25,2024-12-28,retail,18-25,"organic,vegan",natural,fall,3.5,out_of_stock,340
+546,Root Refresh Spray 200ml,hair_color,Herbivore,indie,15.07,200,30,PT,2026-02-13,2026-01-31,retail,36-50,"vegan,cruelty_free",synthetic,fall,3.1,low_stock,319
+547,Satin Lip Gloss Coral,lip_color,Estée Lauder,premium,117.58,20,46,IE,2026-02-25,2024-04-26,online,50+,"organic,cruelty_free",synthetic,all_season,4.3,in_stock,237
+548,Highlighting Powder 30ml,face_powder,La Mer,luxury,164.39,30,39,SI,2026-02-04,2026-01-19,retail,50+,"vegan,organic,natural",mixed,spring,4.5,in_stock,142
+549,Root Refresh Spray 50ml,hair_color,MAC,premium,107.87,50,35,PL,2026-02-25,2026-02-13,retail,18-25,cruelty_free,natural,spring,3.6,in_stock,446
+550,Volume Mousse 50ml,hair_styling,Dior,luxury,164.94,500,32,IE,2026-02-07,2025-01-17,wholesale,36-50,"natural,cruelty_free",synthetic,fall,4.0,in_stock,170
+551,Body Mist 30ml,fragrance,Maybelline,mass_market,19.08,75,22,SI,2026-02-28,2024-08-13,online,18-25,,synthetic,all_season,3.6,in_stock,195
+552,Detox Cleansing Shampoo 250ml,hair_care,L'Oréal,mass_market,27.4,150,7,NL,2026-02-11,2023-12-06,retail,36-50,"natural,cruelty_free",synthetic,fall,3.6,low_stock,86
+553,Top Coat 30ml,nail_care,La Mer,luxury,254.35,20,12,FI,2026-02-23,2025-01-28,retail,26-35,"organic,natural,vegan",natural,winter,4.9,in_stock,299
+554,Glow Boost Serum 500ml,skin_moisturizer,Herbivore,indie,43.71,500,38,BE,2026-02-05,2026-01-26,retail,50+,"cruelty_free,organic",synthetic,spring,4.5,in_stock,234
+555,Base Coat 10ml,nail_care,L'Oréal,mass_market,29.9,30,18,LT,2026-02-28,2025-05-24,online,26-35,"vegan,natural",synthetic,summer,5.0,out_of_stock,255
+556,Flexi Hold Mousse 150ml,hair_styling,Clinique,premium,89.33,150,41,GR,2026-02-27,2026-01-17,online,18-25,,synthetic,fall,4.1,in_stock,404
+557,Eau de Toilette 15ml,fragrance,Clinique,premium,117.43,75,18,LT,2026-02-15,2025-12-02,retail,18-25,"natural,organic",mixed,winter,4.2,in_stock,383
+558,Base Coat 20ml,nail_care,Chanel,luxury,257.01,15,6,LU,2026-02-28,2024-06-08,wholesale,50+,"organic,cruelty_free,natural",synthetic,fall,3.7,low_stock,64
+559,Base Coat 15ml,nail_care,Glossier,indie,72.48,30,40,HU,2026-02-15,2024-07-04,wholesale,50+,"natural,cruelty_free,organic",mixed,winter,4.0,out_of_stock,210
+560,Barrier Repair Cream 200ml,skin_moisturizer,Nivea,mass_market,33.48,200,35,IT,2026-02-04,2026-01-26,retail,36-50,"natural,cruelty_free,organic",natural,all_season,4.2,in_stock,454
+561,Highlighting Powder 8ml,face_powder,Dove,mass_market,30.66,15,44,DK,2026-03-14,2024-11-06,wholesale,36-50,"natural,cruelty_free",natural,summer,3.3,low_stock,98
+562,Eau de Parfum 15ml,fragrance,L'Oréal,mass_market,34.66,15,5,LT,2026-03-31,2024-05-12,retail,18-25,"cruelty_free,organic",mixed,spring,4.8,in_stock,111
+563,Root Touch-Up 150ml,hair_color,Clinique,premium,101.87,100,43,FI,2026-03-27,2025-06-02,online,26-35,"organic,vegan,cruelty_free",synthetic,spring,4.2,in_stock,9
+564,Nail Polish 15ml,nail_care,Dior,luxury,190.84,10,47,SI,2026-03-06,2025-03-04,wholesale,26-35,"organic,natural,cruelty_free",natural,fall,3.8,out_of_stock,235
+565,Smoothing Serum 500ml,hair_styling,Dior,luxury,150.86,150,5,NL,2026-03-21,2024-08-30,online,36-50,"organic,cruelty_free,natural",natural,fall,4.5,low_stock,306
+566,Nail Recovery Serum 30ml,nail_care,Herbivore,indie,28.98,30,15,LT,2026-03-17,2026-02-09,wholesale,50+,"cruelty_free,natural",synthetic,fall,4.5,in_stock,374
+567,Top Coat 10ml,nail_care,Shiseido,premium,38.69,20,9,MT,2026-03-04,2025-08-02,retail,50+,"cruelty_free,organic,vegan",synthetic,winter,3.4,out_of_stock,211
+568,Texturizing Spray 150ml,hair_styling,L'Oréal,mass_market,11.38,200,15,NL,2026-03-12,2026-02-05,wholesale,50+,"natural,organic",natural,all_season,3.8,in_stock,189
+569,Bronzer 20ml,face_powder,Herbivore,indie,75.39,20,45,NL,2026-03-04,2024-08-28,wholesale,50+,"cruelty_free,organic,vegan",synthetic,fall,4.0,out_of_stock,4
+570,Root Touch-Up 1000ml,hair_color,Herbivore,indie,44.49,100,24,PT,2026-03-06,2025-11-21,wholesale,50+,"natural,vegan,cruelty_free",natural,winter,4.3,in_stock,306
+571,Smoothing Serum 150ml,hair_styling,Guerlain,luxury,127.43,200,23,NO,2026-03-03,2025-03-07,retail,26-35,"organic,vegan",natural,all_season,3.6,in_stock,158
+572,Daily Hydrating Cream 150ml,skin_moisturizer,Maybelline,mass_market,5.23,50,28,BG,2026-03-02,2024-10-07,retail,36-50,,mixed,winter,4.2,in_stock,361
+573,Satin Lip Gloss Nude,lip_color,Nivea,mass_market,22.27,10,46,PT,2026-03-08,2024-03-13,wholesale,36-50,"natural,vegan,cruelty_free",synthetic,winter,3.7,low_stock,426
+574,Shine Mist 150ml,hair_styling,Chanel,luxury,153.28,150,5,BE,2026-03-23,2026-02-17,online,18-25,"organic,cruelty_free",mixed,summer,3.7,in_stock,100
+575,Root Touch-Up 1000ml,hair_color,Clinique,premium,45.94,250,41,IE,2026-03-29,2025-09-07,retail,36-50,"cruelty_free,organic,natural",synthetic,all_season,3.2,in_stock,330
+576,Heat Protection Spray 500ml,hair_styling,Shiseido,premium,75.66,250,30,LU,2026-04-21,2024-11-14,retail,26-35,"organic,natural",mixed,summer,4.0,out_of_stock,40
+577,Highlights Kit 100ml,hair_color,Dove,mass_market,32.27,1000,42,GR,2026-04-21,2025-02-06,online,18-25,"natural,cruelty_free",synthetic,spring,4.3,out_of_stock,416
+578,Root Touch-Up 500ml,hair_color,Maybelline,mass_market,9.76,1000,19,SI,2026-04-29,2025-10-06,retail,26-35,"organic,vegan,natural",natural,all_season,4.6,in_stock,27
+579,Detox Cleansing Shampoo 100ml,hair_care,Shiseido,premium,108.6,50,6,LT,2026-04-26,2025-10-23,wholesale,26-35,organic,synthetic,fall,3.8,low_stock,201
+580,Protein Bond Mask 200ml,hair_care,Nivea,mass_market,34.91,200,42,CZ,2026-04-05,2026-03-02,wholesale,26-35,"organic,natural",synthetic,winter,3.9,low_stock,186
+581,Anti-Aging Moisturizer 500ml,skin_moisturizer,Dior,luxury,198.75,50,34,IE,2026-04-10,2025-06-25,wholesale,36-50,"cruelty_free,vegan,organic",synthetic,summer,4.4,in_stock,79
+582,Ultra Hydra Gel 1000ml,skin_moisturizer,Drunk Elephant,indie,43.87,1000,49,EE,2026-04-06,2026-02-13,retail,26-35,"cruelty_free,organic,natural",synthetic,all_season,4.1,in_stock,123
+583,Volume Mousse 1000ml,hair_styling,Garnier,mass_market,20.82,50,13,MT,2026-04-10,2025-02-26,wholesale,50+,"natural,vegan",mixed,all_season,4.1,in_stock,284
+584,Cloud Nine Eau de Parfum 50ml,fragrance,Maybelline,mass_market,33.39,50,29,PL,2026-04-30,2026-03-09,wholesale,26-35,"cruelty_free,organic,natural",mixed,spring,3.7,in_stock,203
+585,Lip Stain Red,lip_color,Estée Lauder,premium,42.38,30,31,MT,2026-04-17,2025-07-21,retail,50+,"cruelty_free,organic,natural",synthetic,spring,3.9,in_stock,464
+586,Eau de Toilette 75ml,fragrance,Tom Ford,luxury,90.5,75,41,CZ,2026-04-03,2023-12-19,wholesale,18-25,"natural,vegan",mixed,winter,3.7,in_stock,429
+587,Plumping Lip Balm Pink,lip_color,Drunk Elephant,indie,27.18,20,34,HU,2026-04-29,2026-01-24,wholesale,26-35,vegan,natural,winter,4.2,in_stock,284
+588,Glossy Tint Cherry 15ml,lip_color,Herbivore,indie,55.84,15,9,IT,2026-04-01,2026-03-25,retail,36-50,,mixed,fall,4.0,in_stock,417
+589,Anti-Aging Moisturizer 500ml,skin_moisturizer,L'Oréal,mass_market,6.11,250,3,IT,2026-04-21,2025-04-13,online,36-50,"cruelty_free,organic,vegan",synthetic,winter,4.3,low_stock,418
+590,Satin Lip Gloss Berry,lip_color,Tom Ford,luxury,176.13,10,48,PL,2026-04-18,2024-10-12,wholesale,36-50,cruelty_free,mixed,fall,3.0,in_stock,255
+591,Satin Lip Gloss Berry,lip_color,Dove,mass_market,13.81,30,6,PL,2026-05-23,2025-02-13,retail,26-35,organic,synthetic,all_season,3.8,in_stock,354
+592,Nail Polish 30ml,nail_care,La Mer,luxury,169.37,20,48,GR,2026-05-15,2024-04-21,online,18-25,"vegan,cruelty_free",mixed,fall,4.4,in_stock,312
+593,Root Touch-Up 50ml,hair_color,Chanel,luxury,178.98,1000,24,IE,2026-05-22,2024-12-13,wholesale,26-35,,mixed,spring,3.8,in_stock,161
+594,Top Coat 10ml,nail_care,Maybelline,mass_market,18.39,30,45,AT,2026-05-21,2024-06-24,online,26-35,"cruelty_free,organic",mixed,all_season,4.1,in_stock,70
+595,Summer Breeze Body Mist 75ml,fragrance,Dior,luxury,201.0,75,20,IT,2026-05-28,2026-02-06,wholesale,50+,"vegan,natural,organic",synthetic,spring,4.5,in_stock,261
+596,Perfume Oil 75ml,fragrance,Tom Ford,luxury,108.55,75,5,IE,2026-05-08,2025-11-25,online,26-35,organic,natural,all_season,3.4,low_stock,270
+597,Permanent Hair Dye 1000ml,hair_color,Maybelline,mass_market,29.87,50,41,LU,2026-05-14,2025-04-23,online,36-50,,natural,all_season,3.3,in_stock,426
+598,Protein Bond Mask 100ml,hair_care,Clinique,premium,52.55,100,9,SK,2026-05-04,2026-03-24,wholesale,26-35,"natural,organic,vegan",synthetic,spring,3.6,low_stock,258
+599,Eye Cream 500ml,skin_moisturizer,Garnier,mass_market,30.91,50,3,SE,2026-05-21,2026-01-26,online,50+,"organic,vegan,natural",synthetic,summer,4.8,out_of_stock,214
+600,Setting Powder 10ml,face_powder,Drunk Elephant,indie,19.74,20,11,PL,2026-05-20,2025-03-21,wholesale,26-35,natural,synthetic,fall,3.7,in_stock,175
+601,Glow Boost Serum 250ml,skin_moisturizer,Nivea,mass_market,14.57,250,8,AT,2026-05-20,2026-02-21,wholesale,50+,,natural,winter,4.0,in_stock,443
+602,Plumping Lip Balm Pink,lip_color,Garnier,mass_market,19.0,10,32,EE,2026-05-20,2025-01-07,wholesale,18-25,,mixed,winter,4.4,low_stock,235
+603,Nail Strengthener 20ml,nail_care,The Ordinary,indie,70.07,20,9,NO,2026-05-31,2024-01-28,online,50+,natural,natural,fall,4.6,in_stock,27
+604,Nourishing Conditioner 50ml,hair_care,Shiseido,premium,40.69,500,26,PT,2026-05-19,2025-06-24,online,18-25,"organic,vegan,natural",synthetic,summer,3.5,in_stock,387
+605,Anti-Aging Moisturizer 150ml,skin_moisturizer,Drunk Elephant,indie,73.05,50,21,NO,2026-05-05,2025-12-13,retail,18-25,"cruelty_free,natural",natural,fall,4.4,in_stock,304
+606,Hydrating Shampoo 200ml,hair_care,Herbivore,indie,52.94,150,39,AT,2026-06-11,2026-03-04,retail,50+,organic,synthetic,summer,3.8,low_stock,297
+607,Glow Boost Serum 200ml,skin_moisturizer,Dior,luxury,86.95,200,8,SE,2026-06-19,2026-03-08,online,18-25,"organic,cruelty_free",mixed,spring,4.2,in_stock,257
+608,Hydrating Shampoo 200ml,hair_care,The Ordinary,indie,77.18,500,35,AT,2026-06-25,2025-11-29,online,18-25,"organic,natural",natural,spring,4.5,in_stock,445
+609,Highlighting Powder 8ml,face_powder,Nivea,mass_market,13.93,30,46,GR,2026-06-24,2025-08-01,retail,26-35,"natural,vegan",mixed,all_season,4.2,low_stock,148
+610,Detox Cleansing Shampoo 200ml,hair_care,Herbivore,indie,37.51,250,42,EE,2026-06-04,2024-07-23,wholesale,50+,natural,mixed,summer,4.8,in_stock,424
+611,Nail Polish 10ml,nail_care,Glossier,indie,56.47,15,7,LU,2026-06-18,2026-02-27,online,18-25,,synthetic,summer,3.3,in_stock,3
+612,Flexi Hold Mousse 250ml,hair_styling,Dior,luxury,99.68,250,35,RO,2026-06-18,2026-02-28,retail,50+,natural,synthetic,summer,4.4,low_stock,452
+613,Anti-Aging Moisturizer 1000ml,skin_moisturizer,L'Oréal,mass_market,13.95,50,7,FI,2026-06-27,2025-07-18,retail,18-25,"natural,vegan",mixed,spring,4.4,out_of_stock,253
+614,Smoothing Serum 250ml,hair_styling,L'Oréal,mass_market,5.42,150,19,PL,2026-06-29,2024-07-26,wholesale,26-35,natural,synthetic,fall,3.8,in_stock,313
+615,Bronzer 10ml,face_powder,Lancôme,premium,52.32,10,25,SI,2026-06-28,2025-08-28,retail,18-25,"natural,cruelty_free",mixed,winter,4.1,in_stock,6
+616,Highlighting Powder 20ml,face_powder,The Ordinary,indie,65.04,10,8,CY,2026-06-09,2025-01-01,online,36-50,"natural,cruelty_free",synthetic,fall,4.8,low_stock,114
+617,Texturizing Spray 500ml,hair_styling,Herbivore,indie,58.17,1000,49,ES,2026-06-08,2025-06-11,online,26-35,"natural,cruelty_free",natural,all_season,4.0,in_stock,271
+618,Nail Recovery Serum 20ml,nail_care,Maybelline,mass_market,20.61,20,44,PT,2026-06-23,2026-06-13,online,26-35,,mixed,all_season,4.8,in_stock,47
+619,Detox Cleansing Shampoo 500ml,hair_care,L'Oréal,mass_market,5.65,200,1,LU,2026-06-29,2024-12-28,online,18-25,,synthetic,all_season,4.0,in_stock,33
+620,Smoothing Serum 500ml,hair_styling,Maybelline,mass_market,26.88,1000,24,IT,2026-06-18,2025-04-03,online,26-35,"natural,organic,vegan",mixed,winter,3.3,in_stock,193
+621,Luminous Setting Powder 20ml,face_powder,Drunk Elephant,indie,78.62,20,1,LU,2026-07-02,2026-06-03,wholesale,36-50,natural,natural,spring,4.1,in_stock,273
+622,Root Touch-Up 500ml,hair_color,La Mer,luxury,215.28,200,16,SE,2026-07-07,2024-05-01,retail,50+,,mixed,fall,2.6,in_stock,18
+623,Detox Cleansing Shampoo 100ml,hair_care,The Ordinary,indie,24.11,250,15,BE,2026-07-08,2026-03-21,retail,26-35,"cruelty_free,natural,organic",synthetic,all_season,4.3,in_stock,420
+624,Anti-Aging Moisturizer 50ml,skin_moisturizer,Dove,mass_market,23.78,50,36,IE,2026-07-06,2025-11-06,retail,36-50,"vegan,cruelty_free,natural",synthetic,spring,3.3,low_stock,196
+625,Gel Effect Top Coat 30ml,nail_care,Clinique,premium,42.99,30,4,PL,2026-07-09,2026-04-24,retail,18-25,vegan,mixed,summer,2.8,low_stock,131
+626,Base Coat 15ml,nail_care,Dior,luxury,212.64,10,13,NL,2026-07-04,2026-01-26,retail,18-25,"vegan,organic",mixed,winter,3.5,in_stock,287
+627,Glossy Tint Cherry 30ml,lip_color,Nivea,mass_market,27.63,30,45,PL,2026-07-04,2026-04-07,wholesale,36-50,"natural,vegan",synthetic,winter,3.7,in_stock,195
+628,Hydrating Shampoo 1000ml,hair_care,Shiseido,premium,58.82,50,24,MT,2026-07-08,2025-08-18,wholesale,26-35,"cruelty_free,organic",synthetic,fall,3.8,in_stock,380
+629,Summer Breeze Body Mist 15ml,fragrance,Drunk Elephant,indie,47.45,15,17,HU,2026-07-03,2026-05-20,online,36-50,organic,natural,summer,4.0,low_stock,87
+630,Daily Hydrating Cream 500ml,skin_moisturizer,Herbivore,indie,19.83,500,43,IE,2026-07-06,2024-01-24,wholesale,50+,,natural,spring,3.4,low_stock,71
+631,Summer Breeze Body Mist 50ml,fragrance,Tom Ford,luxury,187.33,50,35,SI,2026-07-04,2026-06-01,online,18-25,"organic,cruelty_free",natural,fall,3.9,in_stock,9
+632,Root Touch-Up 1000ml,hair_color,Fenty Beauty,indie,32.38,50,6,LT,2026-07-09,2025-05-05,retail,36-50,organic,natural,winter,4.0,low_stock,125
+633,Gel Effect Top Coat 20ml,nail_care,Maybelline,mass_market,6.68,20,45,CY,2026-07-04,2026-06-08,wholesale,18-25,"organic,natural,vegan",natural,winter,4.3,in_stock,459
+634,Shine Mist 50ml,hair_styling,Guerlain,luxury,87.24,50,2,RO,2026-07-09,2026-02-20,retail,36-50,"vegan,organic",synthetic,spring,4.5,in_stock,421
+635,Texturizing Spray 50ml,hair_styling,MAC,premium,42.6,150,33,BE,2026-07-07,2024-09-12,wholesale,26-35,,mixed,spring,4.0,in_stock,175

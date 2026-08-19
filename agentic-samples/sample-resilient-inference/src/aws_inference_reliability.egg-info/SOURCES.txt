@@ -1,0 +1,11 @@
+README.md
+pyproject.toml
+src/aws_inference_reliability.egg-info/PKG-INFO
+src/aws_inference_reliability.egg-info/SOURCES.txt
+src/aws_inference_reliability.egg-info/dependency_links.txt
+src/aws_inference_reliability.egg-info/requires.txt
+src/aws_inference_reliability.egg-info/top_level.txt
+src/reliable_inference/__init__.py
+src/reliable_inference/core.py
+src/reliable_inference/gateway.py
+tests/test_patterns.py

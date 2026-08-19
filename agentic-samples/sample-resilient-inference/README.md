@@ -1,7 +1,9 @@
 # Resilient Inference with Bedrock, Strands, LiteLLM, and AgentCore
 
+[Note: This is meant to be a sample for illustration purposes only and not production ready code]
+
 This sample is the runnable companion to
-[Building inference reliability controls with Amazon Bedrock and AgentCore](../02-implementation.md).
+[Building inference reliability controls with Amazon Bedrock and AgentCore](https://builder.aws.com/content/3I8VGUnRyjZD5S3kcB9SV1ppqbq/building-inference-reliability-controls-with-amazon-bedrock-and-agentcore).
 It uses one small customer-support agent throughout: given a ticket and trusted
 order context, the agent drafts a reply for human review.
 

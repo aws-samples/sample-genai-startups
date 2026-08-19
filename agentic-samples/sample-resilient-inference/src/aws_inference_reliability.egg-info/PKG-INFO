@@ -1,0 +1,10 @@
+Metadata-Version: 2.4
+Name: aws-inference-reliability
+Version: 0.2.0
+Summary: Runnable Amazon Bedrock and AgentCore examples for inference reliability.
+Requires-Python: <3.14,>=3.10
+Requires-Dist: bedrock-agentcore>=1.20.0
+Requires-Dist: boto3>=1.42.0
+Requires-Dist: litellm[proxy]<=1.91.1,>=1.75.9
+Requires-Dist: openai<3.0.0,>=1.68.0
+Requires-Dist: strands-agents[litellm]>=1.50.0

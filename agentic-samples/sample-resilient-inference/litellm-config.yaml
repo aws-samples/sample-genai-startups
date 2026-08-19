@@ -1,0 +1,23 @@
+model_list:
+  - model_name: ticket-drafter
+    litellm_params:
+      model: os.environ/LITELLM_PRIMARY_MODEL
+      aws_region_name: os.environ/AWS_REGION
+    model_info:
+      id: ticket-drafter-primary
+  - model_name: ticket-drafter-fallback
+    litellm_params:
+      model: os.environ/LITELLM_FALLBACK_MODEL
+      aws_region_name: os.environ/AWS_REGION
+    model_info:
+      id: ticket-drafter-fallback
+
+litellm_settings:
+  fallbacks:
+    - ticket-drafter:
+        - ticket-drafter-fallback
+  num_retries: 1
+  request_timeout: 30
+
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY

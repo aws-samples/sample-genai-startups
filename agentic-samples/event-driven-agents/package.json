@@ -34,12 +34,12 @@
     "@aws-sdk/util-dynamodb": "^3.830.0",
     "@sparticuz/chromium": "^137.0.1",
     "@types/uuid": "^10.0.0",
-    "aws-cdk-lib": "2.190.0",
+    "aws-cdk-lib": "2.240.0",
     "axios": "^1.6.0",
     "cdk-nag": "^2.37.23",
     "cheerio": "^1.0.0-rc.12",
     "constructs": "^10.0.0",
-    "linkup-sdk": "^1.0.8",
+    "linkup-sdk": "^1.1.0",
     "puppeteer-core": "^23.1.0",
     "uuid": "^11.1.0"
   }

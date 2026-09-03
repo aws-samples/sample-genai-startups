@@ -1,0 +1,21 @@
+# Reports (generated output)
+# cost-estimate.md  -- uncomment if you don't want to track generated estimates
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Python virtual environments
+.venv/
+venv/
+__pycache__/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Environment variables
+.env
+.env.local

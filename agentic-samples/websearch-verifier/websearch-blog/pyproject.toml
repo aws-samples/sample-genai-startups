@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "verified-company-research-loop"
+version = "0.2.0"
+description = "A verified-goal company research loop using Claude Agent SDK"
+requires-python = ">=3.11"
+dependencies = [
+  "bedrock-agentcore>=1.2.0",
+  "boto3>=1.43.0",
+  "claude-agent-sdk>=0.2.129",
+  "playwright>=1.55.0",
+  "pydantic>=2.10.0",
+]
+
+[project.scripts]
+verified-company-research = "verified_company_research.cli:main"
+compare-verified-company-research = "verified_company_research.paired_experiment:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+packages = ["verified_company_research"]

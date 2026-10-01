@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jev-semanticlayer"
+version = "0.1.0"
+description = "Run a shared semantic incident agent using Strands, Bedrock, Jev, and DynamoDB."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "boto3>=1.43,<2",
+  "httpx>=0.28,<1",
+  "openai>=2.54,<3",
+  "pydantic>=2.12,<3",
+  "python-dotenv>=1.1,<2",
+  "strands-agents[openai]>=1.57,<2",
+  "typesafe-sdk>=0.7,<1",
+]
+
+[project.scripts]
+incident-agent = "jev_semanticlayer.agent_cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

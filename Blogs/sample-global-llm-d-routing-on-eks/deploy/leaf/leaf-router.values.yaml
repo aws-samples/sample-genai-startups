@@ -1,0 +1,32 @@
+# Derived from the llm-d project (https://github.com/llm-d/llm-d), Apache License 2.0.
+# See THIRD-PARTY-LICENSES.
+# SPDX-License-Identifier: Apache-2.0
+## Leaf router: optimized-baseline scheduling (prefix affinity + token load),
+## selecting the simulator pods below. Same plugin set as the upstream guide.
+router:
+  extraServicePorts:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: 8081
+  epp:
+    pluginsConfigFile: "optimized-baseline-plugins.yaml"
+    pluginsCustomConfig:
+      optimized-baseline-plugins.yaml: |
+        apiVersion: llm-d.ai/v1alpha1
+        kind: EndpointPickerConfig
+        plugins:
+        - type: approx-prefix-cache-producer
+        - type: inflight-load-producer
+        - type: prefix-cache-affinity-filter
+        - type: token-load-scorer
+        schedulingProfiles:
+        - name: default
+          plugins:
+          - pluginRef: prefix-cache-affinity-filter
+          - pluginRef: token-load-scorer
+  inferencePool:
+    failureMode: "FailOpen"
+  modelServers:
+    matchLabels:
+      llm-d.ai/guide: "optimized-baseline"

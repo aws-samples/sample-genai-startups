@@ -1,0 +1,16 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: MIT-0
+version: 0.2
+env:
+  variables:
+    GOIMG: public.ecr.aws/docker/library/golang:1.26.8
+phases:
+  pre_build:
+    commands:
+      - aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin ${REPO%%/*}
+      - sed -i "s#golang:1.26.8#${GOIMG}#" Dockerfile.epp
+  build:
+    commands:
+      - docker run --rm -v $PWD:/w -w /w $GOIMG sh -c "go vet ./pkg/epp/framework/plugins/scheduling/scorer/clusteritl/ ./cmd/epp/... && go test ./pkg/epp/framework/plugins/scheduling/scorer/clusteritl/..."
+      - docker build -f Dockerfile.epp --build-arg TARGETOS=linux --build-arg TARGETARCH=amd64 --build-arg BUILD_REF=v0.11.0-clusteritl -t $REPO:$IMAGE_TAG .
+      - docker push $REPO:$IMAGE_TAG

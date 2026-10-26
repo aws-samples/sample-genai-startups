@@ -1,0 +1,8 @@
+env.sh
+kubeconfig
+infra/kubeconfig
+results/
+bin/kubectl
+bin/helm
+bin/eksctl
+.DS_Store

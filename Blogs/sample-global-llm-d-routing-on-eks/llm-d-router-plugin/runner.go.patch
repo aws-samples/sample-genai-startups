@@ -1,0 +1,23 @@
+# Adds cluster-itl-scorer to llm-d-router's cmd/epp/runner/runner.go (v0.11.0).
+# The context lines are llm-d-router code, Apache License 2.0. See THIRD-PARTY-LICENSES.
+# SPDX-License-Identifier: Apache-2.0
+diff --git a/cmd/epp/runner/runner.go b/cmd/epp/runner/runner.go
+index 27080fa..419bed7 100644
+--- a/cmd/epp/runner/runner.go
++++ b/cmd/epp/runner/runner.go
+@@ -139,6 +139,7 @@ import (
+ 	"github.com/llm-d/llm-d-router/pkg/epp/framework/plugins/scheduling/scorer/headerlabelaffinity"
+ 	"github.com/llm-d/llm-d-router/pkg/epp/framework/plugins/scheduling/scorer/kvcacheutilization"
+ 	latencyscorer "github.com/llm-d/llm-d-router/pkg/epp/framework/plugins/scheduling/scorer/latency"
++	"github.com/llm-d/llm-d-router/pkg/epp/framework/plugins/scheduling/scorer/clusteritl"
+ 	"github.com/llm-d/llm-d-router/pkg/epp/framework/plugins/scheduling/scorer/latencyobservation"
+ 	"github.com/llm-d/llm-d-router/pkg/epp/framework/plugins/scheduling/scorer/loadaware"
+ 	"github.com/llm-d/llm-d-router/pkg/epp/framework/plugins/scheduling/scorer/loraaffinity"
+@@ -625,6 +626,7 @@ func (r *Runner) registerInTreePlugins() {
+ 	fwkplugin.Register(headerprofile.HeaderProfileHandlerType, fwkplugin.StabilityAlpha, headerprofile.HeaderProfileHandlerFactory)
+ 	fwkplugin.Register(endpointattribute.EndpointAttributeScorerType, fwkplugin.StabilityAlpha, endpointattribute.EndpointAttributeScorerFactory)
+ 	fwkplugin.Register(latencyobservation.ScorerType, fwkplugin.StabilityAlpha, latencyobservation.ScorerFactory)
++	fwkplugin.Register(clusteritl.PluginType, fwkplugin.StabilityAlpha, clusteritl.Factory)
+ 	fwkplugin.Register(topologyaffinityscorer.ScorerType, fwkplugin.StabilityAlpha, topologyaffinityscorer.Factory)
+ 	fwkplugin.Register(burstprefix.PluginType, fwkplugin.StabilityAlpha, burstprefix.Factory)
+ 	fwkplugin.Register(p2psource.PluginType, fwkplugin.StabilityAlpha, p2psource.PluginFactory)

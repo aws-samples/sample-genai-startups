@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: MIT-0
+# k <context> <kubectl args...>  -- kubectl against the test-bed kubeconfig, namespace llm-d by default
+D=$(cd "$(dirname "$0")/.." && pwd); CTX=$1; shift
+exec "$D/bin/kubectl" --kubeconfig "$D/infra/kubeconfig" --context "$CTX" -n "${NS:-llm-d}" "$@"

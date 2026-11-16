@@ -1,0 +1,29 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: MIT-0
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+metadata:
+  name: gr-leaf-use2
+  region: us-east-2
+  version: "1.33"
+  tags:
+    project: global-routing
+vpc:
+  cidr: 10.201.0.0/16
+  nat:
+    gateway: Single
+  clusterEndpoints:
+    publicAccess: true
+    privateAccess: true
+iam:
+  withOIDC: true
+managedNodeGroups:
+  - name: cpu
+    instanceType: m6i.xlarge
+    desiredCapacity: 2
+    minSize: 1
+    maxSize: 6
+    privateNetworking: true
+    volumeSize: 50
+    tags:
+      project: global-routing

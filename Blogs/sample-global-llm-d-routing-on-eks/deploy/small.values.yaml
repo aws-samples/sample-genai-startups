@@ -1,0 +1,14 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: MIT-0
+## Test-bed sizing: the guide's defaults ask for 4 CPU / 8 GiB per container,
+## which won't fit 2x m6i.xlarge. The simulator needs almost nothing.
+router:
+  epp:
+    resources:
+      requests: {cpu: "500m", memory: 1Gi}
+      limits: {memory: 2Gi}
+  proxy:
+    args: ["--service-node","envoy-sidecar","--log-level","warn","--concurrency","2","--drain-strategy","immediate","--drain-time-s","60","-c","/etc/envoy/envoy.yaml"]
+    resources:
+      requests: {cpu: "500m", memory: 512Mi}
+      limits: {memory: 1Gi}

@@ -1,0 +1,41 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: MIT-0
+# Hub registrar: renders mc-hub-clusters from the registry.
+apiVersion: v1
+kind: ServiceAccount
+metadata: {name: registrar}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata: {name: registrar}
+rules:
+- apiGroups: [""]
+  resources: [configmaps]
+  resourceNames: [mc-hub-clusters]
+  verbs: [get, patch]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata: {name: registrar}
+subjects: [{kind: ServiceAccount, name: registrar}]
+roleRef: {apiGroup: rbac.authorization.k8s.io, kind: Role, name: registrar}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: registrar}
+spec:
+  replicas: 1
+  selector: {matchLabels: {app: registrar}}
+  template:
+    metadata: {labels: {app: registrar}}
+    spec:
+      serviceAccountName: registrar
+      containers:
+      - name: registrar
+        image: python:3.12-slim
+        command: ["sh","-c","pip install -q redis kubernetes pyyaml 2>/dev/null && exec python -u /app/registrar.py"]
+        env:
+        - {name: REDIS_HOST, value: "${VALKEY_ENDPOINT}"}
+        resources: {requests: {cpu: 50m, memory: 128Mi}}
+        volumeMounts: [{name: app, mountPath: /app}]
+      volumes: [{name: app, configMap: {name: registrar-py}}]

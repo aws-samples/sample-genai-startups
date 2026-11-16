@@ -65,7 +65,7 @@
                         <td>{{ user.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
                         <td>
                             <div class="btn-group d-flex flex-wrap">
-                                {% if user.username == 'admin@example.com' %}
+                                {% if user.profile_type == 'admin' or user.is_admin %}
                                     <button class="btn btn-sm btn-primary me-1 mb-1" disabled>Admin (Fixed)</button>
                                 {% else %}
                                     <button class="btn btn-sm btn-outline-primary set-profile me-1 mb-1" data-user-id="{{ user.id }}" data-profile="admin">Admin</button>

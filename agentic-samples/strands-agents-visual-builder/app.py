@@ -10,6 +10,7 @@ from sqlalchemy.engine import URL
 from typing import Dict, Any, Optional, List, Union
 import uuid
 import os
+import secrets
 import sys
 import boto3
 import base64
@@ -51,8 +52,8 @@ def check_aws_credentials():
 def generate_dsql_token(cluster_endpoint, region='us-east-1'):
     """Generate authentication token for DSQL PostgreSQL connections"""
     client = boto3.client("dsql", region_name=region)
-    # Use admin token for full access
-    token = client.generate_db_connect_admin_auth_token(cluster_endpoint, region)
+    # The application must use a custom database role, not the DSQL admin role.
+    token = client.generate_db_connect_auth_token(cluster_endpoint, region)
     return token
 
 # Configure database URI based on environment
@@ -68,8 +69,13 @@ def get_database_uri():
         db_uri = 'sqlite:///instance/strands.db'
     else:
         token = generate_dsql_token(db_uri)
-        db_uri = URL.create("postgresql+pg8000", username="admin", password=token, 
-        host=db_uri, database="postgres")
+        db_uri = URL.create(
+            "postgresql+pg8000",
+            username=os.environ.get('DB_USERNAME', 'admin'),
+            password=token,
+            host=db_uri,
+            database="postgres",
+        )
     print("DBURI", db_uri)
     return db_uri
 
@@ -129,8 +135,10 @@ if 'postgresql' in str(DATABASE_URL):
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# Create tables
-Base.metadata.create_all(bind=engine)
+# Create tables for local SQLite development only by default. Production DSQL
+# schema setup must be performed separately with a short-lived bootstrap role.
+if os.environ.get('AUTO_CREATE_DB_SCHEMA', 'true').lower() == 'true':
+    Base.metadata.create_all(bind=engine)
 
 # Authentication configuration
 COGNITO_ENABLED = os.environ.get('COGNITO_ENABLED', 'false').lower() == 'true'
@@ -140,9 +148,16 @@ COGNITO_CLIENT_SECRET = os.environ.get('COGNITO_CLIENT_SECRET', '')
 COGNITO_DOMAIN = os.environ.get('COGNITO_DOMAIN', '')
 COGNITO_REDIRECT_URI = os.environ.get('COGNITO_REDIRECT_URI', '')
 COGNITO_REGION = os.environ.get('AWS_REGION', 'us-east-1')
+COGNITO_ADMIN_EMAIL = os.environ.get('COGNITO_ADMIN_EMAIL', 'admin@example.com')
 
 # JWT settings for session management
-SECRET_KEY = os.environ.get('SECRET_KEY', 'dev_key_for_session')
+SECRET_KEY = os.environ.get('SECRET_KEY')
+if not SECRET_KEY:
+    if COGNITO_ENABLED:
+        raise RuntimeError("SECRET_KEY must be configured when Cognito authentication is enabled")
+    # Local development remains convenient, but sessions are intentionally invalidated
+    # whenever the local process restarts.
+    SECRET_KEY = secrets.token_urlsafe(32)
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 24 hours
 
@@ -286,45 +301,55 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 
 # Get current user from token
 async def get_current_user(token: str = Cookie(None), db: Session = Depends(get_db)):
-    # Instead of raising an exception, redirect to login page
-    login_redirect = RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
-    
     if not token:
-        return login_redirect
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required",
+            headers={"WWW-Authenticate": "Cookie"},
+        )
     
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id: str = payload.get("sub")
         if user_id is None:
-            return login_redirect
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid authentication token",
+                headers={"WWW-Authenticate": "Cookie"},
+            )
     except JWTError:
-        return login_redirect
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication token",
+            headers={"WWW-Authenticate": "Cookie"},
+        )
     
     try:
         user_id = uuid.UUID(user_id)
         user = db.query(User).get(user_id)
         if user is None:
-            return login_redirect
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid authentication token",
+                headers={"WWW-Authenticate": "Cookie"},
+            )
     except (ValueError, TypeError):
-        return login_redirect
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication token",
+            headers={"WWW-Authenticate": "Cookie"},
+        )
     
     return user
 
 # Login required dependency
 async def login_required(user = Depends(get_current_user)):
-    # If get_current_user returned a RedirectResponse, return it directly
-    if isinstance(user, RedirectResponse):
-        return user
     return user
 
 # Admin required dependency
 async def admin_required(user = Depends(get_current_user)):
-    # If get_current_user returned a RedirectResponse, return it directly
-    if isinstance(user, RedirectResponse):
-        return user
-        
     # Otherwise, check if the user has admin privileges
-    if user.username == 'admin@example.com' or user.profile_type == 'admin':
+    if user.profile_type == 'admin' or user.is_admin:
         return user
         
     # If not admin, raise a forbidden exception
@@ -335,10 +360,6 @@ async def admin_required(user = Depends(get_current_user)):
 
 # Configurer required dependency
 async def configurer_required(user = Depends(get_current_user)):
-    # If get_current_user returned a RedirectResponse, return it directly
-    if isinstance(user, RedirectResponse):
-        return user
-        
     # Otherwise, check if the user has configurer privileges
     if user.profile_type in ['admin', 'configurer']:
         return user
@@ -449,11 +470,15 @@ async def no_cache_middleware(request: Request, call_next):
     
     return response
 
-# Authentication middleware to redirect unauthenticated users to login page
+# Authentication middleware. API callers receive a JSON 401; browser requests
+# are redirected to the login page. Route dependencies still validate the
+# token against the database and enforce per-action authorization.
 @app.middleware("http")
 async def auth_middleware(request: Request, call_next):
-    # Skip auth check for login page, static files, and API endpoints
-    if request.url.path == "/login" or request.url.path.startswith("/static"):
+    path = request.url.path
+
+    # These endpoints are intentionally public.
+    if path in {"/login", "/logout", "/favicon.ico", "/healthz"} or path.startswith("/static"):
         return await call_next(request)
     
     # Check if user is authenticated
@@ -471,8 +496,13 @@ async def auth_middleware(request: Request, call_next):
         except JWTError:
             pass
     
-    # If not authenticated and trying to access a protected page, redirect to login
-    if not is_authenticated and request.url.path == "/":
+    if not is_authenticated:
+        if path == "/api" or path.startswith("/api/"):
+            return JSONResponse(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                content={"detail": "Authentication required"},
+                headers={"WWW-Authenticate": "Cookie"},
+            )
         return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
     
     # Continue with the request
@@ -481,6 +511,14 @@ async def auth_middleware(request: Request, call_next):
 # Template context processor
 @app.middleware("http")
 async def add_process_time_header(request: Request, call_next):
+    if (
+        request.url.path == "/healthz"
+        or request.url.path == "/api"
+        or request.url.path.startswith("/api/")
+        or not request.cookies.get("token")
+    ):
+        return await call_next(request)
+
     # Add common template variables
     request.state.user_profile = None
     
@@ -495,11 +533,10 @@ async def add_process_time_header(request: Request, call_next):
             
             # Always set user_profile if we have a valid token
             if user_id:
-                # If username is admin@example.com, always set profile to admin
                 db = SessionLocal()
                 try:
                     user = db.query(User).get(uuid.UUID(user_id))
-                    if user and user.username == 'admin@example.com':
+                    if user and (user.profile_type == 'admin' or user.is_admin):
                         request.state.user_profile = 'admin'
                     else:
                         request.state.user_profile = profile_type or 'user'
@@ -542,6 +579,10 @@ async def add_process_time_header(request: Request, call_next):
 async def favicon():
     return RedirectResponse(url="/static/favicon.ico")
 
+@app.get("/healthz")
+async def healthz():
+    return {"status": "ok"}
+
 @app.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
     return templates.TemplateResponse("login.html", {"request": request, "error": None})
@@ -576,20 +617,28 @@ async def login(
             # Create or update user in database
             user = db.query(User).filter_by(username=username).first()
             if not user:
-                user = User(username=username, profile_type='admin')  # Assume all Cognito users are admins
-                user.is_admin = True  # For backward compatibility
+                profile_type = 'admin' if username == COGNITO_ADMIN_EMAIL else 'user'
+                user = User(username=username, profile_type=profile_type)
+                user.is_admin = profile_type == 'admin'
                 user.set_password('cognito_managed')  # Password is managed by Cognito
                 db.add(user)
                 db.commit()
             
             # Create access token
-            profile_type = 'admin' if username == 'admin@example.com' else (user.profile_type or 'user')
+            profile_type = 'admin' if username == COGNITO_ADMIN_EMAIL else (user.profile_type or 'user')
             access_token = create_access_token(
                 data={"sub": str(user.id), "username": username, "profile_type": profile_type}
             )
             
             response = RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
-            response.set_cookie(key="token", value=access_token, httponly=True)
+            response.set_cookie(
+                key="token",
+                value=access_token,
+                httponly=True,
+                secure=COGNITO_ENABLED,
+                samesite="lax",
+                max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+            )
             return response
             
         except Exception as e:
@@ -599,13 +648,20 @@ async def login(
         user = db.query(User).filter_by(username=username).first()
         if user and user.check_password(password):
             # Create access token
-            profile_type = 'admin' if username == 'admin@example.com' else (user.profile_type or 'user')
+            profile_type = user.profile_type or 'user'
             access_token = create_access_token(
                 data={"sub": str(user.id), "username": username, "profile_type": profile_type}
             )
             
             response = RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
-            response.set_cookie(key="token", value=access_token, httponly=True)
+            response.set_cookie(
+                key="token",
+                value=access_token,
+                httponly=True,
+                secure=COGNITO_ENABLED,
+                samesite="lax",
+                max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+            )
             return response
         else:
             error = "Invalid username or password"
@@ -1326,7 +1382,7 @@ async def discover_mcp_tools(
         
         from strands.tools.mcp import MCPClient
         from mcp import stdio_client, StdioServerParameters
-        from mcp_helpers import locate_config
+        from mcp_helpers import MCPConfigurationError, locate_config
         
         command, args, env, _ = locate_config(config)
         
@@ -1351,6 +1407,11 @@ async def discover_mcp_tools(
         
         return {"success": True, "tools": tool_names}
         
+    except MCPConfigurationError as e:
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"success": False, "error": str(e)}
+        )
     except Exception as e:
         traceback.print_exc()
 
@@ -1397,7 +1458,7 @@ async def update_user_profile(
     profile_type = data.get('profile_type')
     
     # Prevent changing profile for user named 'admin'
-    if user.username == 'admin@example.com' and profile_type != 'admin':
+    if user.username == COGNITO_ADMIN_EMAIL and profile_type != 'admin':
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
             content={"error": "Cannot change profile for user 'admin'"}

@@ -1,54 +1,111 @@
 import json
+import os
 import re
+from typing import Any
+
+
+class MCPConfigurationError(ValueError):
+    """Raised when an MCP configuration is not safe to execute."""
+
 
 def parse_config(config_str):
     """Parse tool configuration with recovery for malformed JSON."""
-    print(f"[MCP_DEBUG] Parsing config string: {config_str[:200]}..." if len(str(config_str)) > 200 else f"[MCP_DEBUG] Parsing config string: {config_str}")
-    
     if not config_str:
-        print(f"[MCP_DEBUG] Empty config string, returning empty dict")
         return {}
     
     try:
-        result = json.loads(config_str)
-        print(f"[MCP_DEBUG] Successfully parsed JSON config: {result}")
-        return result
-    except Exception as e:
-        print(f"[MCP_DEBUG] JSON parsing failed: {str(e)}, attempting recovery")
-        recovered = _recover_json(config_str)
-        print(f"[MCP_DEBUG] Recovered config: {recovered}")
-        return recovered
+        return json.loads(config_str)
+    except Exception:
+        return _recover_json(config_str)
+
+
+def _load_server_registry():
+    """Load the operator-owned MCP server registry."""
+    raw_registry = os.environ.get("MCP_SERVERS_JSON", "{}")
+    try:
+        registry = json.loads(raw_registry)
+    except json.JSONDecodeError as exc:
+        raise MCPConfigurationError("MCP_SERVERS_JSON is not valid JSON") from exc
+
+    if not isinstance(registry, dict):
+        raise MCPConfigurationError("MCP_SERVERS_JSON must be a JSON object")
+    return registry
+
+
+def _validate_server_definition(server_id: str, definition: Any):
+    if not isinstance(definition, dict):
+        raise MCPConfigurationError(f"MCP server '{server_id}' has an invalid definition")
+
+    command = definition.get("command")
+    args = definition.get("args", [])
+    env = definition.get("env", {})
+
+    # Require a fixed executable path from the operator-owned registry. The
+    # request is never allowed to select an executable, arguments, or env.
+    if not isinstance(command, str) or not command.startswith("/"):
+        raise MCPConfigurationError(
+            f"MCP server '{server_id}' must define an absolute command path"
+        )
+    if not isinstance(args, list) or not all(isinstance(arg, str) for arg in args):
+        raise MCPConfigurationError(f"MCP server '{server_id}' args must be a string list")
+    if not isinstance(env, dict) or not all(
+        isinstance(key, str) and isinstance(value, str)
+        for key, value in env.items()
+    ):
+        raise MCPConfigurationError(f"MCP server '{server_id}' env must be a string map")
+
+    return command, args, env
+
+
+def _find_server_reference(config_dict):
+    if not isinstance(config_dict, dict):
+        return None
+
+    if "command" in config_dict or "args" in config_dict or "env" in config_dict:
+        raise MCPConfigurationError(
+            "MCP commands must be selected by server ID; command, args, and env "
+            "cannot be supplied by the request"
+        )
+
+    if "server" in config_dict:
+        server_id = config_dict["server"]
+        if not isinstance(server_id, str) or not server_id:
+            raise MCPConfigurationError("MCP server must be a non-empty server ID")
+        return server_id, config_dict.get("disabled_tools", [])
+
+    for value in config_dict.values():
+        if isinstance(value, dict):
+            result = _find_server_reference(value)
+            if result:
+                return result
+    return None
 
 def locate_config(config_dict):
-    """Locate MCP configuration in nested JSON structure."""
-    print(f"[MCP_DEBUG] Locating config in: {config_dict}")
-    
-    if not isinstance(config_dict, dict):
-        print(f"[MCP_DEBUG] Config is not a dict: {type(config_dict)}")
-        return None, None, None, None
-    
-    # Check current level first
-    if 'command' in config_dict:
-        result = (
-            config_dict['command'],
-            config_dict.get('args', []),
-            config_dict.get('env', {}),
-            config_dict.get('disabled_tools', [])
+    """Resolve an MCP server from the operator-owned registry.
+
+    Stored/user-provided tool configuration may select only a server ID and
+    disabled tool names. Process execution parameters come exclusively from
+    MCP_SERVERS_JSON.
+    """
+    reference = _find_server_reference(config_dict)
+    if not reference:
+        raise MCPConfigurationError(
+            "MCP configuration must contain a server ID from the server registry"
         )
-        print(f"[MCP_DEBUG] Found command at current level: {result}")
-        return result
-    
-    # Recursively search nested dictionaries
-    for key, value in config_dict.items():
-        print(f"[MCP_DEBUG] Checking nested key: {key}, value type: {type(value)}")
-        if isinstance(value, dict):
-            cmd, args, env, disabled = locate_config(value)
-            if cmd:
-                print(f"[MCP_DEBUG] Found command in nested key {key}: {cmd}")
-                return cmd, args, env, disabled
-    
-    print(f"[MCP_DEBUG] No command found in config")
-    return None, None, None, None
+
+    server_id, disabled_tools = reference
+    if not isinstance(disabled_tools, list) or not all(
+        isinstance(tool, str) for tool in disabled_tools
+    ):
+        raise MCPConfigurationError("disabled_tools must be a string list")
+
+    registry = _load_server_registry()
+    definition = registry.get(server_id)
+    if definition is None:
+        raise MCPConfigurationError(f"MCP server '{server_id}' is not configured")
+
+    command, args, env = _validate_server_definition(server_id, definition)
+    return command, args, env, disabled_tools
 
 def _recover_json(malformed_json):
     """Attempt to recover a dictionary from malformed JSON."""

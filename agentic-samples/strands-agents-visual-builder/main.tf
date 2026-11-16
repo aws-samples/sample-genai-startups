@@ -8,7 +8,7 @@ terraform {
 }
 
 provider "aws" {
-  region = "us-east-1"  # Change to your preferred region
+  region = "us-east-1" # Change to your preferred region
 }
 
 # Variables
@@ -27,12 +27,45 @@ variable "admin_email" {
   default     = "admin@example.com"
 }
 
+variable "mcp_servers_json" {
+  description = "Operator-owned MCP server registry. Tool configs may select only server IDs from this registry."
+  type        = string
+  default     = "{}"
+  sensitive   = true
+}
 
 # Generate a random password for the database
 resource "random_password" "db_password" {
   length           = 16
   special          = true
   override_special = "!#$%&*()-_=+[]{}<>:?"
+}
+
+resource "random_password" "app_secret_key" {
+  length  = 64
+  special = false
+}
+
+resource "aws_secretsmanager_secret" "app_secret_key" {
+  name                    = "${var.app_name}/session-key"
+  description             = "JWT signing key for the Strands GUI session cookie"
+  recovery_window_in_days = 0
+}
+
+resource "aws_secretsmanager_secret_version" "app_secret_key" {
+  secret_id     = aws_secretsmanager_secret.app_secret_key.id
+  secret_string = random_password.app_secret_key.result
+}
+
+resource "aws_secretsmanager_secret" "mcp_server_registry" {
+  name                    = "${var.app_name}/mcp-server-registry"
+  description             = "Operator-owned MCP server registry for the Strands GUI"
+  recovery_window_in_days = 0
+}
+
+resource "aws_secretsmanager_secret_version" "mcp_server_registry" {
+  secret_id     = aws_secretsmanager_secret.mcp_server_registry.id
+  secret_string = var.mcp_servers_json
 }
 
 # ECR Repository
@@ -62,17 +95,22 @@ resource "aws_apprunner_service" "app_service" {
           # Set the database URI using the DSQL public endpoint
           # We'll need to update this with the actual identifier after the cluster is created
           SQLALCHEMY_DATABASE_URI = "${aws_dsql_cluster.strands_db.identifier}.dsql.${data.aws_region.current.name}.on.aws"
+          DB_USERNAME             = "strands_app"
+          AUTO_CREATE_DB_SCHEMA   = "false"
           # Cognito configuration
-          COGNITO_ENABLED = "true"
+          COGNITO_ENABLED      = "true"
           COGNITO_USER_POOL_ID = aws_cognito_user_pool.strands_user_pool.id
-          COGNITO_CLIENT_ID = aws_cognito_user_pool_client.strands_client.id
-          COGNITO_CLIENT_SECRET = ""
-          COGNITO_DOMAIN = "${var.app_name}-${var.environment}.auth.${data.aws_region.current.name}.amazoncognito.com"
+          COGNITO_CLIENT_ID    = aws_cognito_user_pool_client.strands_client.id
+          COGNITO_ADMIN_EMAIL  = var.admin_email
+          COGNITO_DOMAIN       = "${var.app_name}-${var.environment}.auth.${data.aws_region.current.name}.amazoncognito.com"
           # Use a placeholder that will be updated after deployment
           COGNITO_REDIRECT_URI = "https://placeholder-url.amazonaws.com/auth/callback"
           #OTEL_EXPORTER_OTLP_ENDPOINT="https://xray.us-east-1.amazonaws.com/v1/traces"
           #STRANDS_OTEL_ENABLE_CONSOLE_EXPORT=true
-
+        }
+        runtime_environment_secrets = {
+          SECRET_KEY       = aws_secretsmanager_secret.app_secret_key.arn
+          MCP_SERVERS_JSON = aws_secretsmanager_secret.mcp_server_registry.arn
         }
       }
       image_identifier      = "${aws_ecr_repository.app_repo.repository_url}:latest"
@@ -92,11 +130,26 @@ resource "aws_apprunner_service" "app_service" {
     memory            = "2048"
   }
 
+  health_check {
+    protocol            = "HTTP"
+    path                = "/healthz"
+    interval            = 10
+    timeout             = 5
+    healthy_threshold   = 1
+    unhealthy_threshold = 5
+  }
+
   auto_scaling_configuration_arn = aws_apprunner_auto_scaling_configuration_version.app_scaling.arn
 
   depends_on = [
     aws_ecr_repository.app_repo,
-    null_resource.docker_push
+    null_resource.docker_push,
+    aws_iam_role_policy_attachment.app_runner_bedrock_policy,
+    aws_iam_role_policy_attachment.app_runner_dsql_policy,
+    aws_iam_role_policy_attachment.app_runner_secret_policy,
+    aws_iam_role_policy_attachment.app_runner_xray_policy,
+    aws_secretsmanager_secret_version.app_secret_key,
+    aws_secretsmanager_secret_version.mcp_server_registry,
   ]
 }
 
@@ -157,8 +210,8 @@ resource "aws_iam_policy" "ecr_access_policy" {
     Version = "2012-10-17"
     Statement = [
       {
-        Effect = "Allow"
-        Action = "ecr:GetAuthorizationToken"
+        Effect   = "Allow"
+        Action   = "ecr:GetAuthorizationToken"
         Resource = "*"
       },
       {
@@ -194,8 +247,7 @@ resource "aws_iam_policy" "bedrock_access_policy" {
           "bedrock:InvokeModel",
           "bedrock:ListInferenceProfiles",
           "bedrock:InvokeModelWithResponseStream",
-          "bedrock:ListFoundationModels",
-          "sts:GetCallerIdentity"
+          "bedrock:ListFoundationModels"
         ]
         Resource = "*"
       }
@@ -222,8 +274,7 @@ resource "aws_iam_policy" "dsql_access_policy" {
       {
         Effect = "Allow"
         Action = [
-          "dsql:DbConnect",
-          "dsql:DbConnectAdmin"
+          "dsql:DbConnect"
         ]
         Resource = aws_dsql_cluster.strands_db.arn
       }
@@ -237,6 +288,31 @@ resource "aws_iam_role_policy_attachment" "app_runner_dsql_policy" {
   policy_arn = aws_iam_policy.dsql_access_policy.arn
 }
 
+# Permit the application to read only its JWT signing key.
+resource "aws_iam_policy" "app_runner_secret_policy" {
+  name        = "${var.app_name}-secret-access-policy"
+  description = "Allow App Runner to read the application session signing key"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = ["secretsmanager:GetSecretValue"]
+        Resource = [
+          aws_secretsmanager_secret.app_secret_key.arn,
+          aws_secretsmanager_secret.mcp_server_registry.arn,
+        ]
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "app_runner_secret_policy" {
+  role       = aws_iam_role.app_runner_instance_role.name
+  policy_arn = aws_iam_policy.app_runner_secret_policy.arn
+}
+
 # Attach AWSXrayWriteOnlyAccess policy to App Runner instance role
 resource "aws_iam_role_policy_attachment" "app_runner_xray_policy" {
   role       = aws_iam_role.app_runner_instance_role.name
@@ -247,7 +323,7 @@ resource "aws_iam_role_policy_attachment" "app_runner_xray_policy" {
 resource "null_resource" "docker_push" {
   triggers = {
     ecr_repository_url = aws_ecr_repository.app_repo.repository_url
-    reqs = filemd5("${path.module}/requirements.txt")
+    reqs               = filemd5("${path.module}/requirements.txt")
     # Monitor all files in templates directory
     templates_hash = sha256(join("", [for f in fileset("${path.module}/templates", "**") : filemd5("${path.module}/templates/${f}")]))
     # Monitor all python files in root
@@ -256,7 +332,7 @@ resource "null_resource" "docker_push" {
     static_files_hash = sha256(join("", [for f in fileset("${path.module}/static", "**") : filemd5("${path.module}/static/${f}")]))
     # Monitor Dockerfile for changes
     df_py_hash = filemd5("${path.module}/Dockerfile")
-  
+
   }
 
   provisioner "local-exec" {
@@ -299,25 +375,39 @@ output "update_cognito_instructions" {
 
 # Output the DSQL Cluster ARN
 output "dsql_cluster_arn" {
-  value = aws_dsql_cluster.strands_db.arn
+  value       = aws_dsql_cluster.strands_db.arn
   description = "The ARN of the DSQL cluster"
+}
+
+output "dsql_bootstrap_instructions" {
+  value       = <<-EOT
+    Before starting the App Runner service, connect to the DSQL cluster with a
+    short-lived administrator credential and run:
+
+      CREATE ROLE strands_app WITH LOGIN;
+      AWS IAM GRANT strands_app TO '${aws_iam_role.app_runner_instance_role.arn}';
+
+    Apply the application schema while using the strands_app role. The
+    App Runner role is intentionally limited to dsql:DbConnect.
+  EOT
+  description = "One-time DSQL custom-role bootstrap instructions"
 }
 
 # Cognito User Pool
 resource "aws_cognito_user_pool" "strands_user_pool" {
   name = "${var.app_name}-user-pool"
-  
+
   username_attributes = ["email"]
-  
+
   # Use verification configuration instead of auto_verify_attributes
   verification_message_template {
     default_email_option = "CONFIRM_WITH_CODE"
   }
-  
+
   email_configuration {
     email_sending_account = "COGNITO_DEFAULT"
   }
-  
+
   password_policy {
     minimum_length    = 8
     require_lowercase = true
@@ -325,18 +415,18 @@ resource "aws_cognito_user_pool" "strands_user_pool" {
     require_symbols   = true
     require_uppercase = true
   }
-  
+
   schema {
     attribute_data_type = "String"
     name                = "email"
     required            = true
     mutable             = true
   }
-  
+
   admin_create_user_config {
     allow_admin_create_user_only = true
   }
-  
+
   tags = {
     Name = "${var.app_name}-user-pool-${var.environment}"
   }
@@ -344,22 +434,22 @@ resource "aws_cognito_user_pool" "strands_user_pool" {
 
 # Cognito User Pool Client
 resource "aws_cognito_user_pool_client" "strands_client" {
-  name                = "${var.app_name}-client"
-  user_pool_id        = aws_cognito_user_pool.strands_user_pool.id
-  
-  generate_secret     = false
+  name         = "${var.app_name}-client"
+  user_pool_id = aws_cognito_user_pool.strands_user_pool.id
+
+  generate_secret = false
   explicit_auth_flows = [
     "ALLOW_USER_PASSWORD_AUTH",
     "ALLOW_REFRESH_TOKEN_AUTH",
     "ALLOW_USER_SRP_AUTH"
   ]
-  
+
   # Use a placeholder URL that will be updated later
-  callback_urls       = ["https://placeholder-url.amazonaws.com/auth/callback"]
-  logout_urls         = ["https://placeholder-url.amazonaws.com/"]
-  
-  allowed_oauth_flows = ["code"]
-  allowed_oauth_scopes = ["email", "openid", "profile"]
+  callback_urls = ["https://placeholder-url.amazonaws.com/auth/callback"]
+  logout_urls   = ["https://placeholder-url.amazonaws.com/"]
+
+  allowed_oauth_flows          = ["code"]
+  allowed_oauth_scopes         = ["email", "openid", "profile"]
   supported_identity_providers = ["COGNITO"]
 }
 
@@ -367,7 +457,7 @@ resource "aws_cognito_user_pool_client" "strands_client" {
 resource "aws_cognito_user" "admin_user" {
   user_pool_id = aws_cognito_user_pool.strands_user_pool.id
   username     = var.admin_email
-  
+
   attributes = {
     email          = var.admin_email
     email_verified = true
@@ -385,13 +475,13 @@ resource "random_password" "admin_password" {
 
 # Output the admin password
 output "admin_password" {
-  value     = random_password.admin_password.result
-  sensitive = true
+  value       = random_password.admin_password.result
+  sensitive   = true
   description = "Password for the admin user (sensitive)"
 }
 
 output "admin_user" {
-  value     = "admin@example.com"
+  value       = var.admin_email
   description = "The default admin user"
 }
 
@@ -399,7 +489,7 @@ output "admin_user" {
 # Set the admin user's password
 resource "null_resource" "set_admin_password" {
   depends_on = [aws_cognito_user.admin_user]
-  
+
   provisioner "local-exec" {
     command = <<-EOT
       aws cognito-idp admin-set-user-password \

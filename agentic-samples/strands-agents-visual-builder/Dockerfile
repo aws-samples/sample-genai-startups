@@ -16,11 +16,6 @@ RUN curl -fsSL https://deb.nodesource.com/setup_23.x -o-  | bash && apt-get inst
 
 RUN python -m pip install uv
 
-# Install Deno
-RUN curl -fsSL https://deno.land/x/install/install.sh | sh
-ENV PATH="/root/.deno/bin:${PATH}"
-
-
 RUN npm install -g npm
 
 
@@ -36,6 +31,13 @@ COPY . .
 
 # Create instance directory if it doesn't exist
 RUN mkdir -p instance
+
+# Drop root before starting the application. The application only needs to
+# write its local SQLite database and temporary runtime files.
+RUN groupadd --system --gid 10001 appuser \
+    && useradd --system --uid 10001 --gid appuser --create-home --home-dir /home/appuser appuser \
+    && chown -R appuser:appuser /app /home/appuser
+USER appuser
 
 # Expose port
 EXPOSE 5000

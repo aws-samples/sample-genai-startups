@@ -774,7 +774,7 @@ class WorkflowRunner:
                 from mcp_helpers import locate_config
                 
                 command, args, env, _ = locate_config(config)
-                print(f"Located MCP config - command: {command}, args: {args}, env: {env}")
+                print(f"Located configured MCP server for {tool_name}: {command}")
                 
                 # Get disabled_tools from root config
                 disabled_tools = config.get('disabled_tools', [])

@@ -1,0 +1,112 @@
+{
+  "estimateName": "SaaS Platform - 5K Users",
+  "region": "US East (N. Virginia)",
+  "regionCode": "us-east-1",
+  "availabilityZones": 2,
+  "environments": ["production"],
+  "services": [
+    {
+      "type": "Fargate",
+      "description": "API Backend - ECS Fargate",
+      "region": "US East (N. Virginia)",
+      "operatingSystem": "Linux",
+      "cpuArchitecture": "ARM",
+      "vCPU": 0.5,
+      "memoryGB": 1,
+      "numberOfTasks": 4,
+      "ephemeralStorageGB": 20,
+      "durationHoursPerMonth": 730
+    },
+    {
+      "type": "RDS",
+      "description": "PostgreSQL Database",
+      "region": "US East (N. Virginia)",
+      "engine": "PostgreSQL",
+      "instanceType": "db.t4g.medium",
+      "deployment": "Multi-AZ",
+      "quantity": 1,
+      "pricingModel": "On-Demand",
+      "storageType": "General Purpose SSD (gp3)",
+      "storageGB": 50,
+      "backupStorageGB": 0,
+      "dataTransfer": {
+        "outboundGB": 5
+      },
+      "rdsProxy": {
+        "enabled": false
+      }
+    },
+    {
+      "type": "S3",
+      "description": "File Storage + Frontend Assets",
+      "region": "US East (N. Virginia)",
+      "storageClass": "S3 Standard",
+      "storageGB": 50,
+      "putRequests": 50000,
+      "getRequests": 500000,
+      "dataTransfer": {
+        "outboundToInternetGB": 0,
+        "toCloudFrontGB": 100
+      }
+    },
+    {
+      "type": "CloudFront",
+      "description": "CDN for React Frontend + Assets",
+      "region": "US East (N. Virginia)",
+      "dataTransferOutGB": 100,
+      "httpRequests": 500000,
+      "httpsRequests": 5000000,
+      "invalidationPaths": 10
+    },
+    {
+      "type": "ALB",
+      "description": "Application Load Balancer",
+      "region": "US East (N. Virginia)",
+      "numberOfALBs": 1,
+      "processedBytesGBPerHour": 1,
+      "newConnectionsPerSec": 20,
+      "activeConnectionsPerMin": 200,
+      "ruleEvaluationsPerSec": 20
+    },
+    {
+      "type": "NATGateway",
+      "description": "NAT Gateways (1 per AZ)",
+      "region": "US East (N. Virginia)",
+      "numberOfGateways": 2,
+      "dataProcessedGBPerMonth": 30
+    },
+    {
+      "type": "Cognito",
+      "description": "User Authentication",
+      "region": "US East (N. Virginia)",
+      "tier": "Essentials",
+      "monthlyActiveUsers": 5000,
+      "samlMAUs": 0,
+      "advancedSecurity": false
+    },
+    {
+      "type": "SES",
+      "description": "Transactional Email",
+      "region": "US East (N. Virginia)",
+      "emailsPerMonth": 10000,
+      "avgAttachmentKB": 0
+    },
+    {
+      "type": "Route53",
+      "description": "DNS Management",
+      "hostedZones": 1,
+      "queriesPerMonthMillions": 2,
+      "healthChecks": 2
+    },
+    {
+      "type": "CloudWatch",
+      "description": "Monitoring & Logging",
+      "region": "US East (N. Virginia)",
+      "customMetrics": 15,
+      "dashboards": 2,
+      "standardAlarms": 10,
+      "logsIngestionGB": 10,
+      "logsStorageGB": 30
+    }
+  ]
+}

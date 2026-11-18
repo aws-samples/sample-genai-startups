@@ -35,7 +35,7 @@
     "@sparticuz/chromium": "^137.0.1",
     "@types/uuid": "^10.0.0",
     "aws-cdk-lib": "2.190.0",
-    "axios": "^1.6.0",
+    "axios": "^1.13.5",
     "cdk-nag": "^2.37.23",
     "cheerio": "^1.0.0-rc.12",
     "constructs": "^10.0.0",

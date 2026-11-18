@@ -39,7 +39,7 @@
     "cdk-nag": "^2.37.23",
     "cheerio": "^1.0.0-rc.12",
     "constructs": "^10.0.0",
-    "linkup-sdk": "^1.0.8",
+    "linkup-sdk": "^1.1.0",
     "puppeteer-core": "^23.1.0",
     "uuid": "^11.1.0"
   }
